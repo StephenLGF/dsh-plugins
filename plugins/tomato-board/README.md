@@ -44,15 +44,16 @@ npx @deepseek-ai/dsh web
 仓库已包含构建产物，可以直接安装指定版本：
 
 ```bash
-npx @deepseek-ai/dsh plugin --profile web add github:stephenlgf/dsh-tomato-board#v0.1.0
+npx @deepseek-ai/dsh plugin --profile web add \
+  "github:StephenLGF/dsh-plugins#path:/plugins/tomato-board"
 npx @deepseek-ai/dsh web
 ```
 
 也可以 clone 后从本地目录安装：
 
 ```bash
-git clone https://github.com/stephenlgf/dsh-tomato-board.git
-cd dsh-tomato-board
+git clone https://github.com/StephenLGF/dsh-plugins.git
+cd dsh-plugins/plugins/tomato-board
 npx @deepseek-ai/dsh plugin --profile web add .
 npx @deepseek-ai/dsh web
 ```
@@ -96,7 +97,7 @@ rsync -a --delete \
   --exclude .git \
   --exclude node_modules \
   --exclude lib \
-  /absolute/path/to/dsh-tomato-board/ \
+  /absolute/path/to/dsh-plugins/plugins/tomato-board/ \
   packages/client/tomato-board/
 
 pnpm exec tsc -b packages/client/tomato-board
@@ -110,7 +111,11 @@ pnpm --dir packages/client/tomato-board bundle
 版本号采用语义化版本。建议每次发布同时创建 Git tag 和 GitHub Release：
 
 ```bash
-npm version patch # 或 minor / major
+cd plugins/tomato-board
+npm version patch --no-git-tag-version # 或 minor / major
+git add package.json
+git commit -m "release(tomato-board): v0.1.1"
+git tag tomato-board-v0.1.1
 git push origin main --follow-tags
 ```
 

@@ -5,11 +5,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/stephenlgf/dsh-tomato-board.git"
+    "url": "git+https://github.com/StephenLGF/dsh-plugins.git",
+    "directory": "plugins/tomato-board"
   },
-  "homepage": "https://github.com/stephenlgf/dsh-tomato-board#readme",
+  "homepage": "https://github.com/StephenLGF/dsh-plugins/tree/main/plugins/tomato-board#readme",
   "bugs": {
-    "url": "https://github.com/stephenlgf/dsh-tomato-board/issues"
+    "url": "https://github.com/StephenLGF/dsh-plugins/issues"
   },
   "keywords": [
     "deepseek",
