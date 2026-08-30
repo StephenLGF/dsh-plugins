@@ -2,6 +2,20 @@
 
 为 DeepSeek Harness Web 提供 Gitee Team（番茄）工作台和原生对话联动。
 
+## 快速安装（推荐）
+
+Clone 仓库后，从插件目录安装到 Harness Web profile：
+
+```bash
+git clone https://github.com/StephenLGF/dsh-plugins.git
+cd dsh-plugins/plugins/tomato-board
+
+npx @deepseek-ai/dsh plugin --profile web add .
+npx @deepseek-ai/dsh web
+```
+
+安装前请先确认必备的 Gitee CLI 已配置完成，具体要求见下方“必备环境”。
+
 ## 功能
 
 - 在 Harness 侧栏打开番茄工作台，按状态展示当前用户负责的事项。
