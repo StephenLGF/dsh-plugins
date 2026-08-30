@@ -1,0 +1,33 @@
+{
+  "extends": "../../../tsconfig.base.client.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib/types",
+    "types": ["node"],
+    "composite": false,
+    "incremental": false,
+    "paths": {
+      "@deepseek-ai/cordis": ["../../../vendor/cordis/src"],
+      "@deepseek-ai/dsh-api-session-controller/client": ["../../api/session-controller/src/client/index.ts"],
+      "@deepseek-ai/dsh-api-workspace-controller/client": ["../../api/workspace-controller/src/client/index.ts"],
+      "@deepseek-ai/dsh-client-ui-layout/client": ["../ui-layout/src/client/index.ts"],
+      "@deepseek-ai/dsh-client-ui-conversation/client": ["../ui-conversation/src/client/index.ts"],
+      "@deepseek-ai/dsh-client-ui-renderer/client": ["../ui-renderer/src/client/index.ts"],
+      "@deepseek-ai/dsh-client-ui-sidebar/client": ["../ui-sidebar/src/client/index.ts"],
+      "@deepseek-ai/dsh-client-ui-slots": ["../ui-slots/src/index.ts"],
+      "@deepseek-ai/schemastery": ["../../../vendor/schemastery/src"],
+      "@deepseek-ai/dsh-tools": ["../../../packages/core/tools/src"]
+    } 
+  },
+  "include": ["src"],
+  "references": [
+    { "path": "../../../vendor/cordis" },
+    { "path": "../../api/session-controller/tsconfig.client.json" },
+    { "path": "../../api/workspace-controller/tsconfig.client.json" },
+    { "path": "../ui-layout" },
+    { "path": "../ui-conversation" },
+    { "path": "../ui-renderer" },
+    { "path": "../ui-sidebar" },
+    { "path": "../ui-slots" }
+  ]
+}
