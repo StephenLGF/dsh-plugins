@@ -6,6 +6,8 @@ import type { Context } from '@deepseek-ai/cordis'
 const execFileAsync = promisify(execFile)
 const ROUTE = '/api/tomato-board/items'
 const OPEN_ROUTE = '/api/tomato-board/open'
+const TRANSITIONS_ROUTE = '/api/tomato-board/transitions'
+const TRANSITION_ROUTE = '/api/tomato-board/transition'
 const PRIORITY_NAMES = new Map([
   ['69e65065-4b34-4109-bca9-0154e548554a', 'P0'],
   ['8f7912a5-9176-4a79-a269-2269ac42b5a2', 'P1'],
@@ -26,6 +28,13 @@ interface HttpResponse {
   statusCode: number
   setHeader(name: string, value: string): void
   end(body?: string): void
+}
+
+interface TomatoTransition {
+  transition: string
+  targetStatus: string
+  disabled: boolean
+  disabledReason?: string
 }
 
 interface Config {
@@ -63,6 +72,20 @@ function unwrapItems(payload: unknown): unknown[] {
   return []
 }
 
+function unwrapTransitions(payload: unknown): unknown[] {
+  if (Array.isArray(payload)) return payload
+  if (!payload || typeof payload !== 'object') return []
+  const record = payload as Record<string, unknown>
+  for (const key of ['transitions', 'data', 'result']) {
+    const value = record[key]
+    if (Array.isArray(value)) return value
+    if (value && typeof value === 'object' && Array.isArray((value as Record<string, unknown>).transitions)) {
+      return (value as { transitions: unknown[] }).transitions
+    }
+  }
+  return []
+}
+
 function normalizeItem(raw: unknown) {
   const item = raw && typeof raw === 'object' ? raw as Record<string, unknown> : {}
   const nested = item.value && typeof item.value === 'object'
@@ -84,9 +107,76 @@ function normalizeItem(raw: unknown) {
   }
 }
 
+function normalizeTransition(raw: unknown): TomatoTransition | null {
+  if (!raw || typeof raw !== 'object') return null
+  const value = raw as Record<string, unknown>
+  const transition = firstText(value.transition)
+  const targetStatus = firstText(value.targetStatus ?? value.status)
+  if (!transition || !targetStatus) return null
+  return {
+    transition,
+    targetStatus,
+    disabled: value.disabled === true,
+    ...(firstText(value.disabledReason) ? { disabledReason: firstText(value.disabledReason) } : {}),
+  }
+}
+
+function cliSettings(config: Config) {
+  return {
+    executable: config.executable || process.env.TOMATO_CLI_EXECUTABLE || 'gitee',
+    profile: config.profile || process.env.TOMATO_PROFILE || 'osc',
+  }
+}
+
+async function runJson(config: Config, args: string[]): Promise<unknown> {
+  const { executable, profile } = cliSettings(config)
+  const result = await execFileAsync(executable, [...args, '--profile', profile, '--output', 'json'], {
+    timeout: 120_000,
+    maxBuffer: 16 * 1024 * 1024,
+  })
+  return JSON.parse(result.stdout)
+}
+
+async function loadTransitions(config: Config, itemKey: string): Promise<TomatoTransition[]> {
+  const payload = await runJson(config, ['team', 'transition', 'list', itemKey])
+  return unwrapTransitions(payload).map(normalizeTransition).filter((value): value is TomatoTransition => value !== null)
+}
+
+async function loadItem(config: Config, itemKey: string) {
+  return normalizeItem(await runJson(config, ['team', 'item', 'view', itemKey]))
+}
+
+async function executeTransition(config: Config, itemKey: string, transitionName: string) {
+  const transitions = await loadTransitions(config, itemKey)
+  const selected = transitions.find(transition => transition.transition === transitionName)
+  if (!selected || selected.disabled) {
+    throw new Error(selected?.disabledReason || '当前状态不支持该流转')
+  }
+  const before = await loadItem(config, itemKey)
+  await runJson(config, [
+    'team', 'transition', 'execute', itemKey,
+    '--transition', selected.transition,
+  ])
+  const after = await loadItem(config, itemKey)
+  if (after.status !== selected.targetStatus) {
+    throw new Error(`流转后状态校验失败：期望「${selected.targetStatus}」，实际「${after.status || '未知'}」`)
+  }
+  return {
+    itemKey,
+    previousStatus: before.status,
+    currentStatus: after.status,
+    targetStatus: selected.targetStatus,
+  }
+}
+
+function itemKeyFromRoute(requestUrl: string | undefined, route: string): string {
+  const pathname = new URL(requestUrl ?? route, 'http://localhost').pathname
+  const itemKey = decodeURIComponent(pathname.slice(route.length).replace(/^\/+/, '')).trim()
+  return /^[\p{L}\p{N}._-]{1,160}$/u.test(itemKey) ? itemKey : ''
+}
+
 async function loadItems(config: Config) {
-  const executable = config.executable || process.env.TOMATO_CLI_EXECUTABLE || 'gitee'
-  const profile = config.profile || process.env.TOMATO_PROFILE || 'osc'
+  const { executable, profile } = cliSettings(config)
   const iql = config.iql
     || "负责人 = currentUser() and 所属空间 in ['Gitee-Team', 'Gitee-Test'] and 类型 in ['Story', 'EnablerStory', 'Bug', '测试缺陷']"
   const rawItems: unknown[] = []
@@ -159,9 +249,8 @@ export function apply(ctx: Context, config: Config = {}): void {
         sendJson(response, 405, { error: 'Method not allowed' })
         return
       }
-      const pathname = new URL(request.url ?? OPEN_ROUTE, 'http://localhost').pathname
-      const itemKey = decodeURIComponent(pathname.slice(OPEN_ROUTE.length).replace(/^\/+/, '')).trim()
-      if (!itemKey || !/^[\p{L}\p{N}._-]{1,160}$/u.test(itemKey)) {
+      const itemKey = itemKeyFromRoute(request.url, OPEN_ROUTE)
+      if (!itemKey) {
         sendJson(response, 400, { error: '无效的番茄事项编号' })
         return
       }
@@ -180,4 +269,50 @@ export function apply(ctx: Context, config: Config = {}): void {
       response.end()
     },
   }), 'tomato-board: HTTP external item route')
+  ctx.effect(() => webServer.register({
+    kind: 'prefix',
+    path: TRANSITIONS_ROUTE,
+    async handler(request, response) {
+      if (request.method !== 'GET') {
+        sendJson(response, 405, { error: 'Method not allowed' })
+        return
+      }
+      const itemKey = itemKeyFromRoute(request.url, TRANSITIONS_ROUTE)
+      if (!itemKey) {
+        sendJson(response, 400, { error: '无效的番茄事项编号' })
+        return
+      }
+      try {
+        const [item, transitions] = await Promise.all([
+          loadItem(config, itemKey),
+          loadTransitions(config, itemKey),
+        ])
+        sendJson(response, 200, { itemKey, currentStatus: item.status, transitions })
+      } catch (error) {
+        sendJson(response, 502, { error: error instanceof Error ? error.message : '番茄流转状态读取失败' })
+      }
+    },
+  }), 'tomato-board: HTTP transitions route')
+  ctx.effect(() => webServer.register({
+    kind: 'prefix',
+    path: TRANSITION_ROUTE,
+    async handler(request, response) {
+      if (request.method !== 'POST') {
+        sendJson(response, 405, { error: 'Method not allowed' })
+        return
+      }
+      const url = new URL(request.url ?? TRANSITION_ROUTE, 'http://localhost')
+      const itemKey = itemKeyFromRoute(request.url, TRANSITION_ROUTE)
+      const transition = url.searchParams.get('transition')?.trim() ?? ''
+      if (!itemKey || !transition || transition.length > 160) {
+        sendJson(response, 400, { error: '无效的番茄流转请求' })
+        return
+      }
+      try {
+        sendJson(response, 200, await executeTransition(config, itemKey, transition))
+      } catch (error) {
+        sendJson(response, 502, { error: error instanceof Error ? error.message : '番茄事项流转失败' })
+      }
+    },
+  }), 'tomato-board: HTTP transition route')
 }

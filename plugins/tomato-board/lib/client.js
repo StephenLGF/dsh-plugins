@@ -508,15 +508,98 @@ window.__ModuleLoader__.load({
 				const title = summary?.title ?? summary?.displayTitle ?? "";
 				return /^\[([^\]]+)\]/u.exec(title)?.[1]?.trim() ?? "";
 			});
+			const [menuOpen, setMenuOpen] = (0, react.useState)(false);
+			const [loading, setLoading] = (0, react.useState)(false);
+			const [transitioning, setTransitioning] = (0, react.useState)(false);
+			const [transitionState, setTransitionState] = (0, react.useState)({
+				currentStatus: "",
+				transitions: []
+			});
+			const [transitionError, setTransitionError] = (0, react.useState)(null);
+			(0, react.useEffect)(() => {
+				if (!itemKey) return;
+				const controller = new AbortController();
+				setLoading(true);
+				setTransitionError(null);
+				setTransitionState({
+					currentStatus: "",
+					transitions: []
+				});
+				fetch(`/api/tomato-board/transitions/${encodeURIComponent(itemKey)}`, {
+					headers: { accept: "application/json" },
+					signal: controller.signal
+				}).then(async (response) => {
+					const body = await response.json();
+					if (!response.ok) throw new Error(body.error || `请求失败 (${response.status})`);
+					setTransitionState({
+						currentStatus: body.currentStatus || "",
+						transitions: body.transitions ?? []
+					});
+				}).catch((error) => {
+					if (error instanceof Error && error.name === "AbortError") return;
+					setTransitionError(error instanceof Error ? error.message : "番茄流转状态读取失败");
+				}).finally(() => {
+					if (!controller.signal.aborted) setLoading(false);
+				});
+				return () => controller.abort();
+			}, [itemKey]);
 			if (!itemKey) return null;
-			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+			async function transitionTo(transitionName) {
+				if (transitioning) return;
+				setMenuOpen(false);
+				setTransitioning(true);
+				setTransitionError(null);
+				try {
+					const query = new URLSearchParams({ transition: transitionName });
+					const response = await fetch(`/api/tomato-board/transition/${encodeURIComponent(itemKey)}?${query}`, {
+						method: "POST",
+						headers: { accept: "application/json" }
+					});
+					const body = await response.json();
+					if (!response.ok) throw new Error(body.error || `请求失败 (${response.status})`);
+					const transitionsResponse = await fetch(`/api/tomato-board/transitions/${encodeURIComponent(itemKey)}`, { headers: { accept: "application/json" } });
+					const transitionsBody = await transitionsResponse.json();
+					if (!transitionsResponse.ok) throw new Error(transitionsBody.error || `状态刷新失败 (${transitionsResponse.status})`);
+					setTransitionState({
+						currentStatus: transitionsBody.currentStatus || body.currentStatus || "",
+						transitions: transitionsBody.transitions ?? []
+					});
+				} catch (error) {
+					setTransitionError(error instanceof Error ? error.message : "番茄事项流转失败");
+				} finally {
+					setTransitioning(false);
+				}
+			}
+			const availableTransitions = transitionState.transitions.filter((transition) => !transition.disabled);
+			const transitionTitle = transitionError ? `番茄流转失败：${transitionError}` : loading ? "正在查询番茄事项状态" : availableTransitions.length === 0 ? `当前状态「${transitionState.currentStatus || "未知"}」没有可用流转` : `当前状态：${transitionState.currentStatus || "未知"}`;
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Menu, {
+				open: menuOpen,
+				portal: true,
+				align: "end",
+				items: transitionState.transitions.map((transition) => ({
+					id: transition.transition,
+					label: `流转到 ${transition.targetStatus}`,
+					disabled: transition.disabled
+				})),
+				onSelect: (transitionName) => void transitionTo(transitionName),
+				onClose: () => setMenuOpen(false),
+				anchor: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+					variant: "toolbar",
+					size: "sm",
+					title: transitionTitle,
+					"aria-label": transitionTitle,
+					disabled: loading || transitioning || availableTransitions.length === 0,
+					onClick: () => setMenuOpen((open) => !open),
+					children: [transitioning ? "流转中…" : transitionError ? "流转失败" : transitionState.currentStatus || "查询状态…", availableTransitions.length > 0 ? " ▾" : ""]
+				})
+			}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
 				variant: "toolbar",
 				size: "sm",
 				title: "在番茄中打开事项",
 				"aria-label": `在番茄中打开 ${itemKey}`,
 				onClick: () => window.open(`/api/tomato-board/open/${encodeURIComponent(itemKey)}`, "_blank", "noopener,noreferrer"),
 				children: "番茄 ↗"
-			});
+			})] });
 		}
 		const inject = [
 			"slots",

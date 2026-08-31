@@ -24,6 +24,18 @@ interface TomatoItem {
   priority: string
 }
 
+interface TomatoTransition {
+  transition: string
+  targetStatus: string
+  disabled: boolean
+  disabledReason?: string
+}
+
+interface TomatoTransitionState {
+  currentStatus: string
+  transitions: TomatoTransition[]
+}
+
 interface BoardState {
   open: boolean
   loading: boolean
@@ -424,17 +436,118 @@ function TomatoConversationShortcut({ sessionId, useSessions }: PropsRuntime<'co
     const title = summary?.title ?? summary?.displayTitle ?? ''
     return /^\[([^\]]+)\]/u.exec(title)?.[1]?.trim() ?? ''
   })
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [transitioning, setTransitioning] = useState(false)
+  const [transitionState, setTransitionState] = useState<TomatoTransitionState>({
+    currentStatus: '',
+    transitions: [],
+  })
+  const [transitionError, setTransitionError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!itemKey) return
+    const controller = new AbortController()
+    setLoading(true)
+    setTransitionError(null)
+    setTransitionState({ currentStatus: '', transitions: [] })
+    void fetch(`/api/tomato-board/transitions/${encodeURIComponent(itemKey)}`, {
+      headers: { accept: 'application/json' },
+      signal: controller.signal,
+    }).then(async response => {
+      const body = await response.json() as TomatoTransitionState & { error?: string }
+      if (!response.ok) throw new Error(body.error || `请求失败 (${response.status})`)
+      setTransitionState({
+        currentStatus: body.currentStatus || '',
+        transitions: body.transitions ?? [],
+      })
+    }).catch(error => {
+      if (error instanceof Error && error.name === 'AbortError') return
+      setTransitionError(error instanceof Error ? error.message : '番茄流转状态读取失败')
+    }).finally(() => {
+      if (!controller.signal.aborted) setLoading(false)
+    })
+    return () => controller.abort()
+  }, [itemKey])
+
   if (!itemKey) return null
+
+  async function transitionTo(transitionName: string) {
+    if (transitioning) return
+    setMenuOpen(false)
+    setTransitioning(true)
+    setTransitionError(null)
+    try {
+      const query = new URLSearchParams({ transition: transitionName })
+      const response = await fetch(`/api/tomato-board/transition/${encodeURIComponent(itemKey)}?${query}`, {
+        method: 'POST',
+        headers: { accept: 'application/json' },
+      })
+      const body = await response.json() as { currentStatus?: string; error?: string }
+      if (!response.ok) throw new Error(body.error || `请求失败 (${response.status})`)
+      const transitionsResponse = await fetch(`/api/tomato-board/transitions/${encodeURIComponent(itemKey)}`, {
+        headers: { accept: 'application/json' },
+      })
+      const transitionsBody = await transitionsResponse.json() as TomatoTransitionState & { error?: string }
+      if (!transitionsResponse.ok) {
+        throw new Error(transitionsBody.error || `状态刷新失败 (${transitionsResponse.status})`)
+      }
+      setTransitionState({
+        currentStatus: transitionsBody.currentStatus || body.currentStatus || '',
+        transitions: transitionsBody.transitions ?? [],
+      })
+    } catch (error) {
+      setTransitionError(error instanceof Error ? error.message : '番茄事项流转失败')
+    } finally {
+      setTransitioning(false)
+    }
+  }
+
+  const availableTransitions = transitionState.transitions.filter(transition => !transition.disabled)
+  const transitionTitle = transitionError
+    ? `番茄流转失败：${transitionError}`
+    : loading
+      ? '正在查询番茄事项状态'
+      : availableTransitions.length === 0
+        ? `当前状态「${transitionState.currentStatus || '未知'}」没有可用流转`
+        : `当前状态：${transitionState.currentStatus || '未知'}`
   return (
-    <Button
-      variant="toolbar"
-      size="sm"
-      title="在番茄中打开事项"
-      aria-label={`在番茄中打开 ${itemKey}`}
-      onClick={() => window.open(`/api/tomato-board/open/${encodeURIComponent(itemKey)}`, '_blank', 'noopener,noreferrer')}
-    >
-      番茄 ↗
-    </Button>
+    <>
+      <Menu
+        open={menuOpen}
+        portal
+        align="end"
+        items={transitionState.transitions.map(transition => ({
+          id: transition.transition,
+          label: `流转到 ${transition.targetStatus}`,
+          disabled: transition.disabled,
+        }))}
+        onSelect={transitionName => void transitionTo(transitionName)}
+        onClose={() => setMenuOpen(false)}
+        anchor={(
+          <Button
+            variant="toolbar"
+            size="sm"
+            title={transitionTitle}
+            aria-label={transitionTitle}
+            disabled={loading || transitioning || availableTransitions.length === 0}
+            onClick={() => setMenuOpen(open => !open)}
+          >
+            {transitioning ? '流转中…' : transitionError ? '流转失败' : transitionState.currentStatus || '查询状态…'}
+            {availableTransitions.length > 0 ? ' ▾' : ''}
+          </Button>
+        )}
+      />
+      <Button
+        variant="toolbar"
+        size="sm"
+        title="在番茄中打开事项"
+        aria-label={`在番茄中打开 ${itemKey}`}
+        onClick={() => window.open(`/api/tomato-board/open/${encodeURIComponent(itemKey)}`, '_blank', 'noopener,noreferrer')}
+      >
+        番茄 ↗
+      </Button>
+    </>
   )
 }
 
