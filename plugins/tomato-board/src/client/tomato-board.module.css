@@ -33,6 +33,45 @@
   font-weight: 750;
 }
 
+.transitionTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.transitionCaption {
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+}
+
+.transitionTrigger strong {
+  color: var(--dsw-alias-label-primary);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.transitionDivider {
+  width: 1px;
+  height: 14px;
+  margin: 0 2px;
+  background: var(--dsw-alias-border-l2);
+}
+
+.transitionAction {
+  color: var(--dsw-alias-state-business-primary);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.transitionChevron {
+  color: var(--dsw-alias-state-business-primary);
+  transition: transform var(--ds-transition-duration-fast) var(--ds-ease-in-out);
+}
+
+.transitionTrigger[aria-expanded='true'] .transitionChevron {
+  transform: rotate(180deg);
+}
+
 .workbench {
   position: relative;
   min-width: 0;

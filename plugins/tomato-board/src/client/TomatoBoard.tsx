@@ -8,7 +8,7 @@ import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 import {
-  Button, IconCloseOutline16, IconRefreshOutline16, Menu, Modal,
+  Button, IconChevronDownOutline14, IconCloseOutline16, IconRefreshOutline16, Menu, Modal,
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import { SessionId } from '@deepseek-ai/dsh-session/types'
@@ -554,13 +554,29 @@ function TomatoConversationShortcut({ ctx, sessionId, useSessions }: PropsRuntim
           <Button
             variant="toolbar"
             size="sm"
+            className={css.transitionTrigger}
             title={transitionTitle}
             aria-label={transitionTitle}
+            aria-haspopup="menu"
+            aria-expanded={menuOpen}
             disabled={loading || transitioning || availableTransitions.length === 0}
             onClick={() => setMenuOpen(open => !open)}
           >
-            {transitioning ? '流转中…' : delegatedToAgent ? 'AI 已接手' : transitionError ? '流转失败' : transitionState.currentStatus || '查询状态…'}
-            {availableTransitions.length > 0 ? ' ▾' : ''}
+            {transitioning || delegatedToAgent || transitionError
+              ? transitioning ? '正在流转…' : delegatedToAgent ? 'AI 已接手' : '流转失败'
+              : (
+                <>
+                  <span className={css.transitionCaption}>状态</span>
+                  <strong>{transitionState.currentStatus || '查询中…'}</strong>
+                  {availableTransitions.length > 0 ? (
+                    <>
+                      <span className={css.transitionDivider} aria-hidden="true" />
+                      <span className={css.transitionAction}>流转</span>
+                      <IconChevronDownOutline14 className={css.transitionChevron} />
+                    </>
+                  ) : null}
+                </>
+              )}
           </Button>
         )}
       />
