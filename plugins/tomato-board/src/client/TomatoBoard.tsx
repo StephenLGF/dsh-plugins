@@ -430,7 +430,7 @@ function FilterRow({ label, options, hidden, onToggle }: {
   )
 }
 
-function TomatoConversationShortcut({ sessionId, useSessions }: PropsRuntime<'conversation.session.header.actions'>) {
+function TomatoConversationShortcut({ ctx, sessionId, useSessions }: PropsRuntime<'conversation.session.header.actions'> & { ctx: Context }) {
   const itemKey = useSessions(state => {
     const summary = state.byId[sessionId]
     const title = summary?.title ?? summary?.displayTitle ?? ''
@@ -483,8 +483,33 @@ function TomatoConversationShortcut({ sessionId, useSessions }: PropsRuntime<'co
         method: 'POST',
         headers: { accept: 'application/json' },
       })
-      const body = await response.json() as { currentStatus?: string; error?: string }
-      if (!response.ok) throw new Error(body.error || `请求失败 (${response.status})`)
+      const body = await response.json() as {
+        currentStatus?: string
+        error?: string
+        details?: { stderr?: string; stdout?: string }
+      }
+      if (!response.ok) {
+        const selected = transitionState.transitions.find(transition => transition.transition === transitionName)
+        const failure = [body.error, body.details?.stderr, body.details?.stdout].filter(Boolean).join('\n')
+        const requiredFieldsMissing = /字段.{0,24}必填|必填.{0,24}字段|流转前需填写/u.test(failure)
+        if (selected?.targetStatus === '待测试' && requiredFieldsMissing) {
+          const session = ctx.sessions.binding(sessionId)?.session
+          if (!session) throw new Error('当前 Harness 对话未加载，无法交给 AI 继续处理')
+          const prompt = [
+            `番茄事项 ${itemKey} 流转到「待测试」失败，CLI 提示存在必填字段缺失。`,
+            '请先读取番茄事项详情，并结合当前对话和仓库代码进行分析。',
+            '基于证据补齐并回读确认以下字段：根因分析、RD引入原因分析、原因描述、修复版本、解决方案。',
+            '不要编造业务事实；证据不足时先向我确认。',
+            '只有这些字段已经持久化且回读一致后，才能重新执行「修复完成」流转到「待测试」，最后再次回读状态验证。',
+            `CLI 失败信息：${failure || '未返回具体原因'}`,
+          ].join('\n')
+          const prompted = await session.prompt([{ type: 'text', text: prompt }], 'queue')
+          if (!prompted.ok) throw new Error(`无法把流转任务交给 AI：${prompted.error.message}`)
+          setTransitionError('必填字段缺失，已交给当前对话中的 AI 分析并继续处理')
+          return
+        }
+        throw new Error(failure || `请求失败 (${response.status})`)
+      }
       const transitionsResponse = await fetch(`/api/tomato-board/transitions/${encodeURIComponent(itemKey)}`, {
         headers: { accept: 'application/json' },
       })
@@ -504,8 +529,9 @@ function TomatoConversationShortcut({ sessionId, useSessions }: PropsRuntime<'co
   }
 
   const availableTransitions = transitionState.transitions.filter(transition => !transition.disabled)
+  const delegatedToAgent = transitionError?.startsWith('必填字段缺失') === true
   const transitionTitle = transitionError
-    ? `番茄流转失败：${transitionError}`
+    ? delegatedToAgent ? transitionError : `番茄流转失败：${transitionError}`
     : loading
       ? '正在查询番茄事项状态'
       : availableTransitions.length === 0
@@ -533,7 +559,7 @@ function TomatoConversationShortcut({ sessionId, useSessions }: PropsRuntime<'co
             disabled={loading || transitioning || availableTransitions.length === 0}
             onClick={() => setMenuOpen(open => !open)}
           >
-            {transitioning ? '流转中…' : transitionError ? '流转失败' : transitionState.currentStatus || '查询状态…'}
+            {transitioning ? '流转中…' : delegatedToAgent ? 'AI 已接手' : transitionError ? '流转失败' : transitionState.currentStatus || '查询状态…'}
             {availableTransitions.length > 0 ? ' ▾' : ''}
           </Button>
         )}
@@ -556,7 +582,7 @@ export const inject = ['slots', 'sessions', 'workspaces']
 export function apply(ctx: Context): void {
   ctx.slots.inject('conversation.session.header.actions', () => ctx.slots.register(
     { name: 'conversation.session.header.actions', id: 'tomato-shortcut', order: 12 },
-    TomatoConversationShortcut,
+    props => <TomatoConversationShortcut {...props} ctx={ctx} />,
   ))
   ctx.slots.inject('sidebar.footer.action', () => ctx.slots.register(
     { name: 'sidebar.footer.action', id: 'tomato-board' },

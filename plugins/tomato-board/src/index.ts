@@ -219,6 +219,18 @@ function sendJson(response: HttpResponse, status: number, body: unknown) {
   response.end(JSON.stringify(body))
 }
 
+function errorBody(error: unknown, fallback: string) {
+  if (!(error instanceof Error)) return { error: fallback }
+  const detail = error as Error & { stderr?: unknown; stdout?: unknown }
+  return {
+    error: error.message || fallback,
+    details: {
+      stderr: typeof detail.stderr === 'string' ? detail.stderr.slice(-4000) : '',
+      stdout: typeof detail.stdout === 'string' ? detail.stdout.slice(-4000) : '',
+    },
+  }
+}
+
 export const name = 'tomato-board'
 export const inject = ['webServer']
 
@@ -311,7 +323,7 @@ export function apply(ctx: Context, config: Config = {}): void {
       try {
         sendJson(response, 200, await executeTransition(config, itemKey, transition))
       } catch (error) {
-        sendJson(response, 502, { error: error instanceof Error ? error.message : '番茄事项流转失败' })
+        sendJson(response, 502, errorBody(error, '番茄事项流转失败'))
       }
     },
   }), 'tomato-board: HTTP transition route')

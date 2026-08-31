@@ -202,6 +202,17 @@ function sendJson(response, status, body) {
 	response.setHeader("cache-control", "no-store");
 	response.end(JSON.stringify(body));
 }
+function errorBody(error, fallback) {
+	if (!(error instanceof Error)) return { error: fallback };
+	const detail = error;
+	return {
+		error: error.message || fallback,
+		details: {
+			stderr: typeof detail.stderr === "string" ? detail.stderr.slice(-4e3) : "",
+			stdout: typeof detail.stdout === "string" ? detail.stdout.slice(-4e3) : ""
+		}
+	};
+}
 const name = "tomato-board";
 const inject = ["webServer"];
 function apply(ctx, config = {}) {
@@ -292,7 +303,7 @@ function apply(ctx, config = {}) {
 			try {
 				sendJson(response, 200, await executeTransition(config, itemKey, transition));
 			} catch (error) {
-				sendJson(response, 502, { error: error instanceof Error ? error.message : "番茄事项流转失败" });
+				sendJson(response, 502, errorBody(error, "番茄事项流转失败"));
 			}
 		}
 	}), "tomato-board: HTTP transition route");

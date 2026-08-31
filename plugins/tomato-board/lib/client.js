@@ -502,7 +502,7 @@ window.__ModuleLoader__.load({
 				}, option)) })]
 			});
 		}
-		function TomatoConversationShortcut({ sessionId, useSessions }) {
+		function TomatoConversationShortcut({ ctx, sessionId, useSessions }) {
 			const itemKey = useSessions((state) => {
 				const summary = state.byId[sessionId];
 				const title = summary?.title ?? summary?.displayTitle ?? "";
@@ -556,7 +556,35 @@ window.__ModuleLoader__.load({
 						headers: { accept: "application/json" }
 					});
 					const body = await response.json();
-					if (!response.ok) throw new Error(body.error || `请求失败 (${response.status})`);
+					if (!response.ok) {
+						const selected = transitionState.transitions.find((transition) => transition.transition === transitionName);
+						const failure = [
+							body.error,
+							body.details?.stderr,
+							body.details?.stdout
+						].filter(Boolean).join("\n");
+						const requiredFieldsMissing = /字段.{0,24}必填|必填.{0,24}字段|流转前需填写/u.test(failure);
+						if (selected?.targetStatus === "待测试" && requiredFieldsMissing) {
+							const session = ctx.sessions.binding(sessionId)?.session;
+							if (!session) throw new Error("当前 Harness 对话未加载，无法交给 AI 继续处理");
+							const prompt = [
+								`番茄事项 ${itemKey} 流转到「待测试」失败，CLI 提示存在必填字段缺失。`,
+								"请先读取番茄事项详情，并结合当前对话和仓库代码进行分析。",
+								"基于证据补齐并回读确认以下字段：根因分析、RD引入原因分析、原因描述、修复版本、解决方案。",
+								"不要编造业务事实；证据不足时先向我确认。",
+								"只有这些字段已经持久化且回读一致后，才能重新执行「修复完成」流转到「待测试」，最后再次回读状态验证。",
+								`CLI 失败信息：${failure || "未返回具体原因"}`
+							].join("\n");
+							const prompted = await session.prompt([{
+								type: "text",
+								text: prompt
+							}], "queue");
+							if (!prompted.ok) throw new Error(`无法把流转任务交给 AI：${prompted.error.message}`);
+							setTransitionError("必填字段缺失，已交给当前对话中的 AI 分析并继续处理");
+							return;
+						}
+						throw new Error(failure || `请求失败 (${response.status})`);
+					}
 					const transitionsResponse = await fetch(`/api/tomato-board/transitions/${encodeURIComponent(itemKey)}`, { headers: { accept: "application/json" } });
 					const transitionsBody = await transitionsResponse.json();
 					if (!transitionsResponse.ok) throw new Error(transitionsBody.error || `状态刷新失败 (${transitionsResponse.status})`);
@@ -571,7 +599,8 @@ window.__ModuleLoader__.load({
 				}
 			}
 			const availableTransitions = transitionState.transitions.filter((transition) => !transition.disabled);
-			const transitionTitle = transitionError ? `番茄流转失败：${transitionError}` : loading ? "正在查询番茄事项状态" : availableTransitions.length === 0 ? `当前状态「${transitionState.currentStatus || "未知"}」没有可用流转` : `当前状态：${transitionState.currentStatus || "未知"}`;
+			const delegatedToAgent = transitionError?.startsWith("必填字段缺失") === true;
+			const transitionTitle = transitionError ? delegatedToAgent ? transitionError : `番茄流转失败：${transitionError}` : loading ? "正在查询番茄事项状态" : availableTransitions.length === 0 ? `当前状态「${transitionState.currentStatus || "未知"}」没有可用流转` : `当前状态：${transitionState.currentStatus || "未知"}`;
 			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Menu, {
 				open: menuOpen,
 				portal: true,
@@ -590,7 +619,7 @@ window.__ModuleLoader__.load({
 					"aria-label": transitionTitle,
 					disabled: loading || transitioning || availableTransitions.length === 0,
 					onClick: () => setMenuOpen((open) => !open),
-					children: [transitioning ? "流转中…" : transitionError ? "流转失败" : transitionState.currentStatus || "查询状态…", availableTransitions.length > 0 ? " ▾" : ""]
+					children: [transitioning ? "流转中…" : delegatedToAgent ? "AI 已接手" : transitionError ? "流转失败" : transitionState.currentStatus || "查询状态…", availableTransitions.length > 0 ? " ▾" : ""]
 				})
 			}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
 				variant: "toolbar",
@@ -611,7 +640,10 @@ window.__ModuleLoader__.load({
 				name: "conversation.session.header.actions",
 				id: "tomato-shortcut",
 				order: 12
-			}, TomatoConversationShortcut));
+			}, (props) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)(TomatoConversationShortcut, {
+				...props,
+				ctx
+			})));
 			ctx.slots.inject("sidebar.footer.action", () => ctx.slots.register({
 				name: "sidebar.footer.action",
 				id: "tomato-board"
