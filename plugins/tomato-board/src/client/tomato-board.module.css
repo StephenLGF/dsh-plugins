@@ -361,6 +361,16 @@
   box-shadow: var(--dsw-shadow-lv2);
 }
 
+.cardMuted {
+  opacity: .46;
+  filter: saturate(.2);
+  box-shadow: none;
+}
+
+.cardMuted:hover {
+  opacity: .62;
+}
+
 .card:focus-visible {
   outline: 2px solid var(--dsw-alias-state-business-primary);
   outline-offset: 2px;
@@ -382,6 +392,13 @@
   gap: 8px;
 }
 
+.cardButtons {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.muteButton,
 .tomatoLink {
   width: 28px;
   min-width: 28px;
@@ -393,6 +410,15 @@
   place-items: center;
   border-radius: 8px;
   line-height: 1;
+}
+
+.muteButton {
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 9px;
+}
+
+.muteButton[aria-pressed='true'] {
+  color: var(--dsw-alias-label-primary);
 }
 
 .card strong {

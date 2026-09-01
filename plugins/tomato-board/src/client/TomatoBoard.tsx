@@ -64,6 +64,7 @@ const TOMATO_STATUS_ORDER = [
 ]
 const TOMATO_FILTER_BLACKLIST_KEY = 'taskboard.tomatoFilterBlacklist.v1'
 const TOMATO_SESSION_LINKS_KEY = 'taskboard.tomatoSessionLinks.v1'
+const TOMATO_MUTED_ITEMS_KEY = 'taskboard.tomatoMutedItems.v1'
 
 function readSessionLinks(): Record<string, string> {
   try {
@@ -94,6 +95,15 @@ function readFilterBlacklist(): { types: Set<string>; statuses: Set<string> } {
     }
   } catch {
     return { types: new Set(), statuses: new Set() }
+  }
+}
+
+function readMutedItems(): Set<string> {
+  try {
+    const value = JSON.parse(window.localStorage.getItem(TOMATO_MUTED_ITEMS_KEY) ?? '[]')
+    return new Set(Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [])
+  } catch {
+    return new Set()
   }
 }
 
@@ -226,6 +236,7 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
   const workbenchRef = useRef<HTMLElement>(null)
   const [search, setSearch] = useState('')
   const [blacklist, setBlacklist] = useState(readFilterBlacklist)
+  const [mutedItems, setMutedItems] = useState(readMutedItems)
   const sessions = useSyncExternalStore(
     listener => ctx.sessions.list.subscribe(listener),
     () => ctx.sessions.list.getSnapshot(),
@@ -295,6 +306,14 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
     return next
   })
 
+  const toggleMutedItem = (itemKey: string) => setMutedItems(current => {
+    const next = new Set(current)
+    if (next.has(itemKey)) next.delete(itemKey)
+    else next.add(itemKey)
+    window.localStorage.setItem(TOMATO_MUTED_ITEMS_KEY, JSON.stringify([...next]))
+    return next
+  })
+
   return (
     <section ref={workbenchRef} className={css.workbench} aria-label="番茄工作台">
       <header className={css.header}>
@@ -358,7 +377,7 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
               <div className={css.cards}>
                 {items.map(item => (
                   <article
-                    className={css.card}
+                    className={`${css.card} ${mutedItems.has(item.itemKey) ? css.cardMuted : ''}`}
                     key={item.itemKey}
                     tabIndex={0}
                     role="button"
@@ -372,20 +391,37 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
                   >
                     <div className={css.cardTopline}>
                       <span className={css.key}>{item.itemKey}</span>
-                      <Button
-                        className={css.tomatoLink}
-                        variant="ghost"
-                        size="sm"
-                        title="在番茄中打开事项"
-                        aria-label={`在番茄中打开 ${item.itemKey}`}
-                        onClick={event => {
-                          event.stopPropagation()
-                          window.open(`/api/tomato-board/open/${encodeURIComponent(item.itemKey)}`, '_blank', 'noopener,noreferrer')
-                        }}
-                        onKeyDown={event => event.stopPropagation()}
-                      >
-                        ↗
-                      </Button>
+                      <div className={css.cardButtons}>
+                        <Button
+                          className={css.muteButton}
+                          variant="ghost"
+                          size="sm"
+                          title={mutedItems.has(item.itemKey) ? '取消置灰' : '置灰标记'}
+                          aria-label={mutedItems.has(item.itemKey) ? `取消置灰 ${item.itemKey}` : `置灰 ${item.itemKey}`}
+                          aria-pressed={mutedItems.has(item.itemKey)}
+                          onClick={event => {
+                            event.stopPropagation()
+                            toggleMutedItem(item.itemKey)
+                          }}
+                          onKeyDown={event => event.stopPropagation()}
+                        >
+                          ●
+                        </Button>
+                        <Button
+                          className={css.tomatoLink}
+                          variant="ghost"
+                          size="sm"
+                          title="在番茄中打开事项"
+                          aria-label={`在番茄中打开 ${item.itemKey}`}
+                          onClick={event => {
+                            event.stopPropagation()
+                            window.open(`/api/tomato-board/open/${encodeURIComponent(item.itemKey)}`, '_blank', 'noopener,noreferrer')
+                          }}
+                          onKeyDown={event => event.stopPropagation()}
+                        >
+                          ↗
+                        </Button>
+                      </div>
                     </div>
                     <strong>{item.title}</strong>
                     <span className={css.meta}>{[item.itemType, item.priority, item.creator].filter(Boolean).join(' · ')}</span>
