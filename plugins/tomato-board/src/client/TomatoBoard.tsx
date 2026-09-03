@@ -22,6 +22,7 @@ interface TomatoItem {
   workspace: string
   creator: string
   priority: string
+  tomatoUrl: string
 }
 
 interface TomatoTransition {
@@ -33,6 +34,7 @@ interface TomatoTransition {
 
 interface TomatoTransitionState {
   currentStatus: string
+  tomatoUrl: string
   transitions: TomatoTransition[]
 }
 
@@ -415,7 +417,7 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
                           aria-label={`在番茄中打开 ${item.itemKey}`}
                           onClick={event => {
                             event.stopPropagation()
-                            window.open(`/api/tomato-board/open/${encodeURIComponent(item.itemKey)}`, '_blank', 'noopener,noreferrer')
+                            window.open(item.tomatoUrl, '_blank', 'noopener,noreferrer')
                           }}
                           onKeyDown={event => event.stopPropagation()}
                         >
@@ -477,6 +479,7 @@ function TomatoConversationShortcut({ ctx, sessionId, useSessions }: PropsRuntim
   const [transitioning, setTransitioning] = useState(false)
   const [transitionState, setTransitionState] = useState<TomatoTransitionState>({
     currentStatus: '',
+    tomatoUrl: '',
     transitions: [],
   })
   const [transitionError, setTransitionError] = useState<string | null>(null)
@@ -486,7 +489,7 @@ function TomatoConversationShortcut({ ctx, sessionId, useSessions }: PropsRuntim
     const controller = new AbortController()
     setLoading(true)
     setTransitionError(null)
-    setTransitionState({ currentStatus: '', transitions: [] })
+    setTransitionState({ currentStatus: '', tomatoUrl: '', transitions: [] })
     void fetch(`/api/tomato-board/transitions/${encodeURIComponent(itemKey)}`, {
       headers: { accept: 'application/json' },
       signal: controller.signal,
@@ -495,6 +498,7 @@ function TomatoConversationShortcut({ ctx, sessionId, useSessions }: PropsRuntim
       if (!response.ok) throw new Error(body.error || `请求失败 (${response.status})`)
       setTransitionState({
         currentStatus: body.currentStatus || '',
+        tomatoUrl: body.tomatoUrl || '',
         transitions: body.transitions ?? [],
       })
     }).catch(error => {
@@ -555,6 +559,7 @@ function TomatoConversationShortcut({ ctx, sessionId, useSessions }: PropsRuntim
       }
       setTransitionState({
         currentStatus: transitionsBody.currentStatus || body.currentStatus || '',
+        tomatoUrl: transitionsBody.tomatoUrl || '',
         transitions: transitionsBody.transitions ?? [],
       })
     } catch (error) {
@@ -621,7 +626,8 @@ function TomatoConversationShortcut({ ctx, sessionId, useSessions }: PropsRuntim
         size="sm"
         title="在番茄中打开事项"
         aria-label={`在番茄中打开 ${itemKey}`}
-        onClick={() => window.open(`/api/tomato-board/open/${encodeURIComponent(itemKey)}`, '_blank', 'noopener,noreferrer')}
+        disabled={!transitionState.tomatoUrl}
+        onClick={() => window.open(transitionState.tomatoUrl, '_blank', 'noopener,noreferrer')}
       >
         番茄 ↗
       </Button>

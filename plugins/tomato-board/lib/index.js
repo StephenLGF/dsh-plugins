@@ -92,6 +92,18 @@ function normalizeTransition(raw) {
 		...firstText(value.disabledReason) ? { disabledReason: firstText(value.disabledReason) } : {}
 	};
 }
+function tomatoItemUrl(config, itemKey) {
+	const origin = config.tomatoOrigin || "https://osc.gitee.work";
+	const tenant = config.tomatoTenant || "xly-poc";
+	const workspace = itemKey.replace(/-\d+$/u, "");
+	const target = new URL(`/_team/${encodeURIComponent(tenant)}/item/${encodeURIComponent(itemKey)}`, origin);
+	target.searchParams.set("workspace", workspace);
+	target.searchParams.set("tenant", tenant);
+	target.searchParams.set("hiddenHeader", "true");
+	target.searchParams.set("from", "one");
+	target.searchParams.set("frameless", "true");
+	return target.toString();
+}
 function cliSettings(config) {
 	return {
 		executable: config.executable || process.env.TOMATO_CLI_EXECUTABLE || "gitee",
@@ -194,7 +206,10 @@ async function loadItems(config) {
 		"不修复",
 		"已取消"
 	]);
-	return rawItems.map(normalizeItem).filter((item) => item.itemKey && item.title && item.status && !excludedStatuses.has(item.status));
+	return rawItems.map(normalizeItem).filter((item) => item.itemKey && item.title && item.status && !excludedStatuses.has(item.status)).map((item) => ({
+		...item,
+		tomatoUrl: tomatoItemUrl(config, item.itemKey)
+	}));
 }
 function sendJson(response, status, body) {
 	response.statusCode = status;
@@ -245,17 +260,8 @@ function apply(ctx, config = {}) {
 				sendJson(response, 400, { error: "无效的番茄事项编号" });
 				return;
 			}
-			const origin = config.tomatoOrigin || "https://osc.gitee.work";
-			const tenant = config.tomatoTenant || "xly-poc";
-			const workspace = itemKey.replace(/-\d+$/u, "");
-			const target = new URL(`/_team/${encodeURIComponent(tenant)}/item/${encodeURIComponent(itemKey)}`, origin);
-			target.searchParams.set("workspace", workspace);
-			target.searchParams.set("tenant", tenant);
-			target.searchParams.set("hiddenHeader", "true");
-			target.searchParams.set("from", "one");
-			target.searchParams.set("frameless", "true");
 			response.statusCode = 302;
-			response.setHeader("location", target.toString());
+			response.setHeader("location", tomatoItemUrl(config, itemKey));
 			response.setHeader("cache-control", "no-store");
 			response.end();
 		}
@@ -278,6 +284,7 @@ function apply(ctx, config = {}) {
 				sendJson(response, 200, {
 					itemKey,
 					currentStatus: item.status,
+					tomatoUrl: tomatoItemUrl(config, itemKey),
 					transitions
 				});
 			} catch (error) {

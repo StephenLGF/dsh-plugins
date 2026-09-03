@@ -499,7 +499,7 @@ window.__ModuleLoader__.load({
 														"aria-label": `在番茄中打开 ${item.itemKey}`,
 														onClick: (event) => {
 															event.stopPropagation();
-															window.open(`/api/tomato-board/open/${encodeURIComponent(item.itemKey)}`, "_blank", "noopener,noreferrer");
+															window.open(item.tomatoUrl, "_blank", "noopener,noreferrer");
 														},
 														onKeyDown: (event) => event.stopPropagation(),
 														children: "↗"
@@ -554,6 +554,7 @@ window.__ModuleLoader__.load({
 			const [transitioning, setTransitioning] = (0, react.useState)(false);
 			const [transitionState, setTransitionState] = (0, react.useState)({
 				currentStatus: "",
+				tomatoUrl: "",
 				transitions: []
 			});
 			const [transitionError, setTransitionError] = (0, react.useState)(null);
@@ -564,6 +565,7 @@ window.__ModuleLoader__.load({
 				setTransitionError(null);
 				setTransitionState({
 					currentStatus: "",
+					tomatoUrl: "",
 					transitions: []
 				});
 				fetch(`/api/tomato-board/transitions/${encodeURIComponent(itemKey)}`, {
@@ -574,6 +576,7 @@ window.__ModuleLoader__.load({
 					if (!response.ok) throw new Error(body.error || `请求失败 (${response.status})`);
 					setTransitionState({
 						currentStatus: body.currentStatus || "",
+						tomatoUrl: body.tomatoUrl || "",
 						transitions: body.transitions ?? []
 					});
 				}).catch((error) => {
@@ -631,6 +634,7 @@ window.__ModuleLoader__.load({
 					if (!transitionsResponse.ok) throw new Error(transitionsBody.error || `状态刷新失败 (${transitionsResponse.status})`);
 					setTransitionState({
 						currentStatus: transitionsBody.currentStatus || body.currentStatus || "",
+						tomatoUrl: transitionsBody.tomatoUrl || "",
 						transitions: transitionsBody.transitions ?? []
 					});
 				} catch (error) {
@@ -687,7 +691,8 @@ window.__ModuleLoader__.load({
 				size: "sm",
 				title: "在番茄中打开事项",
 				"aria-label": `在番茄中打开 ${itemKey}`,
-				onClick: () => window.open(`/api/tomato-board/open/${encodeURIComponent(itemKey)}`, "_blank", "noopener,noreferrer"),
+				disabled: !transitionState.tomatoUrl,
+				onClick: () => window.open(transitionState.tomatoUrl, "_blank", "noopener,noreferrer"),
 				children: "番茄 ↗"
 			})] });
 		}
