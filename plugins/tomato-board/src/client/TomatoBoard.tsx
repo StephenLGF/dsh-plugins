@@ -59,6 +59,11 @@ const subscribe = (listener: () => void) => {
 }
 const snapshot = () => state
 
+// 真实番茄事项 itemKey 形如 `Gitee-Test-2026-737`、`Proxima-1116`：字母前缀（可含连字符分段）+ 数字结尾。
+// 只匹配该格式可避免把任意 `[xxx]` 开头的普通对话标题（如 `[分析]`、`[每日复盘]`）误判为番茄事项，
+// 进而错误地在对话头上渲染出状态流转按钮并触发无意义的 CLI 调用。
+const TOMATO_ITEM_KEY_PATTERN = /^\[([A-Za-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)*-\d+)\]/u
+
 const TOMATO_TYPE_OPTIONS = ['测试缺陷', '缺陷', 'Bug', 'EnablerStory', 'Story', 'Task']
 const TOMATO_STATUS_ORDER = [
   '新建', 'Bugfix', '修复中', '开发中', '待测试', '测试中', '测试通过', '已完成',
@@ -472,7 +477,11 @@ function TomatoConversationShortcut({ ctx, sessionId, useSessions }: PropsRuntim
   const itemKey = useSessions(state => {
     const summary = state.byId[sessionId]
     const title = summary?.title ?? summary?.displayTitle ?? ''
-    return /^\[([^\]]+)\]/u.exec(title)?.[1]?.trim() ?? ''
+    const match = TOMATO_ITEM_KEY_PATTERN.exec(title)?.[1]?.trim()
+    if (!match) return ''
+    // 仅当该对话确实由番茄工作台创建并记录在本机映射中时，才认定它是番茄事项对话。
+    // 这样即便普通新建对话的标题恰好命中 itemKey 格式，也不会被误带上状态流转 UI。
+    return linkedSessionId(match) === sessionId ? match : ''
   })
   const [menuOpen, setMenuOpen] = useState(false)
   const [loading, setLoading] = useState(false)

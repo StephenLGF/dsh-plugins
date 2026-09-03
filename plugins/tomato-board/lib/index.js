@@ -164,7 +164,7 @@ async function executeTransition(config, itemKey, transitionName) {
 function itemKeyFromRoute(requestUrl, route) {
 	const pathname = new URL(requestUrl ?? route, "http://localhost").pathname;
 	const itemKey = decodeURIComponent(pathname.slice(route.length).replace(/^\/+/, "")).trim();
-	return /^[\p{L}\p{N}._-]{1,160}$/u.test(itemKey) ? itemKey : "";
+	return /^[A-Za-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)*-\d+$/u.test(itemKey) ? itemKey : "";
 }
 async function loadItems(config) {
 	const { executable, profile } = cliSettings(config);

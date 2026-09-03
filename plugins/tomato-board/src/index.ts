@@ -185,7 +185,9 @@ async function executeTransition(config: Config, itemKey: string, transitionName
 function itemKeyFromRoute(requestUrl: string | undefined, route: string): string {
   const pathname = new URL(requestUrl ?? route, 'http://localhost').pathname
   const itemKey = decodeURIComponent(pathname.slice(route.length).replace(/^\/+/, '')).trim()
-  return /^[\p{L}\p{N}._-]{1,160}$/u.test(itemKey) ? itemKey : ''
+  // 与客户端 TOMATO_ITEM_KEY_PATTERN 保持一致：字母前缀（可含连字符分段）+ 数字结尾。
+  // 收紧校验可阻止中文/任意文本透传成 itemKey 被发给 gitee CLI，避免误触发与无意义报错。
+  return /^[A-Za-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)*-\d+$/u.test(itemKey) ? itemKey : ''
 }
 
 async function loadItems(config: Config) {

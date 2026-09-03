@@ -85,6 +85,7 @@ window.__ModuleLoader__.load({
 			return () => listeners.delete(listener);
 		};
 		const snapshot = () => state;
+		const TOMATO_ITEM_KEY_PATTERN = /^\[([A-Za-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)*-\d+)\]/u;
 		const TOMATO_TYPE_OPTIONS = [
 			"测试缺陷",
 			"缺陷",
@@ -547,7 +548,9 @@ window.__ModuleLoader__.load({
 			const itemKey = useSessions((state) => {
 				const summary = state.byId[sessionId];
 				const title = summary?.title ?? summary?.displayTitle ?? "";
-				return /^\[([^\]]+)\]/u.exec(title)?.[1]?.trim() ?? "";
+				const match = TOMATO_ITEM_KEY_PATTERN.exec(title)?.[1]?.trim();
+				if (!match) return "";
+				return linkedSessionId(match) === sessionId ? match : "";
 			});
 			const [menuOpen, setMenuOpen] = (0, react.useState)(false);
 			const [loading, setLoading] = (0, react.useState)(false);
