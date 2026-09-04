@@ -47,3 +47,51 @@
 .disclosureIcon { width:14px; height:14px; display:grid; place-items:center; color:var(--dsw-alias-label-tertiary); transition:transform .15s ease; }
 .disclosureIcon svg { width:12px; height:12px; fill:none; stroke:currentColor; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
 .files details[open] .disclosureIcon { transform:rotate(90deg); }
+
+/* 提交记录区块（总览页紧凑展示，点击数量可切到按提交查看） */
+.commits { min-width:0; padding:18px 20px; border:1px solid var(--dsw-alias-border-l2); border-radius:14px; background:var(--dsw-alias-bg-layer-1); }
+.commitsHeading { margin:0 0 10px; display:flex; align-items:center; gap:6px; font-size:13px; }
+.commitsCount { min-width:22px; height:20px; padding:0 6px; display:inline-flex; align-items:center; justify-content:center; border:1px solid color-mix(in srgb,var(--dsw-alias-state-business-primary) 34%,var(--dsw-alias-border-l2)); border-radius:6px; color:var(--dsw-alias-state-business-primary); background:color-mix(in srgb,var(--dsw-alias-state-business-primary) 6%,transparent); font:700 11px/1 ui-monospace,SFMono-Regular,monospace; cursor:pointer; }
+.commitsCount:hover { background:color-mix(in srgb,var(--dsw-alias-state-business-primary) 14%,transparent); }
+.commits ol { margin:0; padding:0; list-style:none; }
+.commits li { min-height:48px; display:grid; grid-template-columns:64px minmax(0,1fr) 28px; align-items:center; gap:10px; border-top:1px solid color-mix(in srgb,var(--dsw-alias-border-l2) 65%,transparent); }
+.commits li>code { color:var(--dsw-alias-state-business-primary); font:10px/1 ui-monospace,SFMono-Regular,monospace; }
+.commits li>div { min-width:0; display:flex; flex-direction:column; gap:3px; }
+.commits strong { overflow:hidden; font-size:12px; font-weight:550; text-overflow:ellipsis; white-space:nowrap; }
+.commits li span { color:var(--dsw-alias-label-secondary); font-size:10px; }
+.commits button { width:28px; height:28px; padding:0; border:1px solid transparent; border-radius:7px; color:var(--dsw-alias-label-secondary); background:transparent; cursor:pointer; font-size:13px; }
+.commits button:hover { border-color:var(--dsw-alias-border-l2); color:var(--dsw-alias-state-business-primary); }
+
+/* 独立的按提交查看视图：每个 commit 可展开看 diff、可复制 hash */
+.commitView { min-width:0; padding:18px 20px; border:1px solid var(--dsw-alias-border-l2); border-radius:14px; background:var(--dsw-alias-bg-layer-1); }
+.commitView h3 { margin:0 0 10px; font-size:13px; }
+.commitView h3 span { color:var(--dsw-alias-label-secondary); font-weight:400; }
+.commitList { margin:0; padding:0; list-style:none; }
+.commitList li+li { border-top:1px solid color-mix(in srgb,var(--dsw-alias-border-l2) 65%,transparent); }
+.commitRow { display:flex; align-items:center; gap:8px; }
+.commitMain { min-width:0; flex:1; padding:11px 6px; display:grid; grid-template-columns:14px minmax(0,1fr); align-items:center; gap:9px; border:0; color:inherit; background:transparent; text-align:left; cursor:pointer; }
+.commitMain:hover { background:var(--dsw-alias-interactive-bg-hover); }
+.commitMeta { min-width:0; display:flex; flex-direction:column; gap:3px; }
+.commitMain strong { overflow:hidden; font-size:12px; font-weight:550; text-overflow:ellipsis; white-space:nowrap; }
+.commitMain span { color:var(--dsw-alias-label-secondary); font-size:10px; }
+.commitShaButton { display:inline-flex; align-items:center; gap:5px; min-height:26px; padding:0 8px; border:1px solid transparent; border-radius:7px; color:var(--dsw-alias-state-business-primary); background:transparent; cursor:pointer; font:inherit; }
+.commitShaButton:hover { border-color:var(--dsw-alias-border-l2); background:var(--dsw-alias-bg-layer-2); }
+.commitShaButton code { color:inherit; font:600 11px/1 ui-monospace,SFMono-Regular,monospace; }
+.commitShaCopyHint { color:var(--dsw-alias-label-tertiary); font-size:11px; }
+.commitShaButton[aria-pressed="true"] .commitShaCopyHint { color:#3fbf72; }
+.commitExternal { width:28px; height:28px; padding:0; border:1px solid transparent; border-radius:7px; color:var(--dsw-alias-label-secondary); background:transparent; cursor:pointer; font-size:13px; }
+.commitExternal:hover { border-color:var(--dsw-alias-border-l2); color:var(--dsw-alias-state-business-primary); }
+.commitBody { padding:10px 12px 16px 34px; }
+.commitState { min-height:72px; display:grid; place-items:center; color:var(--dsw-alias-label-secondary); font-size:11px; }
+.commitFiles { margin:6px 0 0; padding:0; list-style:none; border:1px solid var(--dsw-alias-border-l2); border-radius:10px; overflow:hidden; background:var(--dsw-alias-bg-base); }
+.commitFiles li+li { border-top:1px solid color-mix(in srgb,var(--dsw-alias-border-l2) 65%,transparent); }
+.commitFiles summary { min-height:42px; padding:0 14px; display:grid; grid-template-columns:14px 22px minmax(0,1fr) auto; align-items:center; gap:8px; cursor:pointer; list-style:none; }
+.commitFiles summary::-webkit-details-marker { display:none; }
+.commitFiles summary::before { content:none; }
+.commitFiles details[open] .disclosureIcon { transform:rotate(90deg); }
+.commitFiles .diffBlock,.commitFiles .diffUnavailable { margin-right:14px; margin-left:14px; }
+.detailStats .commitStat { min-height:86px; padding:16px; display:flex; flex-direction:column; justify-content:center; border:0; border-right:1px solid var(--dsw-alias-border-l2); color:inherit; background:transparent; text-align:left; cursor:pointer; }
+.detailStats .commitStat:hover { background:var(--dsw-alias-interactive-bg-hover); }
+.detailStats .commitStat:disabled { cursor:default; opacity:.65; }
+.detailStats .commitStat strong { font:700 18px/1.2 ui-monospace,SFMono-Regular,monospace; }
+.detailStats .commitStat span { margin-top:7px; color:var(--dsw-alias-state-business-primary); font-size:10px; }

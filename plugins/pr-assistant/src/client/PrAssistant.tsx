@@ -48,6 +48,13 @@ interface PullRequestDetail {
   changedFiles: number
   hasConflict: boolean
   mergeStatus: string
+  commits: Array<{
+    sha: string
+    title: string
+    author: string
+    committedAt: string
+    url: string
+  }>
   files: Array<{
     path: string
     previousPath: string
@@ -163,6 +170,28 @@ function relativeTime(value: string) {
   return `${Math.floor(hours / 24)} 天前`
 }
 
+async function copyToClipboard(text: string): Promise<boolean> {
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text)
+      return true
+    }
+  } catch { /* fall through to legacy path */ }
+  try {
+    const textarea = document.createElement('textarea')
+    textarea.value = text
+    textarea.style.position = 'fixed'
+    textarea.style.opacity = '0'
+    document.body.appendChild(textarea)
+    textarea.select()
+    const ok = document.execCommand('copy')
+    document.body.removeChild(textarea)
+    return ok
+  } catch {
+    return false
+  }
+}
+
 async function inspectWorkspace(workspace: WorkspaceView): Promise<RepositoryResult> {
   try {
     const query = new URLSearchParams({ path: workspace.path })
@@ -196,6 +225,141 @@ function FileDiff({ diff }: { diff: string }) {
   return <pre className={css.diffBlock}>{diff.split('\n').map((line, index) => (
     <span className={line.startsWith('+') ? css.diffAdd : line.startsWith('-') ? css.diffDelete : line.startsWith('@@') ? css.diffHunk : undefined} key={index}>{line || ' '}\n</span>
   ))}</pre>
+}
+
+interface CommitDetail {
+  sha: string
+  files: NonNullable<PullRequestDetail['files']>
+}
+
+type CommitSummary = PullRequestDetail['commits'][number]
+
+async function readApiJson<T>(response: Response): Promise<T> {
+  const text = await response.text()
+  let body: T & { error?: string }
+  try {
+    body = JSON.parse(text) as T & { error?: string }
+  } catch {
+    if (response.status === 404) throw new Error('提交详情接口尚未加载，请重启 Harness Desktop 后重试')
+    throw new Error(text.trim() || `接口返回了无效数据 (${response.status})`)
+  }
+  if (!response.ok) throw new Error(body.error || `请求失败 (${response.status})`)
+  return body
+}
+
+function CommitRow({ commit, repositoryPath }: { commit: CommitSummary; repositoryPath: string }) {
+  const [open, setOpen] = useState(false)
+  const [files, setFiles] = useState<CommitDetail['files'] | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
+
+  useEffect(() => {
+    if (!open || files || loading) return
+    const controller = new AbortController()
+    setLoading(true)
+    setError(null)
+    const query = new URLSearchParams({ path: repositoryPath, sha: commit.sha })
+    void fetch(`/api/pr-assistant/commit?${query}`, {
+      headers: { accept: 'application/json' },
+      signal: controller.signal,
+    }).then(async response => {
+      const body = await readApiJson<CommitDetail>(response)
+      setFiles(body.files ?? [])
+    }).catch(reason => {
+      if (reason instanceof Error && reason.name === 'AbortError') return
+      setError(reason instanceof Error ? reason.message : '提交详情读取失败')
+    }).finally(() => {
+      if (!controller.signal.aborted) setLoading(false)
+    })
+    return () => controller.abort()
+  }, [commit.sha, files, open, repositoryPath])
+
+  async function copySha() {
+    if (await copyToClipboard(commit.sha)) {
+      setCopied(true)
+    }
+  }
+
+  return (
+    <li>
+      <div className={css.commitRow}>
+        <button
+          className={css.commitMain}
+          type="button"
+          aria-expanded={open}
+          title={open ? '收起提交详情' : '展开提交详情'}
+          onClick={() => setOpen(value => !value)}
+        >
+          <span className={css.disclosureIcon} aria-hidden="true"><svg viewBox="0 0 12 12"><path d="m4.5 2.5 3.5 3.5-3.5 3.5" /></svg></span>
+          <div className={css.commitMeta}>
+            <strong>{commit.title || '无提交说明'}</strong>
+            <span>{commit.author || '未知作者'} · {relativeTime(commit.committedAt)}</span>
+          </div>
+        </button>
+        <button
+          className={css.commitShaButton}
+          type="button"
+          title={copied ? '已复制' : '复制完整 commit hash'}
+          aria-label={copied ? `已复制 ${commit.sha}` : `复制 ${commit.sha}`}
+          aria-pressed={copied}
+          onClick={() => void copySha()}
+        >
+          <code>{commit.sha.slice(0, 7)}</code>
+          <span className={css.commitShaCopyHint} aria-hidden="true">{copied ? '✓' : '⧉'}</span>
+        </button>
+        {commit.url ? (
+          <button
+            className={css.commitExternal}
+            type="button"
+            aria-label="打开提交"
+            title="打开提交"
+            onClick={() => window.open(commit.url, '_blank', 'noopener,noreferrer')}
+          >
+            ↗
+          </button>
+        ) : null}
+      </div>
+      {open ? (
+        <div className={css.commitBody}>
+          {loading ? <div className={css.commitState}>正在读取提交变更…</div> : null}
+          {error ? <div className={css.commitState} role="alert">{error}</div> : null}
+          {files ? (
+            files.length ? (
+              <ol className={css.commitFiles}>
+                {files.map(file => (
+                  <li key={`${file.previousPath}:${file.path}`}>
+                    <details>
+                      <summary>
+                        <span className={css.disclosureIcon} aria-hidden="true"><svg viewBox="0 0 12 12"><path d="m4.5 2.5 3.5 3.5-3.5 3.5" /></svg></span>
+                        <span className={css.fileStatus}>{file.status === 'added' ? 'A' : file.status === 'deleted' ? 'D' : file.status === 'renamed' ? 'R' : 'M'}</span>
+                        <code>{file.path}</code>
+                        <span className={css.fileCounts}><i>+{file.additions}</i><b>−{file.deletions}</b></span>
+                      </summary>
+                      <FileDiff diff={file.diff} />
+                    </details>
+                  </li>
+                ))}
+              </ol>
+            ) : <div className={css.commitState}>该提交没有可展示的文件变更。</div>
+          ) : null}
+        </div>
+      ) : null}
+    </li>
+  )
+}
+
+function CommitView({ commits, repositoryPath }: { commits: CommitSummary[]; repositoryPath: string }) {
+  return (
+    <section className={css.commitView}>
+      <h3>按提交查看 <span>{commits.length}</span></h3>
+      <ol className={css.commitList}>
+        {commits.map(commit => (
+          <CommitRow key={commit.sha} commit={commit} repositoryPath={repositoryPath} />
+        ))}
+      </ol>
+    </section>
+  )
 }
 
 function flattenModels(catalog: ModelCatalog): ReviewModel[] {
@@ -335,6 +499,7 @@ function PrAssistantPanel({ ctx, close }: { ctx: Context; close: () => void }) {
   const [detailLoading, setDetailLoading] = useState(false)
   const [detailError, setDetailError] = useState<string | null>(null)
   const [reviewOpen, setReviewOpen] = useState(false)
+  const [commitView, setCommitView] = useState(false)
   const workspaces = useSyncExternalStore(
     listener => ctx.workspaces.list.subscribe(listener),
     () => ctx.workspaces.list.getSnapshot(),
@@ -351,6 +516,7 @@ function PrAssistantPanel({ ctx, close }: { ctx: Context; close: () => void }) {
   useEffect(() => { void refresh() }, [workspaces.items])
   useEffect(() => {
     if (!selection) return
+    setCommitView(false)
     const controller = new AbortController()
     const query = new URLSearchParams({ path: selection.repository.localPath, number: String(selection.pullRequest.number) })
     setDetail(null)
@@ -438,10 +604,11 @@ function PrAssistantPanel({ ctx, close }: { ctx: Context; close: () => void }) {
         <div>
           <span className={css.eyebrow}>REVIEW RADAR</span>
           <div className={css.titleRow}>
-            {selection ? <button className={css.titleBack} type="button" aria-label="返回 PR 列表" title="返回 PR 列表" onClick={() => setSelection(null)}>←</button> : null}
-            <h1>{selection ? `#${selection.pullRequest.number} PR 详情` : 'PR 助手'}</h1>
+            {selection && commitView ? <button className={css.titleBack} type="button" aria-label="返回 PR 详情" title="返回 PR 详情" onClick={() => setCommitView(false)}>←</button> : null}
+            {selection && !commitView ? <button className={css.titleBack} type="button" aria-label="返回 PR 列表" title="返回 PR 列表" onClick={() => setSelection(null)}>←</button> : null}
+            <h1>{selection ? (commitView ? `#${selection.pullRequest.number} 按提交查看` : `#${selection.pullRequest.number} PR 详情`) : 'PR 助手'}</h1>
           </div>
-          <p>{selection ? selection.repository.repository : `${healthy} 个代码仓库 · ${total} 个待处理 PR`}</p>
+          <p>{selection ? (commitView ? `${detail?.commits.length ?? 0} 个提交` : selection.repository.repository) : `${healthy} 个代码仓库 · ${total} 个待处理 PR`}</p>
         </div>
         <div className={css.actions}>
           {!selection ? (
@@ -464,7 +631,10 @@ function PrAssistantPanel({ ctx, close }: { ctx: Context; close: () => void }) {
           {detailLoading ? <div className={css.detailState}>正在读取 PR 详情…</div> : null}
           {detailError ? <div className={css.detailState} role="alert">{detailError}</div> : null}
           {detail ? (
-            <>
+            commitView ? (
+              <CommitView commits={detail.commits} repositoryPath={selection.repository.localPath} />
+            ) : (
+              <>
               <section className={css.detailHero}>
                 <div>
                   <span>{detail.author} · {relativeTime(detail.updatedAt)}</span>
@@ -477,7 +647,7 @@ function PrAssistantPanel({ ctx, close }: { ctx: Context; close: () => void }) {
                 </div>
               </section>
               <section className={css.detailStats}>
-                <div><strong>{detail.commitCount ?? '—'}</strong><span>{detail.commitCount === null ? '提交数暂不可用' : '提交'}</span></div>
+                <button className={css.commitStat} type="button" disabled={detail.commitCount === null} onClick={() => setCommitView(true)}><strong>{detail.commitCount ?? '—'}</strong><span>{detail.commitCount === null ? '提交数暂不可用' : '提交 · 点击查看'}</span></button>
                 <div><strong>{detail.changedFiles}</strong><span>变更文件</span></div>
                 <div><strong className={css.addition}>+{detail.additions}</strong><span>新增行</span></div>
                 <div><strong className={css.deletion}>−{detail.deletions}</strong><span>删除行</span></div>
@@ -515,7 +685,8 @@ function PrAssistantPanel({ ctx, close }: { ctx: Context; close: () => void }) {
                   </li>
                 ))}</ol>
               </section>
-            </>
+              </>
+            )
           ) : null}
         </main>
       ) : (<>

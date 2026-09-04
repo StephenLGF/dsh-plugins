@@ -5,6 +5,7 @@ import type { Context } from '@deepseek-ai/cordis'
 const execFileAsync = promisify(execFile)
 const ROUTE = '/api/pr-assistant/repository'
 const DETAIL_ROUTE = '/api/pr-assistant/pull-request'
+const COMMIT_ROUTE = '/api/pr-assistant/commit'
 
 interface Config {
   executable?: string
@@ -27,6 +28,14 @@ interface ChangedFile {
   deletions: number
   status: 'added' | 'deleted' | 'renamed' | 'modified'
   diff: string
+}
+
+interface PullRequestCommit {
+  sha: string
+  title: string
+  author: string
+  committedAt: string
+  url: string
 }
 
 interface HttpResponse {
@@ -106,7 +115,7 @@ function normalizeGiteeFile(value: unknown): ChangedFile | null {
   }
 }
 
-async function loadGiteeCommitCount(path: string, number: number, config: Config): Promise<number | null> {
+async function loadGiteeCommits(path: string, number: number, config: Config): Promise<PullRequestCommit[] | null> {
   try {
     const remote = await git(path, ['remote', 'get-url', 'origin'])
     const pathname = new URL(remote.replace(/^git@([^:]+):/u, 'https://$1/')).pathname.replace(/^\//u, '').replace(/\.git$/u, '')
@@ -116,7 +125,17 @@ async function loadGiteeCommitCount(path: string, number: number, config: Config
       '--profile', config.profile || 'osc', '-o', 'json',
     ], { cwd: path, timeout: 30_000, maxBuffer: 16 * 1024 * 1024 })
     const payload = parseCliJson(result.stdout || result.stderr)
-    return Array.isArray(payload) ? payload.length : null
+    if (!Array.isArray(payload)) return null
+    return payload.map(value => {
+      const commit = value && typeof value === 'object' ? value as Record<string, unknown> : {}
+      return {
+        sha: String(commit.id || ''),
+        title: String(commit.title || commit.message || '').split('\n')[0] || '',
+        author: String(commit.author_name || ''),
+        committedAt: String(commit.created_at || commit.committed_date || ''),
+        url: '',
+      }
+    })
   } catch {
     return null
   }
@@ -126,10 +145,10 @@ async function loadGiteePullRequest(path: string, number: number, config: Config
   const executable = config.executable || 'gitee'
   const profile = config.profile || 'osc'
   const common = { cwd: path, timeout: 30_000, maxBuffer: 32 * 1024 * 1024 }
-  const [detailResult, diffResult, commitCount] = await Promise.all([
+  const [detailResult, diffResult, commits] = await Promise.all([
     execFileAsync(executable, ['code', 'pr', 'view', String(number), '--json', '--profile', profile], common),
     execFileAsync(executable, ['code', 'pr', 'diff', String(number), '--json', '--profile', profile], common),
-    loadGiteeCommitCount(path, number, config),
+    loadGiteeCommits(path, number, config),
   ])
   const detailValue = parseCliJson(detailResult.stdout || detailResult.stderr)
   const detail = detailValue && typeof detailValue === 'object' ? detailValue as Record<string, unknown> : {}
@@ -148,7 +167,8 @@ async function loadGiteePullRequest(path: string, number: number, config: Config
     targetBranch: String(detail.target_branch || ''),
     url: String(detail.web_url || detail.html_url || ''),
     updatedAt: String(detail.updated_at || ''),
-    commitCount,
+    commitCount: commits?.length ?? null,
+    commits: commits ?? [],
     additions,
     deletions,
     changedFiles: files.length,
@@ -160,9 +180,10 @@ async function loadGiteePullRequest(path: string, number: number, config: Config
 
 async function loadGithubPullRequest(identity: ReturnType<typeof parseRemote>, number: number, config: Config) {
   const base = `https://api.github.com/repos/${encodeURIComponent(identity.owner)}/${encodeURIComponent(identity.repository)}`
-  const [detailValue, filesValue] = await Promise.all([
+  const [detailValue, filesValue, commitsValue] = await Promise.all([
     requestJson(`${base}/pulls/${number}`, config.githubToken, 'github'),
     requestJson(`${base}/pulls/${number}/files?per_page=100`, config.githubToken, 'github'),
+    requestJson(`${base}/pulls/${number}/commits?per_page=100`, config.githubToken, 'github'),
   ])
   const detail = detailValue && typeof detailValue === 'object' ? detailValue as Record<string, unknown> : {}
   const authorValue = detail.user
@@ -182,6 +203,19 @@ async function loadGithubPullRequest(identity: ReturnType<typeof parseRemote>, n
       diff: String(file.patch || ''),
     }
   })
+  const commits = (Array.isArray(commitsValue) ? commitsValue : []).map(value => {
+    const item = value && typeof value === 'object' ? value as Record<string, unknown> : {}
+    const commitValue = item.commit && typeof item.commit === 'object' ? item.commit as Record<string, unknown> : {}
+    const authorValue = commitValue.author && typeof commitValue.author === 'object' ? commitValue.author as Record<string, unknown> : {}
+    const accountValue = item.author && typeof item.author === 'object' ? item.author as Record<string, unknown> : {}
+    return {
+      sha: String(item.sha || ''),
+      title: String(commitValue.message || '').split('\n')[0] || '',
+      author: String(accountValue.login || authorValue.name || ''),
+      committedAt: String(authorValue.date || ''),
+      url: String(item.html_url || ''),
+    }
+  })
   return {
     number,
     title: String(detail.title || ''),
@@ -192,6 +226,7 @@ async function loadGithubPullRequest(identity: ReturnType<typeof parseRemote>, n
     url: String(detail.html_url || ''),
     updatedAt: String(detail.updated_at || ''),
     commitCount: Number(detail.commits || 0),
+    commits,
     additions: Number(detail.additions || 0),
     deletions: Number(detail.deletions || 0),
     changedFiles: Number(detail.changed_files || files.length),
@@ -207,6 +242,40 @@ async function loadPullRequest(path: string, number: number, config: Config) {
   return identity.provider === 'gitee'
     ? loadGiteePullRequest(path, number, config)
     : loadGithubPullRequest(identity, number, config)
+}
+
+async function loadCommit(path: string, sha: string, config: Config) {
+  const remote = await git(path, ['remote', 'get-url', 'origin'])
+  const identity = parseRemote(remote)
+  if (identity.provider === 'gitee') {
+    const pathname = new URL(remote.replace(/^git@([^:]+):/u, 'https://$1/')).pathname.replace(/^\//u, '').replace(/\.git$/u, '')
+    const project = encodeURIComponent(pathname)
+    const result = await execFileAsync(config.executable || 'gitee', [
+      'api', 'GET', `/open/code/api/v8/projects/${project}/repository/commits/${encodeURIComponent(sha)}/diff`,
+      '--profile', config.profile || 'osc', '-o', 'json',
+    ], { cwd: path, timeout: 30_000, maxBuffer: 32 * 1024 * 1024 })
+    const payload = parseCliJson(result.stdout || result.stderr)
+    const files = (Array.isArray(payload) ? payload : []).map(normalizeGiteeFile).filter((file): file is ChangedFile => file !== null)
+    return { files }
+  }
+  const value = await requestJson(
+    `https://api.github.com/repos/${encodeURIComponent(identity.owner)}/${encodeURIComponent(identity.repository)}/commits/${encodeURIComponent(sha)}`,
+    config.githubToken,
+    'github',
+  )
+  const record = value && typeof value === 'object' ? value as Record<string, unknown> : {}
+  const files = (Array.isArray(record.files) ? record.files : []).map(value => {
+    const file = value && typeof value === 'object' ? value as Record<string, unknown> : {}
+    return {
+      path: String(file.filename || ''),
+      previousPath: String(file.previous_filename || file.filename || ''),
+      additions: Number(file.additions || 0),
+      deletions: Number(file.deletions || 0),
+      status: (['added', 'deleted', 'renamed'].includes(String(file.status)) ? file.status : 'modified') as ChangedFile['status'],
+      diff: String(file.patch || ''),
+    }
+  })
+  return { files }
 }
 
 async function git(cwd: string, args: string[]) {
@@ -308,4 +377,20 @@ export function apply(ctx: Context, config: Config = {}): void {
       }
     },
   }), 'pr-assistant: pull request detail route')
+  ctx.effect(() => webServer.register({
+    kind: 'exact',
+    path: COMMIT_ROUTE,
+    async handler(request, response) {
+      if (request.method !== 'GET') return sendJson(response, 405, { error: 'Method not allowed' })
+      const url = new URL(request.url ?? COMMIT_ROUTE, 'http://localhost')
+      const path = url.searchParams.get('path')?.trim()
+      const sha = url.searchParams.get('sha')?.trim()
+      if (!path || !sha || !/^[a-f0-9]{7,64}$/iu.test(sha)) return sendJson(response, 400, { error: '无效的提交详情请求' })
+      try {
+        sendJson(response, 200, await loadCommit(path, sha, config))
+      } catch (error) {
+        sendJson(response, 502, { error: error instanceof Error ? error.message : '提交详情读取失败' })
+      }
+    },
+  }), 'pr-assistant: commit detail route')
 }
