@@ -1,5 +1,5 @@
 /** Package-owned invariant companion for the DSH PR assistant plugin. */
-const PACKAGE_NAME = '@stephenlgf/dsh-pr-assistant'
+const PACKAGE_NAME = '@stephen1620/dsh-pr-assistant'
 
 export const name = 'pr-assistant-invariant'
 

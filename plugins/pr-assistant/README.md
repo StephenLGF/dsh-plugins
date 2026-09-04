@@ -28,7 +28,7 @@
 ```yaml
 - insert:
     - id: pr-assistant
-      name: '@stephenlgf/dsh-pr-assistant'
+      name: '@stephen1620/dsh-pr-assistant'
       config:
         executable: gitee
         profile: osc
@@ -39,12 +39,56 @@ GitHub 令牌仅由服务端用于 API 请求，不会发送到浏览器。
 
 ## 安装
 
+### 从 npm 安装（推荐）
+
+在 DSH profile 目录下用 pnpm 安装，然后把包名加入 `dsh.profile.bundles`：
+
 ```bash
-cd plugins/pr-assistant
-npx @deepseek-ai/dsh plugin --profile web add .
+cd ~/.dsh/profiles/web
+pnpm add @stephen1620/dsh-pr-assistant
+npx @deepseek-ai/dsh web
 ```
 
-DSH Desktop 将 `web` 换成 `desktop`，安装后重新打开应用。
+安装后编辑 `~/.dsh/profiles/web/package.json`，在 `dsh.profile.bundles` 数组里追加 `"@stephen1620/dsh-pr-assistant"`，重启 DSH 即可加载。
+
+DSH Desktop 将 `web` 换成 `desktop`：
+
+```bash
+cd ~/.dsh/profiles/desktop
+pnpm add @stephen1620/dsh-pr-assistant
+```
+
+同样把包名加入 `desktop` profile 的 `dsh.profile.bundles`，然后重新打开应用。
+
+### 从 GitHub 安装
+
+仓库已包含构建产物，可以直接安装指定版本：
+
+```bash
+cd ~/.dsh/profiles/web
+pnpm add "github:StephenLGF/dsh-plugins#path:/plugins/pr-assistant"
+npx @deepseek-ai/dsh web
+```
+
+也可以 clone 后从本地目录安装：
+
+```bash
+git clone https://github.com/StephenLGF/dsh-plugins.git
+cd ~/.dsh/profiles/web
+pnpm add /absolute/path/to/dsh-plugins/plugins/pr-assistant
+npx @deepseek-ai/dsh web
+```
+
+卸载：
+
+```bash
+cd ~/.dsh/profiles/web
+pnpm remove @stephen1620/dsh-pr-assistant
+```
+
+记得同步从 `dsh.profile.bundles` 中移除该包名。
+
+当前版本：`0.1.0`。
 
 ## AI 评审
 

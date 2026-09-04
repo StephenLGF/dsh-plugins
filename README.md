@@ -6,8 +6,8 @@
 
 | 插件 | npm 包 | 说明 |
 | --- | --- | --- |
-| [番茄工作台](./plugins/tomato-board) | `@stephenlgf/dsh-tomato-board` | Gitee Team（番茄）工作台与 Harness 原生对话联动 |
-| [PR 助手](./plugins/pr-assistant) | `@stephenlgf/dsh-pr-assistant` | 汇总 Open PR、查看详情与 diff，并使用 Harness 模型进行 AI 评审 |
+| [番茄工作台](./plugins/tomato-board) | `@stephen1620/dsh-tomato-board` | Gitee Team（番茄）工作台与 Harness 原生对话联动 |
+| [PR 助手](./plugins/pr-assistant) | `@stephen1620/dsh-pr-assistant` | 汇总 Open PR、查看详情与 diff，并使用 Harness 模型进行 AI 评审 |
 
 每个插件都在 `plugins/` 下独立维护，拥有自己的 README、版本号、构建产物和 npm 发布配置。
 

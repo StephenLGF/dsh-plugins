@@ -67,7 +67,7 @@ command -v gitee
 ### 从 npm 安装（发布 npm 后推荐）
 
 ```bash
-npx @deepseek-ai/dsh plugin --profile web add @stephenlgf/dsh-tomato-board
+npx @deepseek-ai/dsh plugin --profile web add @stephen1620/dsh-tomato-board
 npx @deepseek-ai/dsh web
 ```
 
@@ -101,7 +101,7 @@ npx @deepseek-ai/dsh plugin --profile desktop add .
 卸载：
 
 ```bash
-npx @deepseek-ai/dsh plugin --profile web remove @stephenlgf/dsh-tomato-board
+npx @deepseek-ai/dsh plugin --profile web remove @stephen1620/dsh-tomato-board
 ```
 
 ## 配置

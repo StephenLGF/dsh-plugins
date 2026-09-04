@@ -1,6 +1,6 @@
 - insert:
     - id: tomato-board
-      name: '@stephenlgf/dsh-tomato-board'
+      name: '@stephen1620/dsh-tomato-board'
       config:
         executable: gitee
         profile: osc
