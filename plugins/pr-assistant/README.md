@@ -33,9 +33,13 @@
         executable: gitee
         profile: osc
         githubToken: YOUR_GITHUB_TOKEN
+        allowedRoots:
+          - /absolute/path/to/workspaces
 ```
 
 GitHub 令牌仅由服务端用于 API 请求，不会发送到浏览器。
+
+建议为 `githubToken` 仅授予目标仓库的只读 Contents 和 Pull requests 权限。`allowedRoots` 可选，配置后服务端只允许读取这些目录及其子目录中的 Git 仓库；建议 Web 或 Desktop profile 都显式配置。
 
 ## 安装
 
@@ -88,7 +92,7 @@ pnpm remove @stephen1620/dsh-pr-assistant
 
 记得同步从 `dsh.profile.bundles` 中移除该包名。
 
-当前版本：`0.1.0`。
+当前版本：`0.1.1`。
 
 ## AI 评审
 
@@ -112,8 +116,11 @@ pnpm exec tsc -b packages/client/pr-assistant
 pnpm --dir packages/client/pr-assistant bundle
 ```
 
+构建完成后将 `lib/` 同步回本仓库。`prepack` 只验证发布产物完整性和客户端源码一致性，不会在本仓库重新解析 Harness workspace 依赖。
+
 ## 限制
 
 - GitHub 单个仓库最多分页统计 5000 个 Open PR。
 - 企业 Gitee 当前通过 CLI 最多读取 100 个 Open PR。
 - GitHub 对超大或二进制文件可能不返回具体 patch，此时详情页会显示无法展示文本差异的提示。
+- GitHub PR 详情最多读取 3000 个变更文件和 5000 个提交，与 GitHub API 的可用范围保持一致。

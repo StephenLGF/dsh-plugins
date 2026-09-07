@@ -1,10 +1,13 @@
 import { execFile } from "node:child_process";
+import { realpath } from "node:fs/promises";
+import { isAbsolute, relative } from "node:path";
 import { promisify } from "node:util";
 //#region lib/types/index.js
 const execFileAsync = promisify(execFile);
 const ROUTE = "/api/pr-assistant/repository";
 const DETAIL_ROUTE = "/api/pr-assistant/pull-request";
 const COMMIT_ROUTE = "/api/pr-assistant/commit";
+var ClientInputError = class extends Error {};
 function sendJson(response, status, body) {
 	response.statusCode = status;
 	response.setHeader("content-type", "application/json; charset=utf-8");
@@ -186,8 +189,8 @@ async function loadGithubPullRequest(identity, number, config) {
 	const base = `https://api.github.com/repos/${encodeURIComponent(identity.owner)}/${encodeURIComponent(identity.repository)}`;
 	const [detailValue, filesValue, commitsValue] = await Promise.all([
 		requestJson(`${base}/pulls/${number}`, config.githubToken, "github"),
-		requestJson(`${base}/pulls/${number}/files?per_page=100`, config.githubToken, "github"),
-		requestJson(`${base}/pulls/${number}/commits?per_page=100`, config.githubToken, "github")
+		requestJsonPages(`${base}/pulls/${number}/files?per_page=100`, config.githubToken, "github", 30),
+		requestJsonPages(`${base}/pulls/${number}/commits?per_page=100`, config.githubToken, "github", 50)
 	]);
 	const detail = detailValue && typeof detailValue === "object" ? detailValue : {};
 	const authorValue = detail.user;
@@ -322,6 +325,26 @@ async function requestJson(url, token, provider) {
 	}
 	return body;
 }
+async function requestJsonPages(endpoint, token, provider, maxPages) {
+	const items = [];
+	for (let page = 1; page <= maxPages; page += 1) {
+		const body = await requestJson(`${endpoint}${endpoint.includes("?") ? "&" : "?"}page=${page}`, token, provider);
+		if (!Array.isArray(body)) throw new Error("代码平台返回了无法识别的分页数据");
+		items.push(...body);
+		if (body.length < 100) break;
+	}
+	return items;
+}
+async function validateRepositoryPath(path, config) {
+	if (!isAbsolute(path)) throw new ClientInputError("仓库路径必须是绝对路径");
+	const resolved = await realpath(path);
+	if (!config.allowedRoots?.length) return resolved;
+	if (!(await Promise.all(config.allowedRoots.map((root) => realpath(root)))).some((root) => {
+		const child = relative(root, resolved);
+		return child === "" || !child.startsWith("..") && !isAbsolute(child);
+	})) throw new ClientInputError("仓库路径不在 allowedRoots 允许范围内");
+	return resolved;
+}
 async function loadPullRequests(endpoint, token, provider) {
 	const items = [];
 	for (let page = 1; page <= 50; page += 1) {
@@ -379,12 +402,12 @@ function apply(ctx, config = {}) {
 		path: ROUTE,
 		async handler(request, response) {
 			if (request.method !== "GET") return sendJson(response, 405, { error: "Method not allowed" });
-			const path = new URL(request.url ?? ROUTE, "http://localhost").searchParams.get("path")?.trim();
-			if (!path) return sendJson(response, 400, { error: "缺少仓库路径" });
+			const requestedPath = new URL(request.url ?? ROUTE, "http://localhost").searchParams.get("path")?.trim();
+			if (!requestedPath) return sendJson(response, 400, { error: "缺少仓库路径" });
 			try {
-				sendJson(response, 200, await loadRepository(path, config));
+				sendJson(response, 200, await loadRepository(await validateRepositoryPath(requestedPath, config), config));
 			} catch (error) {
-				sendJson(response, 502, { error: error instanceof Error ? error.message : "PR 读取失败" });
+				sendJson(response, error instanceof ClientInputError ? 400 : 502, { error: error instanceof Error ? error.message : "PR 读取失败" });
 			}
 		}
 	}), "pr-assistant: repository route");
@@ -394,13 +417,13 @@ function apply(ctx, config = {}) {
 		async handler(request, response) {
 			if (request.method !== "GET") return sendJson(response, 405, { error: "Method not allowed" });
 			const url = new URL(request.url ?? DETAIL_ROUTE, "http://localhost");
-			const path = url.searchParams.get("path")?.trim();
+			const requestedPath = url.searchParams.get("path")?.trim();
 			const number = Number(url.searchParams.get("number"));
-			if (!path || !Number.isInteger(number) || number <= 0) return sendJson(response, 400, { error: "无效的 PR 详情请求" });
+			if (!requestedPath || !Number.isInteger(number) || number <= 0) return sendJson(response, 400, { error: "无效的 PR 详情请求" });
 			try {
-				sendJson(response, 200, await loadPullRequest(path, number, config));
+				sendJson(response, 200, await loadPullRequest(await validateRepositoryPath(requestedPath, config), number, config));
 			} catch (error) {
-				sendJson(response, 502, { error: error instanceof Error ? error.message : "PR 详情读取失败" });
+				sendJson(response, error instanceof ClientInputError ? 400 : 502, { error: error instanceof Error ? error.message : "PR 详情读取失败" });
 			}
 		}
 	}), "pr-assistant: pull request detail route");
@@ -410,13 +433,13 @@ function apply(ctx, config = {}) {
 		async handler(request, response) {
 			if (request.method !== "GET") return sendJson(response, 405, { error: "Method not allowed" });
 			const url = new URL(request.url ?? COMMIT_ROUTE, "http://localhost");
-			const path = url.searchParams.get("path")?.trim();
+			const requestedPath = url.searchParams.get("path")?.trim();
 			const sha = url.searchParams.get("sha")?.trim();
-			if (!path || !sha || !/^[a-f0-9]{7,64}$/iu.test(sha)) return sendJson(response, 400, { error: "无效的提交详情请求" });
+			if (!requestedPath || !sha || !/^[a-f0-9]{7,64}$/iu.test(sha)) return sendJson(response, 400, { error: "无效的提交详情请求" });
 			try {
-				sendJson(response, 200, await loadCommit(path, sha, config));
+				sendJson(response, 200, await loadCommit(await validateRepositoryPath(requestedPath, config), sha, config));
 			} catch (error) {
-				sendJson(response, 502, { error: error instanceof Error ? error.message : "提交详情读取失败" });
+				sendJson(response, error instanceof ClientInputError ? 400 : 502, { error: error instanceof Error ? error.message : "提交详情读取失败" });
 			}
 		}
 	}), "pr-assistant: commit detail route");

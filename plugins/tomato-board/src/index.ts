@@ -20,7 +20,7 @@ interface WebServer {
   register(route: {
     kind: 'exact' | 'prefix'
     path: string
-    handler: (request: { method?: string; url?: string }, response: HttpResponse) => void | Promise<void>
+    handler: (request: { method?: string; url?: string; headers?: Record<string, string | string[] | undefined> }, response: HttpResponse) => void | Promise<void>
   }): () => void
 }
 
@@ -43,7 +43,13 @@ interface Config {
   iql?: string
   tomatoOrigin?: string
   tomatoTenant?: string
+  cacheTtlMs?: number
+  maxItems?: number
+  excludedStatuses?: string[]
 }
+
+let itemsCache: { key: string; expiresAt: number; value: unknown } | null = null
+let itemsInFlight: { key: string; promise: Promise<unknown> } | null = null
 
 function firstText(value: unknown): string {
   if (typeof value === 'string') return value.trim()
@@ -196,7 +202,9 @@ async function loadItems(config: Config) {
     || "负责人 = currentUser() and 所属空间 in ['Gitee-Team', 'Gitee-Test'] and 类型 in ['Story', 'EnablerStory', 'Bug', '测试缺陷']"
   const rawItems: unknown[] = []
   let page = 1
-  while (rawItems.length < 5000) {
+  let truncated = false
+  const maxItems = Math.max(1, Math.min(config.maxItems ?? 5000, 20_000))
+  while (rawItems.length < maxItems) {
     const result = await execFileAsync(executable, [
       'team', 'item', 'search',
       '--profile', profile,
@@ -218,13 +226,45 @@ async function loadItems(config: Config) {
       || record.hasMore === true
       || (Number.isFinite(total) && rawItems.length < total)
       || (!Number.isFinite(total) && pageItems.length === 50)
+    if (rawItems.length >= maxItems && hasMore) {
+      truncated = true
+      break
+    }
     if (!hasMore || pageItems.length === 0) break
     page += 1
   }
-  const excludedStatuses = new Set(['测试通过', '测试完成', '不修复', '已取消'])
-  return rawItems.map(normalizeItem).filter(item => (
+  const excludedStatuses = new Set(config.excludedStatuses ?? ['测试通过', '测试完成', '不修复', '已取消'])
+  const items = rawItems.slice(0, maxItems).map(normalizeItem).filter(item => (
     item.itemKey && item.title && item.status && !excludedStatuses.has(item.status)
   )).map(item => ({ ...item, tomatoUrl: tomatoItemUrl(config, item.itemKey) }))
+  return { items, truncated }
+}
+
+function loadItemsCached(config: Config) {
+  const ttl = Math.max(0, Math.min(config.cacheTtlMs ?? 15_000, 300_000))
+  const key = JSON.stringify([cliSettings(config), config.iql, config.maxItems, config.excludedStatuses, config.tomatoOrigin, config.tomatoTenant])
+  if (itemsCache?.key === key && itemsCache.expiresAt > Date.now()) return Promise.resolve(itemsCache.value)
+  if (itemsInFlight?.key === key) return itemsInFlight.promise
+  const promise = loadItems(config).then(value => {
+    itemsCache = { key, expiresAt: Date.now() + ttl, value }
+    return value
+  }).finally(() => {
+    if (itemsInFlight?.promise === promise) itemsInFlight = null
+  })
+  itemsInFlight = { key, promise }
+  return promise
+}
+
+function isCrossSite(request: { headers?: Record<string, string | string[] | undefined> }) {
+  const header = (name: string) => {
+    const value = request.headers?.[name] ?? request.headers?.[name.toLowerCase()]
+    return Array.isArray(value) ? value[0] : value
+  }
+  if (header('sec-fetch-site') === 'cross-site') return true
+  const origin = header('origin')
+  const host = header('host')
+  if (!origin || !host) return false
+  try { return new URL(origin).host !== host } catch { return true }
 }
 
 function sendJson(response: HttpResponse, status: number, body: unknown) {
@@ -260,7 +300,7 @@ export function apply(ctx: Context, config: Config = {}): void {
         return
       }
       try {
-        sendJson(response, 200, { items: await loadItems(config) })
+        sendJson(response, 200, await loadItemsCached(config))
       } catch (error) {
         sendJson(response, 502, {
           error: error instanceof Error ? error.message : '番茄事项读取失败',
@@ -322,6 +362,10 @@ export function apply(ctx: Context, config: Config = {}): void {
     async handler(request, response) {
       if (request.method !== 'POST') {
         sendJson(response, 405, { error: 'Method not allowed' })
+        return
+      }
+      if (isCrossSite(request)) {
+        sendJson(response, 403, { error: '拒绝跨站状态流转请求' })
         return
       }
       const url = new URL(request.url ?? TRANSITION_ROUTE, 'http://localhost')

@@ -218,6 +218,20 @@ window.__ModuleLoader__.load({
 				};
 			}
 		}
+		async function inspectWorkspaces(workspaces, concurrency = 4) {
+			const results = new Array(workspaces.length);
+			let cursor = 0;
+			await Promise.all(Array.from({ length: Math.min(concurrency, workspaces.length) }, async () => {
+				while (cursor < workspaces.length) {
+					const index = cursor;
+					cursor += 1;
+					const workspace = workspaces[index];
+					if (!workspace) break;
+					results[index] = await inspectWorkspace(workspace);
+				}
+			}));
+			return results;
+		}
 		function SidebarAction({ wide, openWorkbench }) {
 			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 				className: pr_assistant_module_css_default.sidebarAction,
@@ -550,6 +564,7 @@ window.__ModuleLoader__.load({
 		}
 		function PrAssistantPanel({ ctx, close }) {
 			const panelRef = (0, react.useRef)(null);
+			const refreshGeneration = (0, react.useRef)(0);
 			const [results, setResults] = (0, react.useState)([]);
 			const [loading, setLoading] = (0, react.useState)(false);
 			const [query, setQuery] = (0, react.useState)("");
@@ -564,9 +579,14 @@ window.__ModuleLoader__.load({
 			const [commitView, setCommitView] = (0, react.useState)(false);
 			const workspaces = (0, react.useSyncExternalStore)((listener) => ctx.workspaces.list.subscribe(listener), () => ctx.workspaces.list.getSnapshot(), () => ctx.workspaces.list.getSnapshot());
 			async function refresh() {
+				const generation = ++refreshGeneration.current;
 				setLoading(true);
-				setResults(await Promise.all(workspaces.items.map(inspectWorkspace)));
-				setLoading(false);
+				try {
+					const next = await inspectWorkspaces(workspaces.items);
+					if (generation === refreshGeneration.current) setResults(next);
+				} finally {
+					if (generation === refreshGeneration.current) setLoading(false);
+				}
 			}
 			(0, react.useEffect)(() => {
 				refresh();

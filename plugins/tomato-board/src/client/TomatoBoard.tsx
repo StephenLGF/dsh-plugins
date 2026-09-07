@@ -44,9 +44,10 @@ interface BoardState {
   items: TomatoItem[]
   error: string | null
   selectedItem: TomatoItem | null
+  truncated: boolean
 }
 
-let state: BoardState = { open: false, loading: false, items: [], error: null, selectedItem: null }
+let state: BoardState = { open: false, loading: false, items: [], error: null, selectedItem: null, truncated: false }
 let disposeWorkbench: (() => void) | null = null
 const listeners = new Set<() => void>()
 const emit = (patch: Partial<BoardState>) => {
@@ -118,9 +119,9 @@ async function refresh() {
   emit({ loading: true, error: null })
   try {
     const response = await fetch('/api/tomato-board/items', { headers: { accept: 'application/json' } })
-    const body = await response.json() as { items?: TomatoItem[]; error?: string }
+    const body = await response.json() as { items?: TomatoItem[]; truncated?: boolean; error?: string }
     if (!response.ok) throw new Error(body.error || `请求失败 (${response.status})`)
-    emit({ items: body.items ?? [] })
+    emit({ items: body.items ?? [], truncated: body.truncated === true })
   } catch (error) {
     emit({ error: error instanceof Error ? error.message : '番茄事项读取失败' })
   } finally {
@@ -372,6 +373,7 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
         </div>
       </header>
       {board.error && <div className={css.error} role="alert">{board.error}</div>}
+      {board.truncated && <p className={css.notice} role="status">事项数量已达配置上限，当前仅展示前 {board.items.length} 条。</p>}
       <div className={css.board}>
         {statuses.map(status => {
           const items = filteredItems.filter(item => item.status === status)

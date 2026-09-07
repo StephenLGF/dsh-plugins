@@ -1,4 +1,6 @@
 import { execFile } from 'node:child_process'
+import { realpath } from 'node:fs/promises'
+import { isAbsolute, relative } from 'node:path'
 import { promisify } from 'node:util'
 import type { Context } from '@deepseek-ai/cordis'
 
@@ -11,6 +13,7 @@ interface Config {
   executable?: string
   profile?: string
   githubToken?: string
+  allowedRoots?: string[]
 }
 
 interface WebServer {
@@ -45,6 +48,8 @@ interface HttpResponse {
 }
 
 type Provider = 'github' | 'gitee'
+
+class ClientInputError extends Error {}
 
 function sendJson(response: HttpResponse, status: number, body: unknown) {
   response.statusCode = status
@@ -182,8 +187,8 @@ async function loadGithubPullRequest(identity: ReturnType<typeof parseRemote>, n
   const base = `https://api.github.com/repos/${encodeURIComponent(identity.owner)}/${encodeURIComponent(identity.repository)}`
   const [detailValue, filesValue, commitsValue] = await Promise.all([
     requestJson(`${base}/pulls/${number}`, config.githubToken, 'github'),
-    requestJson(`${base}/pulls/${number}/files?per_page=100`, config.githubToken, 'github'),
-    requestJson(`${base}/pulls/${number}/commits?per_page=100`, config.githubToken, 'github'),
+    requestJsonPages(`${base}/pulls/${number}/files?per_page=100`, config.githubToken, 'github', 30),
+    requestJsonPages(`${base}/pulls/${number}/commits?per_page=100`, config.githubToken, 'github', 50),
   ])
   const detail = detailValue && typeof detailValue === 'object' ? detailValue as Record<string, unknown> : {}
   const authorValue = detail.user
@@ -295,6 +300,31 @@ async function requestJson(url: string, token: string | undefined, provider: Pro
   return body
 }
 
+async function requestJsonPages(endpoint: string, token: string | undefined, provider: Provider, maxPages: number) {
+  const items: unknown[] = []
+  for (let page = 1; page <= maxPages; page += 1) {
+    const separator = endpoint.includes('?') ? '&' : '?'
+    const body = await requestJson(`${endpoint}${separator}page=${page}`, token, provider)
+    if (!Array.isArray(body)) throw new Error('代码平台返回了无法识别的分页数据')
+    items.push(...body)
+    if (body.length < 100) break
+  }
+  return items
+}
+
+async function validateRepositoryPath(path: string, config: Config) {
+  if (!isAbsolute(path)) throw new ClientInputError('仓库路径必须是绝对路径')
+  const resolved = await realpath(path)
+  if (!config.allowedRoots?.length) return resolved
+  const roots = await Promise.all(config.allowedRoots.map(root => realpath(root)))
+  const allowed = roots.some(root => {
+    const child = relative(root, resolved)
+    return child === '' || (!child.startsWith('..') && !isAbsolute(child))
+  })
+  if (!allowed) throw new ClientInputError('仓库路径不在 allowedRoots 允许范围内')
+  return resolved
+}
+
 async function loadPullRequests(endpoint: string, token: string | undefined, provider: Provider) {
   const items: unknown[] = []
   for (let page = 1; page <= 50; page += 1) {
@@ -352,12 +382,13 @@ export function apply(ctx: Context, config: Config = {}): void {
     path: ROUTE,
     async handler(request, response) {
       if (request.method !== 'GET') return sendJson(response, 405, { error: 'Method not allowed' })
-      const path = new URL(request.url ?? ROUTE, 'http://localhost').searchParams.get('path')?.trim()
-      if (!path) return sendJson(response, 400, { error: '缺少仓库路径' })
+      const requestedPath = new URL(request.url ?? ROUTE, 'http://localhost').searchParams.get('path')?.trim()
+      if (!requestedPath) return sendJson(response, 400, { error: '缺少仓库路径' })
       try {
+        const path = await validateRepositoryPath(requestedPath, config)
         sendJson(response, 200, await loadRepository(path, config))
       } catch (error) {
-        sendJson(response, 502, { error: error instanceof Error ? error.message : 'PR 读取失败' })
+        sendJson(response, error instanceof ClientInputError ? 400 : 502, { error: error instanceof Error ? error.message : 'PR 读取失败' })
       }
     },
   }), 'pr-assistant: repository route')
@@ -367,13 +398,14 @@ export function apply(ctx: Context, config: Config = {}): void {
     async handler(request, response) {
       if (request.method !== 'GET') return sendJson(response, 405, { error: 'Method not allowed' })
       const url = new URL(request.url ?? DETAIL_ROUTE, 'http://localhost')
-      const path = url.searchParams.get('path')?.trim()
+      const requestedPath = url.searchParams.get('path')?.trim()
       const number = Number(url.searchParams.get('number'))
-      if (!path || !Number.isInteger(number) || number <= 0) return sendJson(response, 400, { error: '无效的 PR 详情请求' })
+      if (!requestedPath || !Number.isInteger(number) || number <= 0) return sendJson(response, 400, { error: '无效的 PR 详情请求' })
       try {
+        const path = await validateRepositoryPath(requestedPath, config)
         sendJson(response, 200, await loadPullRequest(path, number, config))
       } catch (error) {
-        sendJson(response, 502, { error: error instanceof Error ? error.message : 'PR 详情读取失败' })
+        sendJson(response, error instanceof ClientInputError ? 400 : 502, { error: error instanceof Error ? error.message : 'PR 详情读取失败' })
       }
     },
   }), 'pr-assistant: pull request detail route')
@@ -383,13 +415,14 @@ export function apply(ctx: Context, config: Config = {}): void {
     async handler(request, response) {
       if (request.method !== 'GET') return sendJson(response, 405, { error: 'Method not allowed' })
       const url = new URL(request.url ?? COMMIT_ROUTE, 'http://localhost')
-      const path = url.searchParams.get('path')?.trim()
+      const requestedPath = url.searchParams.get('path')?.trim()
       const sha = url.searchParams.get('sha')?.trim()
-      if (!path || !sha || !/^[a-f0-9]{7,64}$/iu.test(sha)) return sendJson(response, 400, { error: '无效的提交详情请求' })
+      if (!requestedPath || !sha || !/^[a-f0-9]{7,64}$/iu.test(sha)) return sendJson(response, 400, { error: '无效的提交详情请求' })
       try {
+        const path = await validateRepositoryPath(requestedPath, config)
         sendJson(response, 200, await loadCommit(path, sha, config))
       } catch (error) {
-        sendJson(response, 502, { error: error instanceof Error ? error.message : '提交详情读取失败' })
+        sendJson(response, error instanceof ClientInputError ? 400 : 502, { error: error instanceof Error ? error.message : '提交详情读取失败' })
       }
     },
   }), 'pr-assistant: commit detail route')

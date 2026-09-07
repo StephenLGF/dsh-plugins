@@ -5,6 +5,9 @@ interface Config {
     iql?: string;
     tomatoOrigin?: string;
     tomatoTenant?: string;
+    cacheTtlMs?: number;
+    maxItems?: number;
+    excludedStatuses?: string[];
 }
 export declare const name = "tomato-board";
 export declare const inject: string[];

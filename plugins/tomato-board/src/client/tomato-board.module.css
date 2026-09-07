@@ -287,6 +287,7 @@
   color: var(--dsw-alias-state-error-primary);
   background: var(--dsw-alias-state-error-secondary);
 }
+.notice { margin:0; padding:8px 20px; color:var(--dsw-alias-label-secondary); font-size:11px; }
 
 .board {
   flex: 1;

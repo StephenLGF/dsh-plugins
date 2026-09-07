@@ -211,6 +211,21 @@ async function inspectWorkspace(workspace: WorkspaceView): Promise<RepositoryRes
   }
 }
 
+async function inspectWorkspaces(workspaces: readonly WorkspaceView[], concurrency = 4) {
+  const results = new Array<RepositoryResult>(workspaces.length)
+  let cursor = 0
+  await Promise.all(Array.from({ length: Math.min(concurrency, workspaces.length) }, async () => {
+    while (cursor < workspaces.length) {
+      const index = cursor
+      cursor += 1
+      const workspace = workspaces[index]
+      if (!workspace) break
+      results[index] = await inspectWorkspace(workspace)
+    }
+  }))
+  return results
+}
+
 function SidebarAction({ wide, openWorkbench }: { wide: boolean; openWorkbench: () => void }) {
   return (
     <button className={css.sidebarAction} type="button" title="PR 助手" onClick={openWorkbench}>
@@ -488,6 +503,7 @@ function AiReviewDialog({
 
 function PrAssistantPanel({ ctx, close }: { ctx: Context; close: () => void }) {
   const panelRef = useRef<HTMLElement>(null)
+  const refreshGeneration = useRef(0)
   const [results, setResults] = useState<RepositoryResult[]>([])
   const [loading, setLoading] = useState(false)
   const [query, setQuery] = useState('')
@@ -507,10 +523,14 @@ function PrAssistantPanel({ ctx, close }: { ctx: Context; close: () => void }) {
   )
 
   async function refresh() {
+    const generation = ++refreshGeneration.current
     setLoading(true)
-    const next = await Promise.all(workspaces.items.map(inspectWorkspace))
-    setResults(next)
-    setLoading(false)
+    try {
+      const next = await inspectWorkspaces(workspaces.items)
+      if (generation === refreshGeneration.current) setResults(next)
+    } finally {
+      if (generation === refreshGeneration.current) setLoading(false)
+    }
   }
 
   useEffect(() => { void refresh() }, [workspaces.items])

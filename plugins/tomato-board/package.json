@@ -1,6 +1,6 @@
 {
   "name": "@stephen1620/dsh-tomato-board",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Gitee Team/Tomato workboard and native conversation launcher for DeepSeek Harness",
   "license": "MIT",
   "repository": {
@@ -61,7 +61,7 @@
   },
   "scripts": {
     "bundle": "tsdown",
-    "prepack": "npm run bundle"
+    "prepack": "node ../../scripts/verify-package.mjs ."
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "*",

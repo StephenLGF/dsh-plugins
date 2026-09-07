@@ -115,6 +115,9 @@ npx @deepseek-ai/dsh plugin --profile web remove @stephen1620/dsh-tomato-board
 | `iql` | 当前用户负责的 Story、Bug 等 | 工作台查询条件 |
 | `tomatoOrigin` | `https://osc.gitee.work` | 番茄站点地址 |
 | `tomatoTenant` | `xly-poc` | 番茄租户 |
+| `cacheTtlMs` | `15000` | 事项查询缓存时间（毫秒，最大 300000） |
+| `maxItems` | `5000` | 单次最多读取的事项数（最大 20000） |
+| `excludedStatuses` | `测试通过` 等 | 不在工作台展示的状态列表 |
 
 如需覆盖配置，可在 Harness 的用户 patch 中对 `tomato-board` 节点进行修改。最终生效配置可用下面的命令检查：
 
@@ -163,6 +166,8 @@ git push origin main --follow-tags
 npm login
 pnpm publish --access public
 ```
+
+`prepack` 会检查 `lib` 是否完整且客户端产物是否与当前源码一致，不会在独立仓库中重新执行依赖 Harness workspace 的构建。
 
 作用域包首次发布必须使用 `--access public`。发布前应确认 npm 账号拥有 `@stephenlgf` scope；如果没有，需要改用自己可发布的 scope，并同步修改包名、README 安装命令和 Harness 卸载命令。
 

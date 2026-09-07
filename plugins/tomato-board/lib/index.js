@@ -14,6 +14,8 @@ const PRIORITY_NAMES = new Map([
 	["1a3e1092-7d70-42ee-ad38-0e8d953c4c23", "P3"],
 	["faae52da-28c8-46fc-96dd-db9cdb28b557", "P4"]
 ]);
+let itemsCache = null;
+let itemsInFlight = null;
 function firstText(value) {
 	if (typeof value === "string") return value.trim();
 	if (Array.isArray(value)) return value.map(firstText).find(Boolean) ?? "";
@@ -171,7 +173,9 @@ async function loadItems(config) {
 	const iql = config.iql || "负责人 = currentUser() and 所属空间 in ['Gitee-Team', 'Gitee-Test'] and 类型 in ['Story', 'EnablerStory', 'Bug', '测试缺陷']";
 	const rawItems = [];
 	let page = 1;
-	while (rawItems.length < 5e3) {
+	let truncated = false;
+	const maxItems = Math.max(1, Math.min(config.maxItems ?? 5e3, 2e4));
+	while (rawItems.length < maxItems) {
 		const result = await execFileAsync(executable, [
 			"team",
 			"item",
@@ -197,19 +201,70 @@ async function loadItems(config) {
 		rawItems.push(...pageItems);
 		const record = payload && typeof payload === "object" ? payload : {};
 		const total = Number(record.count ?? record.total ?? record.data?.count);
-		if (!(record.hasNext === true || record.hasMore === true || Number.isFinite(total) && rawItems.length < total || !Number.isFinite(total) && pageItems.length === 50) || pageItems.length === 0) break;
+		const hasMore = record.hasNext === true || record.hasMore === true || Number.isFinite(total) && rawItems.length < total || !Number.isFinite(total) && pageItems.length === 50;
+		if (rawItems.length >= maxItems && hasMore) {
+			truncated = true;
+			break;
+		}
+		if (!hasMore || pageItems.length === 0) break;
 		page += 1;
 	}
-	const excludedStatuses = new Set([
+	const excludedStatuses = new Set(config.excludedStatuses ?? [
 		"测试通过",
 		"测试完成",
 		"不修复",
 		"已取消"
 	]);
-	return rawItems.map(normalizeItem).filter((item) => item.itemKey && item.title && item.status && !excludedStatuses.has(item.status)).map((item) => ({
-		...item,
-		tomatoUrl: tomatoItemUrl(config, item.itemKey)
-	}));
+	return {
+		items: rawItems.slice(0, maxItems).map(normalizeItem).filter((item) => item.itemKey && item.title && item.status && !excludedStatuses.has(item.status)).map((item) => ({
+			...item,
+			tomatoUrl: tomatoItemUrl(config, item.itemKey)
+		})),
+		truncated
+	};
+}
+function loadItemsCached(config) {
+	const ttl = Math.max(0, Math.min(config.cacheTtlMs ?? 15e3, 3e5));
+	const key = JSON.stringify([
+		cliSettings(config),
+		config.iql,
+		config.maxItems,
+		config.excludedStatuses,
+		config.tomatoOrigin,
+		config.tomatoTenant
+	]);
+	if (itemsCache?.key === key && itemsCache.expiresAt > Date.now()) return Promise.resolve(itemsCache.value);
+	if (itemsInFlight?.key === key) return itemsInFlight.promise;
+	const promise = loadItems(config).then((value) => {
+		itemsCache = {
+			key,
+			expiresAt: Date.now() + ttl,
+			value
+		};
+		return value;
+	}).finally(() => {
+		if (itemsInFlight?.promise === promise) itemsInFlight = null;
+	});
+	itemsInFlight = {
+		key,
+		promise
+	};
+	return promise;
+}
+function isCrossSite(request) {
+	const header = (name) => {
+		const value = request.headers?.[name] ?? request.headers?.[name.toLowerCase()];
+		return Array.isArray(value) ? value[0] : value;
+	};
+	if (header("sec-fetch-site") === "cross-site") return true;
+	const origin = header("origin");
+	const host = header("host");
+	if (!origin || !host) return false;
+	try {
+		return new URL(origin).host !== host;
+	} catch {
+		return true;
+	}
 }
 function sendJson(response, status, body) {
 	response.statusCode = status;
@@ -241,7 +296,7 @@ function apply(ctx, config = {}) {
 				return;
 			}
 			try {
-				sendJson(response, 200, { items: await loadItems(config) });
+				sendJson(response, 200, await loadItemsCached(config));
 			} catch (error) {
 				sendJson(response, 502, { error: error instanceof Error ? error.message : "番茄事项读取失败" });
 			}
@@ -298,6 +353,10 @@ function apply(ctx, config = {}) {
 		async handler(request, response) {
 			if (request.method !== "POST") {
 				sendJson(response, 405, { error: "Method not allowed" });
+				return;
+			}
+			if (isCrossSite(request)) {
+				sendJson(response, 403, { error: "拒绝跨站状态流转请求" });
 				return;
 			}
 			const url = new URL(request.url ?? TRANSITION_ROUTE, "http://localhost");

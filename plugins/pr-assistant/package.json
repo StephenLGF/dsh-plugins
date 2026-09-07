@@ -1,6 +1,6 @@
 {
   "name": "@stephen1620/dsh-pr-assistant",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Pull request overview for DeepSeek Harness workspaces",
   "license": "MIT",
   "repository": {
@@ -36,7 +36,7 @@
       "platform": "web"
     }
   },
-  "scripts": { "bundle": "tsdown", "prepack": "npm run bundle" },
+  "scripts": { "bundle": "tsdown", "prepack": "node ../../scripts/verify-package.mjs ." },
   "peerDependencies": {
     "@deepseek-ai/cordis": "*",
     "@deepseek-ai/dsh-api-session-controller": "*",

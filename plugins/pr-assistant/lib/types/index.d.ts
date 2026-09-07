@@ -3,6 +3,7 @@ interface Config {
     executable?: string;
     profile?: string;
     githubToken?: string;
+    allowedRoots?: string[];
 }
 export declare const name = "pr-assistant";
 export declare const inject: string[];
