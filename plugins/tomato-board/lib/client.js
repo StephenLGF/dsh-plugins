@@ -18,7 +18,7 @@ window.__ModuleLoader__.load({
 		}
 		//#endregion
 		//#region \0dsh-css:/Users/gengfeng/deepseek-harness/packages/client/tomato-board/src/client/tomato-board.module.css.mjs
-		const css$1 = ".Y6kksa_sidebarAction{width:100%;min-height:36px;color:var(--dsw-alias-label-primary);cursor:pointer;font:inherit;white-space:nowrap;transition:background var(--ds-transition-duration-fast) var(--ds-ease-in-out), border-color var(--ds-transition-duration-fast) var(--ds-ease-in-out);background:0 0;border:0;border-radius:10px;align-items:center;gap:9px;margin:0;padding:0 10px;display:flex}.Y6kksa_sidebarAction:hover{background:var(--dsw-alias-interactive-bg-hover)}.Y6kksa_topbarAction{border:1px solid var(--dsw-alias-border-l2);min-height:28px;color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-base);cursor:pointer;font:inherit;white-space:nowrap;border-radius:8px;align-items:center;gap:7px;padding:4px 9px;font-size:12px;font-weight:600;display:inline-flex}.Y6kksa_topbarAction:hover{border-color:color-mix(in srgb, var(--dsw-alias-state-error-primary) 45%, var(--dsw-alias-border-l2));background:var(--dsw-alias-interactive-bg-hover)}.Y6kksa_topbarAction:focus-visible{outline:2px solid var(--dsw-alias-state-error-primary);outline-offset:2px}.Y6kksa_topbarAction .Y6kksa_tomatoIcon{border-radius:5px;width:16px;height:16px;font-size:10px}.Y6kksa_tomatoIcon{width:18px;height:18px;color:var(--dsw-alias-label-primary-inverted);background:var(--dsw-alias-state-error-primary);border-radius:6px;flex:none;place-items:center;font-size:11px;font-weight:750;display:inline-grid}.Y6kksa_transitionTrigger{align-items:center;gap:6px;display:inline-flex}.Y6kksa_transitionCaption{color:var(--dsw-alias-label-secondary);font-size:12px}.Y6kksa_transitionTrigger strong{color:var(--dsw-alias-label-primary);font-size:12px;font-weight:650}.Y6kksa_transitionDivider{background:var(--dsw-alias-border-l2);width:1px;height:14px;margin:0 2px}.Y6kksa_transitionAction{color:var(--dsw-alias-state-business-primary);font-size:12px;font-weight:650}.Y6kksa_transitionChevron{color:var(--dsw-alias-state-business-primary);transition:transform var(--ds-transition-duration-fast) var(--ds-ease-in-out)}.Y6kksa_transitionTrigger[aria-expanded=true] .Y6kksa_transitionChevron{transform:rotate(180deg)}.Y6kksa_workbench{min-width:0;height:100%;min-height:0;color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-base);font-family:var(--dsw-font-family);flex-direction:column;flex:1;display:flex;position:relative}.Y6kksa_headerLead{align-items:center;gap:28px;min-width:0;display:flex}.Y6kksa_pageTabs{align-self:stretch;align-items:flex-end;gap:22px;display:flex}.Y6kksa_pageTabs button{height:100%;color:var(--dsw-alias-label-secondary);cursor:pointer;font:inherit;background:0 0;border:0;padding:0 2px;font-size:13px;font-weight:600;position:relative}.Y6kksa_pageTabs button:hover,.Y6kksa_pageTabs button[aria-current=page]{color:var(--dsw-alias-label-primary)}.Y6kksa_pageTabs button[aria-current=page]:after{content:\"\";background:var(--dsw-alias-state-error-primary);border-radius:99px 99px 0 0;height:3px;position:absolute;bottom:-9px;left:0;right:0}.Y6kksa_pageTabs button:focus-visible{outline:2px solid var(--dsw-alias-state-error-primary);outline-offset:3px}.Y6kksa_pageContent{flex-direction:column;flex:1;min-width:0;min-height:0;display:flex;overflow:hidden}.Y6kksa_createDialog{width:min(480px,100%)}.Y6kksa_dialogBody{flex-direction:column;gap:12px;display:flex}.Y6kksa_dialogBody>span{color:var(--dsw-alias-state-error-primary);font-size:12px;font-weight:700}.Y6kksa_dialogBody code{color:var(--dsw-alias-label-secondary);overflow-wrap:anywhere;font-size:13px}.Y6kksa_workspaceTrigger{justify-content:space-between;width:100%;display:flex}.Y6kksa_header{z-index:20;border-bottom:1px solid color-mix(in srgb, var(--dsw-alias-border-l2) 72%, transparent);background:color-mix(in srgb, var(--dsw-alias-bg-layer-1) 72%, transparent);backdrop-filter:blur(16px);justify-content:space-between;align-items:center;min-height:52px;padding:8px 16px;display:flex;position:relative}.Y6kksa_header h1{margin:0;font-size:16px;line-height:22px}.Y6kksa_header p{color:var(--dsw-alias-label-secondary);margin:1px 0 0;font-size:12px;line-height:16px}.Y6kksa_actions{align-items:center;gap:8px;display:flex}.Y6kksa_actions button{border:1px solid var(--dsw-alias-border-l2);min-height:34px;color:var(--dsw-alias-label-primary);background:var(--dsw-alias-button-elevated-fill);cursor:pointer;transition:background var(--ds-transition-duration-fast) var(--ds-ease-in-out), border-color var(--ds-transition-duration-fast) var(--ds-ease-in-out);border-radius:10px;padding:0 14px}.Y6kksa_actions button:hover{border-color:var(--dsw-alias-border-l3);background:var(--dsw-alias-button-floating-hover)}.Y6kksa_actions button:disabled{cursor:wait;opacity:.55}.Y6kksa_actions .Y6kksa_headerIconButton{border-radius:8px;width:34px;min-width:34px;height:34px;min-height:34px;padding:0}.Y6kksa_searchField{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);border-radius:10px;align-items:center;gap:6px;width:220px;min-height:34px;padding:0 8px;display:flex}.Y6kksa_searchField input{min-width:0;color:inherit;font:inherit;background:0 0;border:0;outline:0;flex:1}.Y6kksa_searchField button{border:0;min-height:24px;padding:0 5px}.Y6kksa_filterMenu{position:relative}.Y6kksa_filterMenu summary{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);cursor:pointer;border-radius:10px;place-items:center;width:34px;height:34px;list-style:none;display:grid;position:relative}.Y6kksa_filterMenu summary::-webkit-details-marker{display:none}.Y6kksa_filterMenu summary i{background:var(--dsw-alias-state-error-primary);border-radius:50%;width:5px;height:5px;position:absolute;top:5px;right:5px}.Y6kksa_filterPopover{z-index:30;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-2);width:min(760px,100vw - 320px);box-shadow:var(--dsw-shadow-lv3);border-radius:16px;gap:12px;padding:14px;display:grid;position:absolute;top:calc(100% + 8px);right:0}.Y6kksa_assigneeFilter{align-items:flex-start;gap:12px;display:flex}.Y6kksa_assigneeFilter>span{width:36px;color:var(--dsw-alias-label-secondary);padding-top:8px;font-size:13px}.Y6kksa_assigneePicker{min-width:260px;position:relative}.Y6kksa_assigneeFilter .Y6kksa_assigneeTrigger{justify-content:space-between;align-items:center;gap:12px;width:100%;height:34px;padding:0 10px;display:flex}.Y6kksa_assigneeTrigger>span{text-overflow:ellipsis;white-space:nowrap;overflow:hidden}.Y6kksa_assigneeDropdown{z-index:40;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);width:320px;box-shadow:var(--dsw-shadow-lv3);border-radius:10px;padding:8px;position:absolute;top:calc(100% + 5px);left:0}.Y6kksa_assigneeDropdown>input{border:1px solid var(--dsw-alias-border-l2);width:100%;height:32px;color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-base);font:inherit;border-radius:7px;outline:0;padding:0 9px}.Y6kksa_assigneeDropdown>input:focus{border-color:var(--dsw-alias-state-business-primary)}.Y6kksa_assigneeDropdown>[role=listbox]{max-height:260px;margin-top:7px;overflow:auto}.Y6kksa_assigneeDropdown [role=option]{width:100%;min-height:38px;color:var(--dsw-alias-label-primary);text-align:left;cursor:pointer;background:0 0;border:0;border-radius:7px;flex-direction:column;justify-content:center;align-items:flex-start;gap:2px;padding:6px 9px;display:flex}.Y6kksa_assigneeDropdown [role=option]:hover,.Y6kksa_assigneeDropdown [role=option][aria-selected=true]{background:var(--dsw-alias-interactive-bg-hover)}.Y6kksa_assigneeDropdown strong{font-size:12px;font-weight:550}.Y6kksa_assigneeDropdown small{color:var(--dsw-alias-label-secondary);font-size:10px}.Y6kksa_assigneeDropdown p{color:var(--dsw-alias-label-secondary);text-align:center;margin:0;padding:18px 8px;font-size:11px}.Y6kksa_filterRow{align-items:flex-start;gap:12px;display:flex}.Y6kksa_filterRow>span{width:36px;color:var(--dsw-alias-label-secondary);padding-top:7px;font-size:13px}.Y6kksa_filterRow>div{flex-wrap:wrap;flex:1;gap:7px;display:flex}.Y6kksa_filterRow button{min-height:30px;color:var(--dsw-alias-label-secondary);padding:3px 11px}.Y6kksa_filterRow .Y6kksa_selectedFilter{border-color:var(--dsw-alias-state-business-primary);color:var(--dsw-alias-state-business-primary);background:color-mix(in srgb, var(--dsw-alias-state-business-primary) 10%, transparent)}.Y6kksa_error{color:var(--dsw-alias-state-error-primary);background:var(--dsw-alias-state-error-secondary);border-radius:12px;margin:16px 24px 0;padding:12px 14px}.Y6kksa_notice{color:var(--dsw-alias-label-secondary);margin:0;padding:8px 20px;font-size:11px}.Y6kksa_board{z-index:1;flex:1;align-items:flex-start;gap:12px;padding:8px 12px;display:flex;position:relative;overflow:auto}.Y6kksa_lane{border:1px solid var(--dsw-alias-border-l2);background:color-mix(in srgb, var(--dsw-alias-bg-module-platform) 86%, transparent);width:300px;min-width:300px;max-height:100%;transition:transform .16s var(--ds-ease-in-out), opacity .16s var(--ds-ease-in-out), box-shadow .16s var(--ds-ease-in-out);border-radius:16px;flex-direction:column;display:flex}.Y6kksa_laneDragging{opacity:.5;transform:scale(.985)}.Y6kksa_laneDropBefore{box-shadow:-4px 0 0 var(--dsw-alias-state-business-primary);transform:translate(8px)}.Y6kksa_laneDropAfter{box-shadow:4px 0 0 var(--dsw-alias-state-business-primary);transform:translate(-8px)}.Y6kksa_laneHeader{cursor:grab;user-select:none;justify-content:space-between;align-items:center;padding:12px 14px 10px;display:flex}.Y6kksa_laneHeader:active{cursor:grabbing}@media (prefers-reduced-motion:reduce){.Y6kksa_lane{transition:none}}.Y6kksa_laneHeader h2{margin:0;font-size:14px}.Y6kksa_laneHeader span{text-align:center;min-width:22px;color:var(--dsw-alias-label-secondary);background:var(--dsw-alias-bg-overlay);border-radius:999px;padding:2px 6px;font-size:12px}.Y6kksa_cards{padding:0 8px 8px;overflow-y:auto}.Y6kksa_card{border:1px solid var(--dsw-alias-border-l2);min-width:0;max-width:100%;color:inherit;background:color-mix(in srgb, var(--dsw-alias-bg-layer-1) 96%, transparent);box-shadow:var(--dsw-shadow-lv1);text-align:left;transition:background var(--ds-transition-duration-fast) var(--ds-ease-in-out), border-color var(--ds-transition-duration-fast) var(--ds-ease-in-out), box-shadow var(--ds-transition-duration-fast) var(--ds-ease-in-out);cursor:pointer;border-radius:14px;flex-direction:column;gap:7px;margin-top:8px;padding:12px;text-decoration:none;display:flex;overflow:hidden}.Y6kksa_card:hover{border-color:var(--dsw-alias-border-l3);background:var(--dsw-alias-button-floating-hover);box-shadow:var(--dsw-shadow-lv2)}.Y6kksa_cardMuted{opacity:.46;filter:saturate(.2);box-shadow:none}.Y6kksa_cardMuted:hover{opacity:.62}.Y6kksa_card:focus-visible{outline:2px solid var(--dsw-alias-state-business-primary);outline-offset:2px}.Y6kksa_card strong,.Y6kksa_key,.Y6kksa_meta{overflow-wrap:anywhere;word-break:normal;min-width:0}.Y6kksa_cardTopline{justify-content:space-between;align-items:center;gap:8px;min-width:0;display:flex}.Y6kksa_cardButtons{align-items:center;gap:2px;display:inline-flex}.Y6kksa_muteButton,.Y6kksa_tomatoLink{border-radius:8px;flex:none;place-items:center;width:28px;min-width:28px;height:28px;min-height:28px;padding:0;line-height:1;display:inline-grid}.Y6kksa_muteButton{color:var(--dsw-alias-label-tertiary);font-size:9px}.Y6kksa_muteButton[aria-pressed=true]{color:var(--dsw-alias-label-primary)}.Y6kksa_card strong{font-size:14px;font-weight:600;line-height:1.45}.Y6kksa_key{color:var(--dsw-alias-label-secondary);font-size:12px;font-weight:650}.Y6kksa_meta{color:var(--dsw-alias-label-tertiary);font-size:12px}.Y6kksa_empty{color:var(--dsw-alias-label-tertiary);margin:auto}@media (width<=820px){.Y6kksa_headerLead{gap:14px}.Y6kksa_pageTabs{gap:12px}.Y6kksa_pageTabs button{font-size:12px}.Y6kksa_header{align-items:flex-start;gap:10px}.Y6kksa_actions{flex-wrap:wrap;justify-content:flex-end}.Y6kksa_searchField{width:170px}}";
+		const css$1 = ".Y6kksa_sidebarAction{width:100%;min-height:36px;color:var(--dsw-alias-label-primary);cursor:pointer;font:inherit;white-space:nowrap;transition:background var(--ds-transition-duration-fast) var(--ds-ease-in-out), border-color var(--ds-transition-duration-fast) var(--ds-ease-in-out);background:0 0;border:0;border-radius:10px;align-items:center;gap:9px;margin:0;padding:0 10px;display:flex}.Y6kksa_sidebarAction:hover{background:var(--dsw-alias-interactive-bg-hover)}.Y6kksa_topbarAction{border:1px solid var(--dsw-alias-border-l2);min-height:28px;color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-base);cursor:pointer;font:inherit;white-space:nowrap;border-radius:8px;align-items:center;gap:7px;padding:4px 9px;font-size:12px;font-weight:600;display:inline-flex}.Y6kksa_topbarAction:hover{border-color:color-mix(in srgb, var(--dsw-alias-state-error-primary) 45%, var(--dsw-alias-border-l2));background:var(--dsw-alias-interactive-bg-hover)}.Y6kksa_topbarAction:focus-visible{outline:2px solid var(--dsw-alias-state-error-primary);outline-offset:2px}.Y6kksa_topbarAction .Y6kksa_tomatoIcon{border-radius:5px;width:16px;height:16px;font-size:10px}.Y6kksa_tomatoIcon{width:18px;height:18px;color:var(--dsw-alias-label-primary-inverted);background:var(--dsw-alias-state-error-primary);border-radius:6px;flex:none;place-items:center;font-size:11px;font-weight:750;display:inline-grid}.Y6kksa_transitionTrigger{align-items:center;gap:6px;display:inline-flex}.Y6kksa_transitionCaption{color:var(--dsw-alias-label-secondary);font-size:12px}.Y6kksa_transitionTrigger strong{color:var(--dsw-alias-label-primary);font-size:12px;font-weight:650}.Y6kksa_transitionDivider{background:var(--dsw-alias-border-l2);width:1px;height:14px;margin:0 2px}.Y6kksa_transitionAction{color:var(--dsw-alias-state-business-primary);font-size:12px;font-weight:650}.Y6kksa_transitionChevron{color:var(--dsw-alias-state-business-primary);transition:transform var(--ds-transition-duration-fast) var(--ds-ease-in-out)}.Y6kksa_transitionTrigger[aria-expanded=true] .Y6kksa_transitionChevron{transform:rotate(180deg)}.Y6kksa_workbench{min-width:0;height:100%;min-height:0;color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-base);font-family:var(--dsw-font-family);flex-direction:column;flex:1;display:flex;position:relative}.Y6kksa_createDialog{width:min(480px,100%)}.Y6kksa_dialogBody{flex-direction:column;gap:12px;display:flex}.Y6kksa_dialogBody>span{color:var(--dsw-alias-state-error-primary);font-size:12px;font-weight:700}.Y6kksa_dialogBody code{color:var(--dsw-alias-label-secondary);overflow-wrap:anywhere;font-size:13px}.Y6kksa_workspaceTrigger{justify-content:space-between;width:100%;display:flex}.Y6kksa_header{z-index:20;border-bottom:1px solid color-mix(in srgb, var(--dsw-alias-border-l2) 72%, transparent);background:color-mix(in srgb, var(--dsw-alias-bg-layer-1) 72%, transparent);backdrop-filter:blur(16px);justify-content:space-between;align-items:center;min-height:52px;padding:8px 16px;display:flex;position:relative}.Y6kksa_header h1{margin:0;font-size:16px;line-height:22px}.Y6kksa_header p{color:var(--dsw-alias-label-secondary);margin:1px 0 0;font-size:12px;line-height:16px}.Y6kksa_actions{align-items:center;gap:8px;display:flex}.Y6kksa_actions button{border:1px solid var(--dsw-alias-border-l2);min-height:34px;color:var(--dsw-alias-label-primary);background:var(--dsw-alias-button-elevated-fill);cursor:pointer;transition:background var(--ds-transition-duration-fast) var(--ds-ease-in-out), border-color var(--ds-transition-duration-fast) var(--ds-ease-in-out);border-radius:10px;padding:0 14px}.Y6kksa_actions button:hover{border-color:var(--dsw-alias-border-l3);background:var(--dsw-alias-button-floating-hover)}.Y6kksa_actions button:disabled{cursor:wait;opacity:.55}.Y6kksa_actions .Y6kksa_headerIconButton{border-radius:8px;width:34px;min-width:34px;height:34px;min-height:34px;padding:0}.Y6kksa_searchField{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);border-radius:10px;align-items:center;gap:6px;width:220px;min-height:34px;padding:0 8px;display:flex}.Y6kksa_searchField input{min-width:0;color:inherit;font:inherit;background:0 0;border:0;outline:0;flex:1}.Y6kksa_searchField button{border:0;min-height:24px;padding:0 5px}.Y6kksa_filterMenu{position:relative}.Y6kksa_filterMenu summary{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);cursor:pointer;border-radius:10px;place-items:center;width:34px;height:34px;list-style:none;display:grid;position:relative}.Y6kksa_filterMenu summary::-webkit-details-marker{display:none}.Y6kksa_filterMenu summary i{background:var(--dsw-alias-state-error-primary);border-radius:50%;width:5px;height:5px;position:absolute;top:5px;right:5px}.Y6kksa_filterPopover{z-index:30;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-2);width:min(760px,100vw - 320px);box-shadow:var(--dsw-shadow-lv3);border-radius:16px;gap:12px;padding:14px;display:grid;position:absolute;top:calc(100% + 8px);right:0}.Y6kksa_assigneeFilter{align-items:flex-start;gap:12px;display:flex}.Y6kksa_assigneeFilter>span{width:36px;color:var(--dsw-alias-label-secondary);padding-top:8px;font-size:13px}.Y6kksa_assigneePicker{min-width:260px;position:relative}.Y6kksa_assigneeFilter .Y6kksa_assigneeTrigger{justify-content:space-between;align-items:center;gap:12px;width:100%;height:34px;padding:0 10px;display:flex}.Y6kksa_assigneeTrigger>span{text-overflow:ellipsis;white-space:nowrap;overflow:hidden}.Y6kksa_assigneeDropdown{z-index:40;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);width:320px;box-shadow:var(--dsw-shadow-lv3);border-radius:10px;padding:8px;position:absolute;top:calc(100% + 5px);left:0}.Y6kksa_assigneeDropdown>input{border:1px solid var(--dsw-alias-border-l2);width:100%;height:32px;color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-base);font:inherit;border-radius:7px;outline:0;padding:0 9px}.Y6kksa_assigneeDropdown>input:focus{border-color:var(--dsw-alias-state-business-primary)}.Y6kksa_assigneeDropdown>[role=listbox]{max-height:260px;margin-top:7px;overflow:auto}.Y6kksa_assigneeDropdown [role=option]{width:100%;min-height:38px;color:var(--dsw-alias-label-primary);text-align:left;cursor:pointer;background:0 0;border:0;border-radius:7px;flex-direction:column;justify-content:center;align-items:flex-start;gap:2px;padding:6px 9px;display:flex}.Y6kksa_assigneeDropdown [role=option]:hover,.Y6kksa_assigneeDropdown [role=option][aria-selected=true]{background:var(--dsw-alias-interactive-bg-hover)}.Y6kksa_assigneeDropdown strong{font-size:12px;font-weight:550}.Y6kksa_assigneeDropdown small{color:var(--dsw-alias-label-secondary);font-size:10px}.Y6kksa_assigneeDropdown p{color:var(--dsw-alias-label-secondary);text-align:center;margin:0;padding:18px 8px;font-size:11px}.Y6kksa_filterRow{align-items:flex-start;gap:12px;display:flex}.Y6kksa_filterRow>span{width:36px;color:var(--dsw-alias-label-secondary);padding-top:7px;font-size:13px}.Y6kksa_filterRow>div{flex-wrap:wrap;flex:1;gap:7px;display:flex}.Y6kksa_filterRow button{min-height:30px;color:var(--dsw-alias-label-secondary);padding:3px 11px}.Y6kksa_filterRow .Y6kksa_selectedFilter{border-color:var(--dsw-alias-state-business-primary);color:var(--dsw-alias-state-business-primary);background:color-mix(in srgb, var(--dsw-alias-state-business-primary) 10%, transparent)}.Y6kksa_error{color:var(--dsw-alias-state-error-primary);background:var(--dsw-alias-state-error-secondary);border-radius:12px;margin:16px 24px 0;padding:12px 14px}.Y6kksa_notice{color:var(--dsw-alias-label-secondary);margin:0;padding:8px 20px;font-size:11px}.Y6kksa_board{z-index:1;flex:1;align-items:flex-start;gap:12px;padding:8px 12px;display:flex;position:relative;overflow:auto}.Y6kksa_lane{border:1px solid var(--dsw-alias-border-l2);background:color-mix(in srgb, var(--dsw-alias-bg-module-platform) 86%, transparent);width:300px;min-width:300px;max-height:100%;transition:transform .16s var(--ds-ease-in-out), opacity .16s var(--ds-ease-in-out), box-shadow .16s var(--ds-ease-in-out);border-radius:16px;flex-direction:column;display:flex}.Y6kksa_laneDragging{opacity:.5;transform:scale(.985)}.Y6kksa_laneDropBefore{box-shadow:-4px 0 0 var(--dsw-alias-state-business-primary);transform:translate(8px)}.Y6kksa_laneDropAfter{box-shadow:4px 0 0 var(--dsw-alias-state-business-primary);transform:translate(-8px)}.Y6kksa_laneHeader{cursor:grab;user-select:none;justify-content:space-between;align-items:center;padding:12px 14px 10px;display:flex}.Y6kksa_laneHeader:active{cursor:grabbing}@media (prefers-reduced-motion:reduce){.Y6kksa_lane{transition:none}}.Y6kksa_laneHeader h2{margin:0;font-size:14px}.Y6kksa_laneHeader span{text-align:center;min-width:22px;color:var(--dsw-alias-label-secondary);background:var(--dsw-alias-bg-overlay);border-radius:999px;padding:2px 6px;font-size:12px}.Y6kksa_cards{padding:0 8px 8px;overflow-y:auto}.Y6kksa_card{border:1px solid var(--dsw-alias-border-l2);min-width:0;max-width:100%;color:inherit;background:color-mix(in srgb, var(--dsw-alias-bg-layer-1) 96%, transparent);box-shadow:var(--dsw-shadow-lv1);text-align:left;transition:background var(--ds-transition-duration-fast) var(--ds-ease-in-out), border-color var(--ds-transition-duration-fast) var(--ds-ease-in-out), box-shadow var(--ds-transition-duration-fast) var(--ds-ease-in-out);cursor:pointer;border-radius:14px;flex-direction:column;gap:7px;margin-top:8px;padding:12px;text-decoration:none;display:flex;overflow:hidden}.Y6kksa_card:hover{border-color:var(--dsw-alias-border-l3);background:var(--dsw-alias-button-floating-hover);box-shadow:var(--dsw-shadow-lv2)}.Y6kksa_cardMuted{opacity:.46;filter:saturate(.2);box-shadow:none}.Y6kksa_cardMuted:hover{opacity:.62}.Y6kksa_card:focus-visible{outline:2px solid var(--dsw-alias-state-business-primary);outline-offset:2px}.Y6kksa_card strong,.Y6kksa_key,.Y6kksa_meta{overflow-wrap:anywhere;word-break:normal;min-width:0}.Y6kksa_cardTopline{justify-content:space-between;align-items:center;gap:8px;min-width:0;display:flex}.Y6kksa_cardButtons{align-items:center;gap:2px;display:inline-flex}.Y6kksa_muteButton,.Y6kksa_tomatoLink{border-radius:8px;flex:none;place-items:center;width:28px;min-width:28px;height:28px;min-height:28px;padding:0;line-height:1;display:inline-grid}.Y6kksa_muteButton{color:var(--dsw-alias-label-tertiary);font-size:9px}.Y6kksa_muteButton[aria-pressed=true]{color:var(--dsw-alias-label-primary)}.Y6kksa_card strong{font-size:14px;font-weight:600;line-height:1.45}.Y6kksa_key{color:var(--dsw-alias-label-secondary);font-size:12px;font-weight:650}.Y6kksa_meta{color:var(--dsw-alias-label-tertiary);font-size:12px}.Y6kksa_empty{color:var(--dsw-alias-label-tertiary);margin:auto}@media (width<=820px){.Y6kksa_header{align-items:flex-start;gap:10px}.Y6kksa_actions{flex-wrap:wrap;justify-content:flex-end}.Y6kksa_searchField{width:170px}}";
 		const tagId$1 = "@stephen1620/dsh-tomato-board/tomato-board.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId$1) + "]") === null) {
 			const tag = document.createElement("style");
@@ -48,7 +48,6 @@ window.__ModuleLoader__.load({
 			"filterRow": "Y6kksa_filterRow",
 			"header": "Y6kksa_header",
 			"headerIconButton": "Y6kksa_headerIconButton",
-			"headerLead": "Y6kksa_headerLead",
 			"key": "Y6kksa_key",
 			"lane": "Y6kksa_lane",
 			"laneDragging": "Y6kksa_laneDragging",
@@ -58,8 +57,6 @@ window.__ModuleLoader__.load({
 			"meta": "Y6kksa_meta",
 			"muteButton": "Y6kksa_muteButton",
 			"notice": "Y6kksa_notice",
-			"pageContent": "Y6kksa_pageContent",
-			"pageTabs": "Y6kksa_pageTabs",
 			"searchField": "Y6kksa_searchField",
 			"selectedFilter": "Y6kksa_selectedFilter",
 			"sidebarAction": "Y6kksa_sidebarAction",
@@ -76,7 +73,7 @@ window.__ModuleLoader__.load({
 		};
 		//#endregion
 		//#region \0dsh-css:/Users/gengfeng/deepseek-harness/packages/client/tomato-board/src/client/story-points.module.css.mjs
-		const css = ".LfvjxG_page{min-height:0;color:var(--dsw-alias-label-primary,#292d32);flex:1;padding:14px 18px 18px;overflow:auto}.LfvjxG_page *{box-sizing:border-box}.LfvjxG_page button,.LfvjxG_page select,.LfvjxG_page input{font:inherit;color:inherit;border:1px solid var(--dsw-alias-border-l2,#dedfdf);background:var(--dsw-alias-bg-base,white);border-radius:8px;min-width:0;padding:8px 12px}.LfvjxG_page button{cursor:pointer;white-space:nowrap}.LfvjxG_page button:hover{background:var(--dsw-alias-interactive-bg-hover,#f4f4f2)}.LfvjxG_page button:disabled{opacity:.5;cursor:wait}.LfvjxG_page :focus-visible{outline-offset:3px;outline:2px solid #458e88}.LfvjxG_page h2,.LfvjxG_page h3,.LfvjxG_page h4,.LfvjxG_page p{margin:0}.LfvjxG_toolbar,.LfvjxG_controls,.LfvjxG_panelHeader,.LfvjxG_listHeading,.LfvjxG_rankLabel{justify-content:space-between;align-items:center;gap:12px;display:flex}.LfvjxG_toolbar p,.LfvjxG_summary p,.LfvjxG_caption,.LfvjxG_footnote,.LfvjxG_itemText small,.LfvjxG_rankRow small,.LfvjxG_listHeading span{color:var(--dsw-alias-label-secondary,#797c80);font-size:12px;line-height:1.5}.LfvjxG_eyebrow{letter-spacing:1.6px;color:var(--dsw-alias-label-secondary,#797c80);font-size:10px;font-weight:650}.LfvjxG_headerControls{align-items:center;gap:8px;display:flex}.LfvjxG_headerControls label{color:var(--dsw-alias-label-secondary,#797c80);align-items:center;gap:7px;font-size:12px;display:flex}.LfvjxG_headerControls select,.LfvjxG_headerControls button{border:1px solid var(--dsw-alias-border-l2,#dedfdf);min-width:0;height:34px;color:var(--dsw-alias-label-primary,#292d32);background:var(--dsw-alias-bg-base,white);font:inherit;border-radius:9px;padding:0 10px}.LfvjxG_headerControls select{width:min(320px,34vw)}.LfvjxG_headerControls button{cursor:pointer}.LfvjxG_headerControls button:disabled,.LfvjxG_headerControls select:disabled{opacity:.5;cursor:wait}.LfvjxG_columns{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);align-items:start;gap:14px;display:grid}.LfvjxG_panel{border:1px solid var(--dsw-alias-border-l2,#e4e4df);background:var(--dsw-alias-bg-base,white);border-radius:14px;min-width:0;padding:16px}.LfvjxG_panelHeader{border-bottom:1px solid var(--dsw-alias-border-l2,#e4e4df);padding-bottom:12px}.LfvjxG_panelHeader h3{white-space:nowrap;font-size:16px}.LfvjxG_panelHeader select{max-width:65%;font-size:12px}.LfvjxG_panelHeader button{font-size:12px}.LfvjxG_summary{justify-content:space-between;align-items:center;gap:16px;padding:16px 0;display:flex}.LfvjxG_total{font-variant-numeric:tabular-nums;letter-spacing:-2px;font-size:48px;font-weight:600;line-height:1.15}.LfvjxG_total small{letter-spacing:0;color:var(--dsw-alias-label-secondary,#797c80);font-size:15px}.LfvjxG_pie{background:var(--dsw-alias-border-l2,#e7e7e2);width:136px;height:136px;box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--dsw-alias-border-l2,#ddd) 55%, transparent), 0 14px 36px #00000012;border-radius:50%;flex:0 0 136px;padding:17px;position:relative;transform:rotate(-90deg)}.LfvjxG_pie:after{content:\"\";border:1px solid #458e883d;border-radius:50%;position:absolute;inset:-7px}.LfvjxG_pie>div{z-index:1;background:var(--dsw-alias-bg-base,white);width:100%;height:100%;box-shadow:inset 0 0 0 1px var(--dsw-alias-border-l2,#e7e7e2);border-radius:50%;flex-direction:column;justify-content:center;align-items:center;display:flex;position:relative;transform:rotate(90deg)}.LfvjxG_pie strong{letter-spacing:-1px;font-size:30px;line-height:1}.LfvjxG_pie span{letter-spacing:.08em;color:var(--dsw-alias-label-secondary,#797c80);margin-top:6px;font-size:10px}.LfvjxG_listHeading{padding:12px 0}.LfvjxG_listHeading h4{font-size:13px}.LfvjxG_item{border-top:1px solid var(--dsw-alias-border-l2,#e4e4df);align-items:center;gap:10px;padding:10px 0;display:flex}.LfvjxG_dot{border-radius:3px;flex-shrink:0;width:8px;height:8px}.LfvjxG_itemText{flex:1;min-width:0}.LfvjxG_itemText a{color:inherit;overflow-wrap:anywhere;font-size:13px;line-height:1.6;text-decoration:none}.LfvjxG_itemText a:hover{text-decoration:underline}.LfvjxG_itemText small{font-size:10px;display:block}.LfvjxG_itemPoints{white-space:nowrap;font-variant-numeric:tabular-nums;font-size:12px}.LfvjxG_item button{padding:5px 8px;font-size:11px}.LfvjxG_chips{flex-wrap:wrap;gap:8px;margin:18px 0 10px;display:flex}.LfvjxG_chips>span{background:var(--dsw-alias-interactive-bg-hover,#f2f3f0);border-radius:6px;align-items:center;gap:6px;padding:3px 5px 3px 10px;font-size:12px;display:flex}.LfvjxG_chips button{background:0 0;border:0;padding:1px 5px}.LfvjxG_ranking{gap:16px;margin-top:16px;display:grid}.LfvjxG_rankLabel{gap:10px;margin-bottom:10px;font-size:13px}.LfvjxG_rankLabel span{color:var(--dsw-alias-label-secondary,#999);font-size:11px}.LfvjxG_rankLabel strong{flex:1}.LfvjxG_rankLabel b{font-variant-numeric:tabular-nums}.LfvjxG_track{background:var(--dsw-alias-interactive-bg-hover,#f1f2ee);border-radius:4px;height:12px;overflow:hidden}.LfvjxG_track>div{border-radius:inherit;background:#458e88;height:100%}.LfvjxG_rankRow:first-child .LfvjxG_track>div{background:#d76b50}.LfvjxG_rankRow small{font-size:10px}.LfvjxG_footnote{border-top:1px solid var(--dsw-alias-border-l2,#e4e4df);padding-top:16px;font-size:11px;margin-top:32px!important}.LfvjxG_empty{text-align:center;color:var(--dsw-alias-label-secondary,#797c80);padding:50px 12px;font-size:13px}.LfvjxG_empty h4{margin-bottom:8px}.LfvjxG_emptyIcon{color:#458e88;margin-bottom:15px;font-size:38px;display:block}.LfvjxG_error{color:var(--dsw-alias-state-error-primary,#bd4336);overflow-wrap:anywhere;padding:12px 0;font-size:12px}.LfvjxG_notice{color:var(--dsw-alias-label-secondary,#797c80);padding:10px 0;font-size:12px}.LfvjxG_addPeople{border:1px solid var(--dsw-alias-border-l2,#ddd);border-radius:10px;margin-top:16px;padding:12px}.LfvjxG_addPeople input{width:100%}.LfvjxG_addPeople>div{max-height:210px;margin-top:8px;overflow:auto}.LfvjxG_addPeople button{text-align:left;border:0;gap:8px;width:100%;display:flex}.LfvjxG_addPeople small{opacity:.6;flex:1}.LfvjxG_modalBackdrop{z-index:100;background:#0006;place-items:center;padding:20px;display:grid;position:fixed;inset:0}.LfvjxG_dialog{background:var(--dsw-alias-bg-base,white);border-radius:16px;gap:18px;width:min(440px,100%);padding:26px;display:grid;box-shadow:0 20px 80px #0003}.LfvjxG_dialog p{font-size:13px;line-height:1.6}.LfvjxG_dialog label{gap:8px;font-size:13px;display:grid}.LfvjxG_dialog small{opacity:.65;font-size:12px}.LfvjxG_dialogActions{justify-content:flex-end;gap:10px;display:flex}@media (width<=1000px){.LfvjxG_columns{grid-template-columns:1fr}.LfvjxG_page{padding:20px}}@media (width<=540px){.LfvjxG_page{padding:12px}.LfvjxG_panel{padding:16px}.LfvjxG_controls{width:100%}.LfvjxG_controls label{flex:1;min-width:0}.LfvjxG_controls select{width:100%}.LfvjxG_pie{flex-basis:126px;width:126px;height:126px;padding:20px}.LfvjxG_total{font-size:44px}.LfvjxG_item{gap:7px}.LfvjxG_toolbar h2{font-size:23px}}";
+		const css = ".LfvjxG_page{min-height:0;color:var(--dsw-alias-label-primary,#292d32);flex:1;padding:28px;overflow:auto}.LfvjxG_page *{box-sizing:border-box}.LfvjxG_page button,.LfvjxG_page select,.LfvjxG_page input{font:inherit;color:inherit;border:1px solid var(--dsw-alias-border-l2,#dedfdf);background:var(--dsw-alias-bg-base,white);border-radius:8px;min-width:0;padding:8px 12px}.LfvjxG_page button{cursor:pointer;white-space:nowrap}.LfvjxG_page button:hover{background:var(--dsw-alias-interactive-bg-hover,#f4f4f2)}.LfvjxG_page button:disabled{opacity:.5;cursor:wait}.LfvjxG_page :focus-visible{outline-offset:3px;outline:2px solid #458e88}.LfvjxG_page h2,.LfvjxG_page h3,.LfvjxG_page h4,.LfvjxG_page p{margin:0}.LfvjxG_toolbar,.LfvjxG_controls,.LfvjxG_panelHeader,.LfvjxG_listHeading,.LfvjxG_rankLabel{justify-content:space-between;align-items:center;gap:16px;display:flex}.LfvjxG_toolbar{flex-wrap:wrap;margin-bottom:26px}.LfvjxG_toolbar h2{letter-spacing:-.7px;margin:5px 0;font-size:26px}.LfvjxG_toolbar p,.LfvjxG_summary p,.LfvjxG_caption,.LfvjxG_footnote,.LfvjxG_itemText small,.LfvjxG_rankRow small,.LfvjxG_listHeading span{color:var(--dsw-alias-label-secondary,#797c80);font-size:12px;line-height:1.7}.LfvjxG_eyebrow{letter-spacing:1.6px;color:var(--dsw-alias-label-secondary,#797c80);font-size:10px;font-weight:650}.LfvjxG_controls label{align-items:center;gap:12px;font-size:13px;display:flex}.LfvjxG_controls select{max-width:340px}.LfvjxG_headerIconButton{border-radius:8px;width:34px;min-width:34px;height:34px;min-height:34px;padding:0}.LfvjxG_columns{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);align-items:start;gap:22px;display:grid}.LfvjxG_panel{border:1px solid var(--dsw-alias-border-l2,#e4e4df);background:var(--dsw-alias-bg-base,white);border-radius:16px;min-width:0;padding:22px}.LfvjxG_panelHeader{border-bottom:1px solid var(--dsw-alias-border-l2,#e4e4df);padding-bottom:20px}.LfvjxG_panelHeader h3{white-space:nowrap;font-size:16px}.LfvjxG_panelHeader select{max-width:65%;font-size:12px}.LfvjxG_panelHeader button{font-size:12px}.LfvjxG_summary{justify-content:space-between;align-items:center;gap:20px;padding:30px 0;display:flex}.LfvjxG_total{font-variant-numeric:tabular-nums;letter-spacing:-2px;font-size:58px;font-weight:600;line-height:1.25}.LfvjxG_total small{letter-spacing:0;color:var(--dsw-alias-label-secondary,#797c80);font-size:15px}.LfvjxG_pie{background:var(--dsw-alias-border-l2,#e7e7e2);border-radius:50%;flex:0 0 158px;width:158px;height:158px;padding:25px}.LfvjxG_pie>div{background:var(--dsw-alias-bg-base,white);border-radius:50%;flex-direction:column;justify-content:center;align-items:center;width:100%;height:100%;display:flex}.LfvjxG_pie strong{font-size:26px}.LfvjxG_pie span{color:var(--dsw-alias-label-secondary,#797c80);font-size:11px}.LfvjxG_listHeading{padding:12px 0}.LfvjxG_listHeading h4{font-size:13px}.LfvjxG_item{border-top:1px solid var(--dsw-alias-border-l2,#e4e4df);align-items:center;gap:10px;padding:16px 0;display:flex}.LfvjxG_dot{border-radius:3px;flex-shrink:0;width:8px;height:8px}.LfvjxG_itemText{flex:1;min-width:0}.LfvjxG_itemText a{color:inherit;overflow-wrap:anywhere;font-size:13px;line-height:1.6;text-decoration:none}.LfvjxG_itemText a:hover{text-decoration:underline}.LfvjxG_itemText small{font-size:10px;display:block}.LfvjxG_itemPoints{white-space:nowrap;font-variant-numeric:tabular-nums;font-size:12px}.LfvjxG_item button{padding:5px 8px;font-size:11px}.LfvjxG_chips{flex-wrap:wrap;gap:8px;margin:18px 0 10px;display:flex}.LfvjxG_chips>span{background:var(--dsw-alias-interactive-bg-hover,#f2f3f0);border-radius:6px;align-items:center;gap:6px;padding:3px 5px 3px 10px;font-size:12px;display:flex}.LfvjxG_chips button{background:0 0;border:0;padding:1px 5px}.LfvjxG_ranking{gap:25px;margin-top:24px;display:grid}.LfvjxG_rankLabel{gap:10px;margin-bottom:10px;font-size:13px}.LfvjxG_rankLabel span{color:var(--dsw-alias-label-secondary,#999);font-size:11px}.LfvjxG_rankLabel strong{flex:1}.LfvjxG_rankLabel b{font-variant-numeric:tabular-nums}.LfvjxG_track{background:var(--dsw-alias-interactive-bg-hover,#f1f2ee);border-radius:4px;height:12px;overflow:hidden}.LfvjxG_track>div{border-radius:inherit;background:#458e88;height:100%}.LfvjxG_rankRow:first-child .LfvjxG_track>div{background:#d76b50}.LfvjxG_rankRow small{font-size:10px}.LfvjxG_footnote{border-top:1px solid var(--dsw-alias-border-l2,#e4e4df);padding-top:16px;font-size:11px;margin-top:32px!important}.LfvjxG_empty{text-align:center;color:var(--dsw-alias-label-secondary,#797c80);padding:50px 12px;font-size:13px}.LfvjxG_empty h4{margin-bottom:8px}.LfvjxG_emptyIcon{color:#458e88;margin-bottom:15px;font-size:38px;display:block}.LfvjxG_error{color:var(--dsw-alias-state-error-primary,#bd4336);overflow-wrap:anywhere;padding:12px 0;font-size:12px}.LfvjxG_notice{color:var(--dsw-alias-label-secondary,#797c80);padding:10px 0;font-size:12px}.LfvjxG_addPeople{border:1px solid var(--dsw-alias-border-l2,#ddd);border-radius:10px;margin-top:16px;padding:12px}.LfvjxG_addPeople input{width:100%}.LfvjxG_addPeople>div{max-height:210px;margin-top:8px;overflow:auto}.LfvjxG_addPeople button{text-align:left;border:0;gap:8px;width:100%;display:flex}.LfvjxG_addPeople small{opacity:.6;flex:1}.LfvjxG_modalBackdrop{z-index:100;background:#0006;place-items:center;padding:20px;display:grid;position:fixed;inset:0}.LfvjxG_dialog{background:var(--dsw-alias-bg-base,white);border-radius:16px;gap:18px;width:min(440px,100%);padding:26px;display:grid;box-shadow:0 20px 80px #0003}.LfvjxG_dialog p{font-size:13px;line-height:1.6}.LfvjxG_dialog label{gap:8px;font-size:13px;display:grid}.LfvjxG_dialog small{opacity:.65;font-size:12px}.LfvjxG_dialogActions{justify-content:flex-end;gap:10px;display:flex}@media (width<=1000px){.LfvjxG_columns{grid-template-columns:1fr}.LfvjxG_page{padding:20px}}@media (width<=540px){.LfvjxG_page{padding:12px}.LfvjxG_panel{padding:16px}.LfvjxG_controls{width:100%}.LfvjxG_controls label{flex:1;min-width:0}.LfvjxG_controls select{width:100%}.LfvjxG_pie{flex-basis:126px;width:126px;height:126px;padding:20px}.LfvjxG_total{font-size:44px}.LfvjxG_item{gap:7px}.LfvjxG_toolbar h2{font-size:23px}}";
 		const tagId = "@stephen1620/dsh-tomato-board/story-points.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
@@ -99,7 +96,7 @@ window.__ModuleLoader__.load({
 			"error": "LfvjxG_error",
 			"eyebrow": "LfvjxG_eyebrow",
 			"footnote": "LfvjxG_footnote",
-			"headerControls": "LfvjxG_headerControls",
+			"headerIconButton": "LfvjxG_headerIconButton",
 			"item": "LfvjxG_item",
 			"itemPoints": "LfvjxG_itemPoints",
 			"itemText": "LfvjxG_itemText",
@@ -121,15 +118,6 @@ window.__ModuleLoader__.load({
 		//#endregion
 		//#region src/client/StoryPoints.tsx
 		const TEAM_KEY = "taskboard.tomatoStoryTeam.v1";
-		const SPRINT_KEY = "taskboard.tomatoStorySprint.v1";
-		const OWNER_KEY = "taskboard.tomatoStoryOwner.v1";
-		const savedValue = (key, fallback) => {
-			try {
-				return localStorage.getItem(key) || fallback;
-			} catch {
-				return fallback;
-			}
-		};
 		const colors = [
 			"#d76b50",
 			"#458e88",
@@ -148,15 +136,8 @@ window.__ModuleLoader__.load({
 				signal: signal ?? null,
 				headers: { accept: "application/json" }
 			});
-			const text = await response.text();
-			let body;
-			try {
-				body = text ? JSON.parse(text) : {};
-			} catch {
-				const detail = text.trim();
-				throw new Error(response.status === 404 || detail === "not found" ? "迭代故事点接口尚未加载，请完全重启 DSH Desktop" : `服务返回了无法识别的内容 (${response.status})`);
-			}
-			if (!response.ok) throw new Error(typeof body.error === "string" ? body.error : `请求失败 (${response.status})`);
+			const body = await response.json();
+			if (!response.ok) throw new Error(body.error || `请求失败 (${response.status})`);
 			return body;
 		}
 		function readTeam() {
@@ -167,11 +148,11 @@ window.__ModuleLoader__.load({
 				return [];
 			}
 		}
-		function StoryPoints({ toolbarTarget }) {
+		function StoryPoints() {
 			const [sprints, setSprints] = (0, react.useState)([]);
 			const [users, setUsers] = (0, react.useState)([]);
-			const [sprint, setSprint] = (0, react.useState)(() => savedValue(SPRINT_KEY, ""));
-			const [owner, setOwner] = (0, react.useState)(() => savedValue(OWNER_KEY, "currentUser()"));
+			const [sprint, setSprint] = (0, react.useState)("");
+			const [owner, setOwner] = (0, react.useState)("currentUser()");
 			const [team, setTeam] = (0, react.useState)(readTeam);
 			const [adding, setAdding] = (0, react.useState)(false);
 			const [search, setSearch] = (0, react.useState)("");
@@ -194,8 +175,7 @@ window.__ModuleLoader__.load({
 					const sorted = [...data.sprints].sort((a, b) => (b.startDate ?? "").localeCompare(a.startDate ?? ""));
 					setSprints(sorted);
 					setUsers(directory.users);
-					setSprint((current) => sorted.some((value) => value.sprintId === current) ? current : sorted[0]?.sprintId || "");
-					setOwner((current) => current === "currentUser()" || directory.users.some((user) => user.username === current) ? current : "currentUser()");
+					setSprint((current) => current || sorted[0]?.sprintId || "");
 				}).catch((error) => {
 					if (!controller.signal.aborted) setDirectoryError(error.message);
 				}).finally(() => {
@@ -208,16 +188,6 @@ window.__ModuleLoader__.load({
 					localStorage.setItem(TEAM_KEY, JSON.stringify(team));
 				} catch {}
 			}, [team]);
-			(0, react.useEffect)(() => {
-				if (sprint) try {
-					localStorage.setItem(SPRINT_KEY, sprint);
-				} catch {}
-			}, [sprint]);
-			(0, react.useEffect)(() => {
-				try {
-					localStorage.setItem(OWNER_KEY, owner);
-				} catch {}
-			}, [owner]);
 			const ownersKey = JSON.stringify([...new Set([owner, ...team])].sort());
 			(0, react.useEffect)(() => {
 				if (!sprint) return;
@@ -257,7 +227,7 @@ window.__ModuleLoader__.load({
 				version
 			]);
 			const personal = results[owner];
-			const items = (0, react.useMemo)(() => (personal?.items ?? []).filter((item) => item.storyPoints !== null).sort((a, b) => (b.storyPoints ?? 0) - (a.storyPoints ?? 0) || a.itemKey.localeCompare(b.itemKey)), [personal]);
+			const items = (0, react.useMemo)(() => [...personal?.items ?? []].sort((a, b) => (b.storyPoints ?? -1) - (a.storyPoints ?? -1) || a.itemKey.localeCompare(b.itemKey)), [personal]);
 			const sum = total(items);
 			const slices = items.filter((item) => item.storyPoints !== null && item.storyPoints > 0);
 			let offset = 0;
@@ -286,45 +256,6 @@ window.__ModuleLoader__.load({
 				setEditing(null);
 				setNotice("");
 			};
-			(0, react.useEffect)(() => {
-				toolbarTarget(/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-					className: story_points_module_css_default.headerControls,
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "迭代" }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
-						"aria-label": "选择迭代",
-						value: sprint,
-						disabled: directoryLoading || saving,
-						onChange: (event) => changeSprint(event.target.value),
-						children: [!sprints.length && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
-							value: "",
-							children: directoryLoading ? "正在读取迭代…" : "暂无迭代"
-						}), sprints.map((value) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("option", {
-							value: value.sprintId,
-							children: [
-								value.name,
-								" · ",
-								value.workspaceKey,
-								value.status === "completed" ? "（已结束）" : ""
-							]
-						}, value.sprintId))]
-					})] }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-						type: "button",
-						disabled: saving,
-						onClick: () => {
-							refresh();
-							if (directoryError || !sprints.length) setDirectoryVersion((value) => value + 1);
-						},
-						children: "刷新"
-					})]
-				}));
-				return () => toolbarTarget(null);
-			}, [
-				directoryError,
-				directoryLoading,
-				saving,
-				sprint,
-				sprints,
-				toolbarTarget
-			]);
 			async function save() {
 				if (!editing || saving) return;
 				if (!draft.trim() || !Number.isFinite(Number(draft)) || Number(draft) < 0) {
@@ -347,6 +278,49 @@ window.__ModuleLoader__.load({
 			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 				className: story_points_module_css_default.page,
 				children: [
+					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						className: story_points_module_css_default.toolbar,
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+								className: story_points_module_css_default.eyebrow,
+								children: "SPRINT / STORY POINTS"
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h2", { children: "迭代故事点" }),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", { children: "看清个人投入，比较团队分布" })
+						] }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: story_points_module_css_default.controls,
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", { children: ["迭代", /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
+								"aria-label": "选择迭代",
+								value: sprint,
+								disabled: directoryLoading || saving,
+								onChange: (event) => changeSprint(event.target.value),
+								children: [!sprints.length && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+									value: "",
+									children: directoryLoading ? "正在读取迭代…" : "暂无迭代"
+								}), sprints.map((value) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("option", {
+									value: value.sprintId,
+									children: [
+										value.name,
+										" · ",
+										value.workspaceKey,
+										value.status === "completed" ? "（已结束）" : ""
+									]
+								}, value.sprintId))]
+							})] }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+								variant: "toolbar",
+								size: "sm",
+								className: story_points_module_css_default.headerIconButton,
+								icon: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconRefreshOutline16, {}),
+								title: "刷新迭代故事点",
+								"aria-label": "刷新迭代故事点",
+								disabled: saving,
+								onClick: () => {
+									refresh();
+									if (directoryError || !sprints.length) setDirectoryVersion((value) => value + 1);
+								}
+							})]
+						})]
+					}),
 					directoryError && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("p", {
 						className: story_points_module_css_default.error,
 						role: "alert",
@@ -404,13 +378,22 @@ window.__ModuleLoader__.load({
 								}),
 								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 									className: story_points_module_css_default.summary,
-									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-										className: story_points_module_css_default.eyebrow,
-										children: "故事点总数"
-									}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-										className: story_points_module_css_default.total,
-										children: [number(sum), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("small", { children: " SP" })]
-									})] }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+											className: story_points_module_css_default.eyebrow,
+											children: "故事点总数"
+										}),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+											className: story_points_module_css_default.total,
+											children: [number(sum), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("small", { children: " SP" })]
+										}),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("p", { children: [
+											items.filter((item) => item.storyPoints !== null).length,
+											" 项已估点 · ",
+											items.filter((item) => item.storyPoints === null).length,
+											" 项未填写"
+										] })
+									] }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 										className: story_points_module_css_default.pie,
 										role: "img",
 										"aria-label": `个人故事点分布，共 ${number(sum)} 点；各需求明细见下方列表`,
@@ -449,8 +432,7 @@ window.__ModuleLoader__.load({
 												}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("small", { children: [
 													item.itemKey,
 													" · ",
-													item.status,
-													sum > 0 && item.storyPoints !== null ? ` · ${number(item.storyPoints / sum * 100)}%` : ""
+													item.status
 												] })]
 											}),
 											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("strong", {
@@ -912,7 +894,6 @@ window.__ModuleLoader__.load({
 			const workbenchRef = (0, react.useRef)(null);
 			const filterMenuRef = (0, react.useRef)(null);
 			const [page, setPage] = (0, react.useState)("board");
-			const [storyToolbar, setStoryToolbar] = (0, react.useState)(null);
 			const [search, setSearch] = (0, react.useState)("");
 			const [blacklist, setBlacklist] = (0, react.useState)(readFilterBlacklist);
 			const [mutedItems, setMutedItems] = (0, react.useState)(readMutedItems);
@@ -1070,27 +1051,23 @@ window.__ModuleLoader__.load({
 				children: [
 					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("header", {
 						className: tomato_board_module_css_default.header,
-						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-							className: tomato_board_module_css_default.headerLead,
-							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", { children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("h1", { children: "番茄工作台" }) }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("nav", {
-								className: tomato_board_module_css_default.pageTabs,
-								"aria-label": "番茄工作台页面",
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-									type: "button",
-									"aria-current": page === "board" ? "page" : void 0,
-									onClick: () => setPage("board"),
-									children: "事项看板"
-								}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-									type: "button",
-									"aria-current": page === "points" ? "page" : void 0,
-									onClick: () => setPage("points"),
-									children: "迭代投入"
-								})]
-							})]
-						}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h1", { children: "番茄工作台" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", { children: page === "points" ? "个人与团队的迭代投入" : board.loading ? "正在读取番茄事项…" : `显示 ${filteredItems.length} / ${board.items.length} 个事项` })] }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 							className: tomato_board_module_css_default.actions,
 							children: [
-								page === "points" && storyToolbar,
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+									variant: "toolbar",
+									size: "sm",
+									"aria-pressed": page === "board",
+									onClick: () => setPage("board"),
+									children: "事项看板"
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+									variant: "toolbar",
+									size: "sm",
+									"aria-pressed": page === "points",
+									onClick: () => setPage("points"),
+									children: "迭代故事点"
+								}),
 								page === "board" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
 									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", {
 										className: tomato_board_module_css_default.searchField,
@@ -1178,142 +1155,139 @@ window.__ModuleLoader__.load({
 							]
 						})]
 					}),
-					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("main", {
-						className: tomato_board_module_css_default.pageContent,
-						children: page === "points" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)(StoryPoints, { toolbarTarget: setStoryToolbar }) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
-							board.error && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-								className: tomato_board_module_css_default.error,
-								role: "alert",
-								children: board.error
-							}),
-							board.truncated && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("p", {
-								className: tomato_board_module_css_default.notice,
-								role: "status",
-								children: [
-									"事项数量已达配置上限，当前仅展示前 ",
-									board.items.length,
-									" 条。"
-								]
-							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: tomato_board_module_css_default.board,
-								children: [statuses.map((status) => {
-									const items = filteredItems.filter((item) => item.status === status);
-									return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
-										ref: (element) => {
-											if (element) laneElements.current.set(status, element);
-											else laneElements.current.delete(status);
+					page === "points" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)(StoryPoints, {}) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+						board.error && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							className: tomato_board_module_css_default.error,
+							role: "alert",
+							children: board.error
+						}),
+						board.truncated && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("p", {
+							className: tomato_board_module_css_default.notice,
+							role: "status",
+							children: [
+								"事项数量已达配置上限，当前仅展示前 ",
+								board.items.length,
+								" 条。"
+							]
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: tomato_board_module_css_default.board,
+							children: [statuses.map((status) => {
+								const items = filteredItems.filter((item) => item.status === status);
+								return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
+									ref: (element) => {
+										if (element) laneElements.current.set(status, element);
+										else laneElements.current.delete(status);
+									},
+									className: `${tomato_board_module_css_default.lane} ${draggedLane === status ? tomato_board_module_css_default.laneDragging : ""} ${dropLane?.status === status ? dropLane.after ? tomato_board_module_css_default.laneDropAfter : tomato_board_module_css_default.laneDropBefore : ""}`,
+									"aria-labelledby": `tomato-lane-${status}`,
+									onDragOver: (event) => {
+										if (!draggedLane || draggedLane === status) return;
+										event.preventDefault();
+										const bounds = event.currentTarget.getBoundingClientRect();
+										setDropLane({
+											status,
+											after: event.clientX >= bounds.left + bounds.width / 2
+										});
+									},
+									onDrop: (event) => {
+										event.preventDefault();
+										if (draggedLane && dropLane?.status === status) moveLane(draggedLane, status, dropLane.after);
+										setDraggedLane(null);
+										setDropLane(null);
+									},
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("header", {
+										className: tomato_board_module_css_default.laneHeader,
+										draggable: true,
+										title: "拖拽调整泳道顺序",
+										onDragStart: (event) => {
+											event.dataTransfer.effectAllowed = "move";
+											event.dataTransfer.setData("text/plain", status);
+											const lane = event.currentTarget.parentElement;
+											if (lane) {
+												const bounds = lane.getBoundingClientRect();
+												event.dataTransfer.setDragImage(lane, Math.min(Math.max(event.clientX - bounds.left, 0), bounds.width), Math.min(Math.max(event.clientY - bounds.top, 0), bounds.height));
+											}
+											setDraggedLane(status);
 										},
-										className: `${tomato_board_module_css_default.lane} ${draggedLane === status ? tomato_board_module_css_default.laneDragging : ""} ${dropLane?.status === status ? dropLane.after ? tomato_board_module_css_default.laneDropAfter : tomato_board_module_css_default.laneDropBefore : ""}`,
-										"aria-labelledby": `tomato-lane-${status}`,
-										onDragOver: (event) => {
-											if (!draggedLane || draggedLane === status) return;
-											event.preventDefault();
-											const bounds = event.currentTarget.getBoundingClientRect();
-											setDropLane({
-												status,
-												after: event.clientX >= bounds.left + bounds.width / 2
-											});
-										},
-										onDrop: (event) => {
-											event.preventDefault();
-											if (draggedLane && dropLane?.status === status) moveLane(draggedLane, status, dropLane.after);
+										onDragEnd: () => {
 											setDraggedLane(null);
 											setDropLane(null);
 										},
-										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("header", {
-											className: tomato_board_module_css_default.laneHeader,
-											draggable: true,
-											title: "拖拽调整泳道顺序",
-											onDragStart: (event) => {
-												event.dataTransfer.effectAllowed = "move";
-												event.dataTransfer.setData("text/plain", status);
-												const lane = event.currentTarget.parentElement;
-												if (lane) {
-													const bounds = lane.getBoundingClientRect();
-													event.dataTransfer.setDragImage(lane, Math.min(Math.max(event.clientX - bounds.left, 0), bounds.width), Math.min(Math.max(event.clientY - bounds.top, 0), bounds.height));
+										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h2", {
+											id: `tomato-lane-${status}`,
+											children: status
+										}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: items.length })]
+									}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+										className: tomato_board_module_css_default.cards,
+										children: items.map((item) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("article", {
+											className: `${tomato_board_module_css_default.card} ${mutedItems.has(item.itemKey) ? tomato_board_module_css_default.cardMuted : ""}`,
+											tabIndex: 0,
+											role: "button",
+											onClick: () => openItem(item),
+											onKeyDown: (event) => {
+												if (event.key === "Enter" || event.key === " ") {
+													event.preventDefault();
+													openItem(item);
 												}
-												setDraggedLane(status);
 											},
-											onDragEnd: () => {
-												setDraggedLane(null);
-												setDropLane(null);
-											},
-											children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h2", {
-												id: `tomato-lane-${status}`,
-												children: status
-											}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: items.length })]
-										}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-											className: tomato_board_module_css_default.cards,
-											children: items.map((item) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("article", {
-												className: `${tomato_board_module_css_default.card} ${mutedItems.has(item.itemKey) ? tomato_board_module_css_default.cardMuted : ""}`,
-												tabIndex: 0,
-												role: "button",
-												onClick: () => openItem(item),
-												onKeyDown: (event) => {
-													if (event.key === "Enter" || event.key === " ") {
-														event.preventDefault();
-														openItem(item);
-													}
-												},
-												children: [
-													/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-														className: tomato_board_module_css_default.cardTopline,
-														children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-															className: tomato_board_module_css_default.key,
-															children: item.itemKey
-														}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-															className: tomato_board_module_css_default.cardButtons,
-															children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
-																className: tomato_board_module_css_default.muteButton,
-																variant: "ghost",
-																size: "sm",
-																title: mutedItems.has(item.itemKey) ? "取消置灰" : "置灰标记",
-																"aria-label": mutedItems.has(item.itemKey) ? `取消置灰 ${item.itemKey}` : `置灰 ${item.itemKey}`,
-																"aria-pressed": mutedItems.has(item.itemKey),
-																onClick: (event) => {
-																	event.stopPropagation();
-																	toggleMutedItem(item.itemKey);
-																},
-																onKeyDown: (event) => event.stopPropagation(),
-																children: "●"
-															}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
-																className: tomato_board_module_css_default.tomatoLink,
-																variant: "ghost",
-																size: "sm",
-																title: "在番茄中打开事项",
-																"aria-label": `在番茄中打开 ${item.itemKey}`,
-																onClick: (event) => {
-																	event.stopPropagation();
-																	window.open(item.tomatoUrl, "_blank", "noopener,noreferrer");
-																},
-																onKeyDown: (event) => event.stopPropagation(),
-																children: "↗"
-															})]
+											children: [
+												/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+													className: tomato_board_module_css_default.cardTopline,
+													children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+														className: tomato_board_module_css_default.key,
+														children: item.itemKey
+													}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+														className: tomato_board_module_css_default.cardButtons,
+														children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+															className: tomato_board_module_css_default.muteButton,
+															variant: "ghost",
+															size: "sm",
+															title: mutedItems.has(item.itemKey) ? "取消置灰" : "置灰标记",
+															"aria-label": mutedItems.has(item.itemKey) ? `取消置灰 ${item.itemKey}` : `置灰 ${item.itemKey}`,
+															"aria-pressed": mutedItems.has(item.itemKey),
+															onClick: (event) => {
+																event.stopPropagation();
+																toggleMutedItem(item.itemKey);
+															},
+															onKeyDown: (event) => event.stopPropagation(),
+															children: "●"
+														}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+															className: tomato_board_module_css_default.tomatoLink,
+															variant: "ghost",
+															size: "sm",
+															title: "在番茄中打开事项",
+															"aria-label": `在番茄中打开 ${item.itemKey}`,
+															onClick: (event) => {
+																event.stopPropagation();
+																window.open(item.tomatoUrl, "_blank", "noopener,noreferrer");
+															},
+															onKeyDown: (event) => event.stopPropagation(),
+															children: "↗"
 														})]
-													}),
-													/* @__PURE__ */ (0, react_jsx_runtime.jsx)("strong", { children: item.title }),
-													/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-														className: tomato_board_module_css_default.meta,
-														children: [
-															item.workspaceName && item.workspaceKey && item.workspaceName !== item.workspaceKey ? `${item.workspaceName} (${item.workspaceKey})` : item.workspaceKey || item.workspaceName,
-															item.itemType,
-															item.priority,
-															item.assignees.join("/"),
-															item.creator
-														].filter(Boolean).join(" · ")
-													})
-												]
-											}, item.itemKey))
-										})]
-									}, status);
-								}), !board.loading && !board.error && statuses.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-									className: tomato_board_module_css_default.empty,
-									children: "当前没有可显示的番茄事项"
-								})]
-							})
-						] })
-					}),
+													})]
+												}),
+												/* @__PURE__ */ (0, react_jsx_runtime.jsx)("strong", { children: item.title }),
+												/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+													className: tomato_board_module_css_default.meta,
+													children: [
+														item.workspaceName && item.workspaceKey && item.workspaceName !== item.workspaceKey ? `${item.workspaceName} (${item.workspaceKey})` : item.workspaceKey || item.workspaceName,
+														item.itemType,
+														item.priority,
+														item.assignees.join("/"),
+														item.creator
+													].filter(Boolean).join(" · ")
+												})
+											]
+										}, item.itemKey))
+									})]
+								}, status);
+							}), !board.loading && !board.error && statuses.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+								className: tomato_board_module_css_default.empty,
+								children: "当前没有可显示的番茄事项"
+							})]
+						})
+					] }),
 					board.selectedItem ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)(CreateConversationDialog, {
 						ctx,
 						item: board.selectedItem

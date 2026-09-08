@@ -137,7 +137,7 @@ export function StoryPoints() {
           {items.length > 0 && !slices.length && <p className={css.notice}>暂无大于 0 的故事点，填写后即可查看分布。</p>}
           <div className={css.items}>{items.map(item => <div className={css.item} key={item.itemKey}>
             <span className={css.dot} style={{ background: item.storyPoints && item.storyPoints > 0 ? colors[slices.indexOf(item) % colors.length] : 'var(--dsw-alias-border-l2, #ddd)' }} />
-            <div className={css.itemText}><a href={item.tomatoUrl} target="_blank" rel="noreferrer">{item.title}</a><small>{item.itemKey} · {item.status}{sum > 0 && item.storyPoints !== null ? ` · ${number(item.storyPoints / sum * 100)}%` : ''}</small></div>
+            <div className={css.itemText}><a href={item.tomatoUrl} target="_blank" rel="noreferrer">{item.title}</a><small>{item.itemKey} · {item.status}</small></div>
             <strong className={css.itemPoints}>{item.storyPoints === null ? '未填写' : `${number(item.storyPoints)} SP`}</strong><button disabled={saving} onClick={() => { setEditing(item); setDraft(item.storyPoints === null ? '' : String(item.storyPoints)); setSaveError('') }}>调整</button>
           </div>)}</div>
         </>}
