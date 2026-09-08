@@ -1,0 +1,43 @@
+.page { flex: 1; min-height: 0; overflow: auto; padding: 28px; color: var(--dsw-alias-label-primary, #292d32); }
+.page * { box-sizing: border-box; }
+.page button, .page select, .page input { font: inherit; color: inherit; border: 1px solid var(--dsw-alias-border-l2, #dedfdf); border-radius: 8px; background: var(--dsw-alias-bg-base, white); padding: 8px 12px; min-width: 0; }
+.page button { cursor: pointer; white-space: nowrap; }
+.page button:hover { background: var(--dsw-alias-interactive-bg-hover, #f4f4f2); }
+.page button:disabled { opacity: .5; cursor: wait; }
+.page :focus-visible { outline: 2px solid #458e88; outline-offset: 3px; }
+.page h2, .page h3, .page h4, .page p { margin: 0; }
+.toolbar, .controls, .panelHeader, .listHeading, .rankLabel { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.toolbar { margin-bottom: 26px; flex-wrap: wrap; }
+.toolbar h2 { font-size: 26px; letter-spacing: -.7px; margin: 5px 0; }
+.toolbar p, .summary p, .caption, .footnote, .itemText small, .rankRow small, .listHeading span { color: var(--dsw-alias-label-secondary, #797c80); font-size: 12px; line-height: 1.7; }
+.eyebrow { font-size: 10px; font-weight: 650; letter-spacing: 1.6px; color: var(--dsw-alias-label-secondary, #797c80); }
+.controls label { display: flex; align-items: center; gap: 12px; font-size: 13px; }
+.controls select { max-width: 340px; }
+.headerIconButton { width: 34px; min-width: 34px; height: 34px; min-height: 34px; padding: 0; border-radius: 8px; }
+.columns { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 22px; align-items: start; }
+.panel { border: 1px solid var(--dsw-alias-border-l2, #e4e4df); border-radius: 16px; padding: 22px; min-width: 0; background: var(--dsw-alias-bg-base, white); }
+.panelHeader { padding-bottom: 20px; border-bottom: 1px solid var(--dsw-alias-border-l2, #e4e4df); }
+.panelHeader h3 { font-size: 16px; white-space: nowrap; }
+.panelHeader select { max-width: 65%; font-size: 12px; }
+.panelHeader button { font-size: 12px; }
+.summary { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 30px 0; }
+.total { font-size: 58px; line-height: 1.25; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -2px; }
+.total small { font-size: 15px; letter-spacing: 0; color: var(--dsw-alias-label-secondary, #797c80); }
+.pie { width: 158px; height: 158px; flex: 0 0 158px; padding: 25px; border-radius: 50%; background: var(--dsw-alias-border-l2, #e7e7e2); }
+.pie > div { background: var(--dsw-alias-bg-base, white); border-radius: 50%; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+.pie strong { font-size: 26px; }.pie span { font-size: 11px; color: var(--dsw-alias-label-secondary, #797c80); }
+.listHeading { padding: 12px 0; }.listHeading h4 { font-size: 13px; }
+.item { display: flex; align-items: center; gap: 10px; padding: 16px 0; border-top: 1px solid var(--dsw-alias-border-l2, #e4e4df); }
+.dot { width: 8px; height: 8px; border-radius: 3px; flex-shrink: 0; }
+.itemText { min-width: 0; flex: 1; }.itemText a { color: inherit; text-decoration: none; font-size: 13px; line-height: 1.6; overflow-wrap: anywhere; }.itemText a:hover { text-decoration: underline; }.itemText small { display: block; font-size: 10px; }
+.itemPoints { font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; }.item button { font-size: 11px; padding: 5px 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 10px; }.chips > span { display: flex; align-items: center; gap: 6px; padding: 3px 5px 3px 10px; border-radius: 6px; background: var(--dsw-alias-interactive-bg-hover, #f2f3f0); font-size: 12px; }.chips button { border: 0; padding: 1px 5px; background: transparent; }
+.ranking { display: grid; gap: 25px; margin-top: 24px; }.rankLabel { gap: 10px; font-size: 13px; margin-bottom: 10px; }.rankLabel span { color: var(--dsw-alias-label-secondary, #999); font-size: 11px; }.rankLabel strong { flex: 1; }.rankLabel b { font-variant-numeric: tabular-nums; }
+.track { height: 12px; border-radius: 4px; background: var(--dsw-alias-interactive-bg-hover, #f1f2ee); overflow: hidden; }.track > div { height: 100%; background: #458e88; border-radius: inherit; }.rankRow:first-child .track > div { background: #d76b50; }.rankRow small { font-size: 10px; }
+.footnote { margin-top: 32px !important; padding-top: 16px; border-top: 1px solid var(--dsw-alias-border-l2, #e4e4df); font-size: 11px; }
+.empty { text-align: center; padding: 50px 12px; color: var(--dsw-alias-label-secondary, #797c80); font-size: 13px; }.empty h4 { margin-bottom: 8px; }.emptyIcon { display: block; font-size: 38px; margin-bottom: 15px; color: #458e88; }
+.error { color: var(--dsw-alias-state-error-primary, #bd4336); font-size: 12px; padding: 12px 0; overflow-wrap: anywhere; }.notice { font-size: 12px; padding: 10px 0; color: var(--dsw-alias-label-secondary, #797c80); }
+.addPeople { margin-top: 16px; padding: 12px; border: 1px solid var(--dsw-alias-border-l2, #ddd); border-radius: 10px; }.addPeople input { width: 100%; }.addPeople > div { max-height: 210px; overflow: auto; margin-top: 8px; }.addPeople button { width: 100%; display: flex; gap: 8px; text-align: left; border: 0; }.addPeople small { flex: 1; opacity: .6; }
+.modalBackdrop { position: fixed; inset: 0; background: #0006; z-index: 100; display: grid; place-items: center; padding: 20px; }.dialog { background: var(--dsw-alias-bg-base, white); border-radius: 16px; padding: 26px; width: min(440px, 100%); display: grid; gap: 18px; box-shadow: 0 20px 80px #0003; }.dialog p { font-size: 13px; line-height: 1.6; }.dialog label { display: grid; gap: 8px; font-size: 13px; }.dialog small { opacity: .65; font-size: 12px; }.dialogActions { display: flex; justify-content: flex-end; gap: 10px; }
+@media (max-width: 1000px) { .columns { grid-template-columns: 1fr; }.page { padding: 20px; } }
+@media (max-width: 540px) { .page { padding: 12px; }.panel { padding: 16px; }.controls { width: 100%; }.controls label { min-width: 0; flex: 1; }.controls select { width: 100%; }.pie { width: 126px; height: 126px; flex-basis: 126px; padding: 20px; }.total { font-size: 44px; }.item { gap: 7px; }.toolbar h2 { font-size: 23px; } }
