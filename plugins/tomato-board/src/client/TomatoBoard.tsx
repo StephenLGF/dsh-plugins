@@ -10,10 +10,12 @@ import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 import {
   Button, IconChevronDownOutline14, IconCloseOutline16, IconRefreshOutline16, Menu, Modal,
 } from '@deepseek-ai/dsh-client-ui-primitives'
+import type { MenuEntry } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import { SessionId } from '@deepseek-ai/dsh-session/types'
 import css from './tomato-board.module.css'
 import { StoryPoints } from './StoryPoints'
+import { Tag } from './Tag'
 
 export interface TomatoItem {
   itemKey: string
@@ -55,13 +57,16 @@ interface TomatoTransitionState {
 interface BoardState {
   open: boolean
   loading: boolean
+  // 本次打开期间已成功加载过一次的标记：空列表也算加载完成，
+  // 用来区分「还没加载」和「加载了但结果为空」。
+  loaded: boolean
   items: TomatoItem[]
   error: string | null
   selectedItem: TomatoItem | null
   truncated: boolean
 }
 
-let state: BoardState = { open: false, loading: false, items: [], error: null, selectedItem: null, truncated: false }
+let state: BoardState = { open: false, loading: false, loaded: false, items: [], error: null, selectedItem: null, truncated: false }
 let disposeWorkbench: (() => void) | null = null
 const listeners = new Set<() => void>()
 const emit = (patch: Partial<BoardState>) => {
@@ -174,7 +179,7 @@ async function refresh(assignee = 'currentUser()') {
     const response = await fetch(`/api/tomato-board/items?${query}`, { headers: { accept: 'application/json' } })
     const body = await response.json() as { items?: TomatoItem[]; truncated?: boolean; error?: string }
     if (!response.ok) throw new Error(body.error || `请求失败 (${response.status})`)
-    emit({ items: body.items ?? [], truncated: body.truncated === true })
+    emit({ items: body.items ?? [], truncated: body.truncated === true, loaded: true })
   } catch (error) {
     emit({ error: error instanceof Error ? error.message : '番茄事项读取失败' })
   } finally {
@@ -185,7 +190,8 @@ async function refresh(assignee = 'currentUser()') {
 function closeWorkbench() {
   const dispose = disposeWorkbench
   disposeWorkbench = null
-  emit({ open: false, selectedItem: null })
+  // 关闭时清掉 loaded 和 error：下次打开工作台会重新拉取一次最新数据。
+  emit({ open: false, selectedItem: null, loaded: false, error: null })
   dispose?.()
 }
 
@@ -312,6 +318,7 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
   const [mutedItems, setMutedItems] = useState(readMutedItems)
   const [selectedAssignee, setSelectedAssignee] = useState('currentUser()')
   const [filterDirectory, setFilterDirectory] = useState<FilterDirectory>({ users: [], workspaces: [] })
+  const [directoryVersion, setDirectoryVersion] = useState(0)
   const [laneOrder, setLaneOrder] = useState(readLaneOrder)
   const [draggedLane, setDraggedLane] = useState<string | null>(null)
   const [dropLane, setDropLane] = useState<{ status: string; after: boolean } | null>(null)
@@ -324,15 +331,17 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
   )
 
   useEffect(() => {
-    if (board.open && board.items.length === 0 && !board.loading && !board.error) void refresh()
-  }, [board.error, board.items.length, board.loading, board.open])
+    // 用 loaded 而不是 items.length 判断：成功返回空列表时也算加载完成，
+    // 否则 loading 变回 false 会再次命中本 effect，形成无限请求循环。
+    if (board.open && !board.loaded && !board.loading && !board.error) void refresh()
+  }, [board.error, board.loaded, board.loading, board.open])
   useEffect(() => {
     if (!board.open) return
     void fetch('/api/tomato-board/filters', { headers: { accept: 'application/json' } })
       .then(response => response.ok ? response.json() : Promise.reject(new Error(`HTTP ${response.status}`)))
       .then(value => setFilterDirectory(value as FilterDirectory))
       .catch(() => {})
-  }, [board.open])
+  }, [board.open, directoryVersion])
   useEffect(() => {
     if (!board.open) return
     const closeOnOutsideNavigation = (event: PointerEvent) => {
@@ -404,7 +413,8 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
   const filteredItems = board.items.filter(item => (
     !blacklist.types.has(item.itemType)
     && !blacklist.statuses.has(item.status)
-    && !blacklist.workspaces.has(item.workspaceKey || item.workspaceName || item.workspace)
+    && !blacklist.workspaces.has(item.workspaceKey)
+    && !blacklist.workspaces.has(item.workspaceName)
     && (!normalizedSearch || [
       item.itemKey, item.title, item.itemType, item.status, item.workspaceKey, item.workspaceName, item.creator, item.assignees.join(' '), item.priority,
     ].join(' ').toLowerCase().includes(normalizedSearch))
@@ -414,28 +424,45 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
     ...TOMATO_STATUS_ORDER,
     ...board.items.map(item => item.status).filter(status => !TOMATO_STATUS_ORDER.includes(status)),
   ])], laneOrder)
-  const workspaceOptions = [...new Map([
-    ...filterDirectory.workspaces.map(workspace => [workspace.key || workspace.name, workspace.name && workspace.key && workspace.name !== workspace.key ? `${workspace.name} (${workspace.key})` : workspace.key || workspace.name] as const),
-    ...board.items.map(item => [item.workspaceKey || item.workspaceName || item.workspace, item.workspaceName && item.workspaceKey && item.workspaceName !== item.workspaceKey ? `${item.workspaceName} (${item.workspaceKey})` : item.workspaceKey || item.workspaceName] as const),
-  ].filter(([value]) => Boolean(value))).entries()].map(([value, label]) => ({ value, label }))
+  // Workspace options derive purely from the current assignee's items (the
+  // board query is already assignee-scoped server-side), so the count is
+  // however many workspaces that assignee actually spans — never the logged-in
+  // account's full directory. The item filter checks key AND name so both
+  // identity forms hide correctly.
+  const workspaceOptions = (() => {
+    const entries = new Map<string, { value: string; label: string }>()
+    for (const item of board.items) {
+      const value = item.workspaceKey || item.workspaceName || item.workspace
+      if (!value) continue
+      const label = item.workspaceName && item.workspaceKey && item.workspaceName !== item.workspaceKey ? `${item.workspaceName} (${item.workspaceKey})` : value
+      if (!entries.has(value)) entries.set(value, { value, label })
+    }
+    return [...entries.values()]
+  })()
   const defaultStatuses = [...new Set([
     ...TOMATO_STATUS_ORDER.filter(status => filteredItems.some(item => item.status === status)),
     ...filteredItems.map(item => item.status).filter(status => !TOMATO_STATUS_ORDER.includes(status)),
   ])]
   const statuses = applyLaneOrder(defaultStatuses, laneOrder)
 
-  const toggleBlacklist = (kind: 'types' | 'statuses' | 'workspaces', value: string) => setBlacklist(current => {
-    const nextValues = new Set(current[kind])
-    if (nextValues.has(value)) nextValues.delete(value)
-    else nextValues.add(value)
-    const next = { ...current, [kind]: nextValues }
+  const persistBlacklist = (next: typeof blacklist) => {
     window.localStorage.setItem(TOMATO_FILTER_BLACKLIST_KEY, JSON.stringify({
       types: [...next.types],
       statuses: [...next.statuses],
       workspaces: [...next.workspaces],
     }))
     return next
+  }
+  const toggleBlacklist = (kind: 'types' | 'statuses' | 'workspaces', value: string) => setBlacklist(current => {
+    const nextValues = new Set(current[kind])
+    if (nextValues.has(value)) nextValues.delete(value)
+    else nextValues.add(value)
+    return persistBlacklist({ ...current, [kind]: nextValues })
   })
+  const setWorkspaceFilterAll = (visible: boolean) => setBlacklist(current => persistBlacklist({
+    ...current,
+    workspaces: visible ? new Set<string>() : new Set(workspaceOptions.map(option => option.value)),
+  }))
 
   const toggleMutedItem = (itemKey: string) => setMutedItems(current => {
     const next = new Set(current)
@@ -485,7 +512,7 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
                 {(blacklist.types.size > 0 || blacklist.statuses.size > 0 || blacklist.workspaces.size > 0 || selectedAssignee !== 'currentUser()') && <i />}
               </summary>
               <div className={css.filterPopover}>
-                <WorkspaceFilterRow options={workspaceOptions} hidden={blacklist.workspaces} onToggle={value => toggleBlacklist('workspaces', value)} />
+                <WorkspaceFilterRow options={workspaceOptions} hidden={blacklist.workspaces} onToggle={value => toggleBlacklist('workspaces', value)} onSetAll={setWorkspaceFilterAll} />
                 <AssigneePicker users={filterDirectory.users} value={selectedAssignee} onChange={value => { setSelectedAssignee(value); void refresh(value) }} />
                 <FilterRow label="类型" options={typeOptions} hidden={blacklist.types} onToggle={value => toggleBlacklist('types', value)} />
                 <FilterRow label="状态" options={statusOptions} hidden={blacklist.statuses} onToggle={value => toggleBlacklist('statuses', value)} />
@@ -499,7 +526,7 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
               title="刷新番茄事项"
               aria-label="刷新番茄事项"
               disabled={board.loading}
-              onClick={() => void refresh(selectedAssignee)}
+              onClick={() => { void refresh(selectedAssignee); setDirectoryVersion(value => value + 1) }}
             />
             </>}
             <Button
@@ -617,10 +644,10 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
                     </div>
                     <strong>{item.title}</strong>
                     <div className={css.cardMeta}>
-                      <span className={css.typeTag} style={typeStyle(item.itemType)}>{item.itemType}</span>
-                      {(item.workspaceName || item.workspaceKey) && <span className={`${css.metaTag} ${css.workspaceTag}`} title="空间">{item.workspaceName && item.workspaceKey && item.workspaceName !== item.workspaceKey ? `${item.workspaceName} (${item.workspaceKey})` : item.workspaceKey || item.workspaceName}</span>}
-                      {item.priority && <span className={`${css.metaTag} ${css.priorityTag}`} data-priority={priorityLabel(item.priority)} title="优先级">{priorityLabel(item.priority)}</span>}
-                      {item.creator && <span className={`${css.metaTag} ${css.creatorTag}`} title="创建人">{item.creator}</span>}
+                      <Tag tone={typeTone(item.itemType)}>{item.itemType}</Tag>
+                      {(item.workspaceName || item.workspaceKey) && <Tag title="空间">{item.workspaceName && item.workspaceKey && item.workspaceName !== item.workspaceKey ? `${item.workspaceName} (${item.workspaceKey})` : item.workspaceKey || item.workspaceName}</Tag>}
+                      {item.priority && <Tag title="优先级">{priorityLabel(item.priority)}</Tag>}
+                      {item.creator && <Tag title="创建人">创建 {item.creator}</Tag>}
                     </div>
                   </article>
                 ))}
@@ -656,10 +683,6 @@ function typeTone(type: string): string {
   const palette = ['#2f7d72', '#2777a8', '#7b61a8', '#c34f43', '#9a6b24', '#51753a', '#a14f78']
   return palette[[...type].reduce((hash, char) => hash + char.charCodeAt(0), 0) % palette.length]!
 }
-function typeStyle(type: string) {
-  const tone = typeTone(type)
-  return { '--type-tone': tone } as React.CSSProperties
-}
 
 function FilterRow({ label, options, hidden, onToggle }: {
   label: string
@@ -672,42 +695,84 @@ function FilterRow({ label, options, hidden, onToggle }: {
       <span>{label}</span>
       <div>
         {options.map(option => (
-          <button
+          <Tag
             key={option}
-            className={`${hidden.has(option) ? '' : css.selectedFilter} ${label === '类型' ? css.typeFilter : ''}`}
-            style={label === '类型' ? typeStyle(option) : undefined}
-            type="button"
-            aria-pressed={!hidden.has(option)}
+            interactive
+            pressed={!hidden.has(option)}
+            tone={label === '类型' ? typeTone(option) : undefined}
             onClick={() => onToggle(option)}
           >
-            {label === '类型' && <i aria-hidden="true" />}{option}
-          </button>
+            {option}
+          </Tag>
         ))}
       </div>
     </div>
   )
 }
 
-function WorkspaceFilterRow({ options, hidden, onToggle }: {
+const WORKSPACE_SELECT_ALL = 'workspace:select-all'
+const WORKSPACE_SELECT_NONE = 'workspace:select-none'
+
+/** Multi-select workspace dropdown composed on the shared Menu primitive. */
+function WorkspaceFilterRow({ options, hidden, onToggle, onSetAll }: {
   options: Array<{ value: string; label: string }>
   hidden: ReadonlySet<string>
   onToggle: (value: string) => void
+  onSetAll: (visible: boolean) => void
 }) {
+  const [open, setOpen] = useState(false)
+  const rootRef = useRef<HTMLDivElement>(null)
+  const visibleValues = options.filter(option => !hidden.has(option.value)).map(option => option.value)
+  const summary = options.length === 0
+    ? '暂无空间'
+    : hidden.size === 0
+      ? `全部空间 · ${options.length}`
+      : visibleValues.length === 0
+        ? '未选择空间'
+        : `已选空间 ${visibleValues.length} / ${options.length}`
+  // First Esc closes this dropdown only; the host filter popover stays open.
+  useEffect(() => {
+    if (!open) return
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') { event.stopPropagation(); setOpen(false) }
+    }
+    const root = rootRef.current
+    root?.addEventListener('keydown', onKey, true)
+    return () => root?.removeEventListener('keydown', onKey, true)
+  }, [open])
+  const items: MenuEntry[] = options.map(option => ({ id: option.value, label: option.label }))
+  const footer: MenuEntry[] = [
+    { id: WORKSPACE_SELECT_ALL, label: '全部显示' },
+    { id: WORKSPACE_SELECT_NONE, label: '全部隐藏' },
+  ]
   return (
-    <div className={css.filterRow}>
+    <div className={css.filterRow} ref={rootRef}>
       <span>空间</span>
-      <div>
-        {options.map(option => (
-          <button
-            key={option.value}
-            className={hidden.has(option.value) ? '' : css.selectedFilter}
-            type="button"
-            aria-pressed={!hidden.has(option.value)}
-            onClick={() => onToggle(option.value)}
-          >
-            {option.label}
-          </button>
-        ))}
+      <div className={css.workspaceSelect}>
+        <Menu
+          open={open}
+          items={items}
+          footer={footer}
+          selectedIds={visibleValues}
+          onSelect={(id) => {
+            if (id === WORKSPACE_SELECT_ALL) onSetAll(true)
+            else if (id === WORKSPACE_SELECT_NONE) onSetAll(false)
+            else onToggle(id)
+          }}
+          onClose={() => { setOpen(false) }}
+          anchor={
+            <button
+              type="button"
+              className={css.workspaceTrigger}
+              aria-expanded={open}
+              title={summary}
+              onClick={() => { setOpen(!open) }}
+            >
+              <span>{summary}</span>
+              <i className={css.workspaceChevron} aria-hidden><IconChevronDownOutline14 /></i>
+            </button>
+          }
+        />
       </div>
     </div>
   )
