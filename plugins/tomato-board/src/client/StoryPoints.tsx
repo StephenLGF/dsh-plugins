@@ -1,163 +1,65 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import type { Dispatch, ReactNode, SetStateAction } from 'react'
 import { Button, IconRefreshOutline16 } from '@deepseek-ai/dsh-client-ui-primitives'
 import css from './story-points.module.css'
+import type { TomatoItem } from './TomatoBoard'
 
 type User = { username: string; name: string }
 type Sprint = { sprintId: string; name: string; workspaceKey: string; status: string; startDate?: string }
-type Item = { itemKey: string; title: string; status: string; storyPoints: number | null; tomatoUrl: string }
+type Item = TomatoItem & { storyPoints: number | null }
 type Result = { items: Item[]; truncated: boolean }
-const TEAM_KEY = 'taskboard.tomatoStoryTeam.v1'
+type Team = { id: string; name: string; members: string[] }
+const LEGACY_TEAM_KEY = 'taskboard.tomatoStoryTeam.v1'
+const TEAMS_KEY = 'taskboard.tomatoStoryTeams.v2'
+const SPRINT_KEY = 'taskboard.tomatoStorySprint.v1'
+const OWNER_KEY = 'taskboard.tomatoStoryOwner.v1'
 const colors = ['#d76b50', '#458e88', '#c79940', '#687fb2', '#976f9c', '#75914f', '#be7f92', '#698b9d']
 const number = (value: number) => new Intl.NumberFormat('zh-CN', { maximumFractionDigits: 4 }).format(value)
 const total = (items: Item[]) => items.reduce((sum, item) => sum + (item.storyPoints ?? 0), 0)
-async function json<T>(url: string, signal?: AbortSignal, method = 'GET'): Promise<T> {
-  const response = await fetch(url, { method, signal: signal ?? null, headers: { accept: 'application/json' } })
-  const body = await response.json()
-  if (!response.ok) throw new Error(body.error || `请求失败 (${response.status})`)
-  return body as T
+const savedValue = (key: string, fallback: string) => { try { return localStorage.getItem(key) || fallback } catch { return fallback } }
+const teamId = () => `team-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`
+async function json<T>(url: string, signal?: AbortSignal): Promise<T> {
+  const response = await fetch(url, { signal: signal ?? null, cache: 'no-store', headers: { accept: 'application/json', 'cache-control': 'no-cache' } }); const text = await response.text(); let body: Record<string, unknown>
+  try { body = text ? JSON.parse(text) as Record<string, unknown> : {} } catch { throw new Error(response.status === 404 || text.trim() === 'not found' ? '迭代故事点接口尚未加载，请完全重启 DSH Desktop' : `服务返回了无法识别的内容 (${response.status})`) }
+  if (!response.ok) throw new Error(typeof body.error === 'string' ? body.error : `请求失败 (${response.status})`); return body as T
 }
-function readTeam(): string[] {
+function readTeams(): Team[] {
   try {
-    const saved: unknown = JSON.parse(localStorage.getItem(TEAM_KEY) ?? '[]')
-    return Array.isArray(saved) ? [...new Set(saved.filter((value): value is string => typeof value === 'string' && /^[A-Za-z0-9_.@-]{1,128}$/u.test(value)))] : []
+    const saved: unknown = JSON.parse(localStorage.getItem(TEAMS_KEY) ?? '[]')
+    if (Array.isArray(saved) && saved.length) return saved.flatMap(value => value && typeof value === 'object' ? [{ id: String((value as Team).id), name: String((value as Team).name), members: Array.isArray((value as Team).members) ? [...new Set((value as Team).members)] : [] }] : [])
+    const legacy: unknown = JSON.parse(localStorage.getItem(LEGACY_TEAM_KEY) ?? '[]')
+    return Array.isArray(legacy) && legacy.length ? [{ id: 'team-default', name: '默认团队', members: legacy.filter((value): value is string => typeof value === 'string') }] : []
   } catch { return [] }
 }
 
-export function StoryPoints() {
-  const [sprints, setSprints] = useState<Sprint[]>([])
-  const [users, setUsers] = useState<User[]>([])
-  const [sprint, setSprint] = useState('')
-  const [owner, setOwner] = useState('currentUser()')
-  const [team, setTeam] = useState(readTeam)
-  const [adding, setAdding] = useState(false)
-  const [search, setSearch] = useState('')
-  const [results, setResults] = useState<Record<string, Result>>({})
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const [directoryError, setDirectoryError] = useState('')
-  const [directoryLoading, setDirectoryLoading] = useState(true)
-  const [version, setVersion] = useState(0)
-  const [directoryVersion, setDirectoryVersion] = useState(0)
-  const [editing, setEditing] = useState<Item | null>(null)
-  const [draft, setDraft] = useState('')
-  const [saving, setSaving] = useState(false)
-  const [saveError, setSaveError] = useState('')
-  const [notice, setNotice] = useState('')
+export function StoryPoints({ toolbarTarget, onOpenItem }: { toolbarTarget: Dispatch<SetStateAction<ReactNode>>; onOpenItem: (item: TomatoItem) => void }) {
+  const [sprints, setSprints] = useState<Sprint[]>([]); const [users, setUsers] = useState<User[]>([])
+  const [sprint, setSprint] = useState(() => savedValue(SPRINT_KEY, '')); const [owner, setOwner] = useState(() => savedValue(OWNER_KEY, 'currentUser()'))
+  const [teams, setTeams] = useState(readTeams); const [openTeamId, setOpenTeamId] = useState(() => readTeams()[0]?.id ?? '')
+  const [loadedTeams, setLoadedTeams] = useState<Set<string>>(() => { const first = readTeams()[0]?.id; return new Set(first ? [first] : []) }); const [teamDraft, setTeamDraft] = useState(''); const [teamEditor, setTeamEditor] = useState<{ mode: 'create' | 'rename'; id?: string } | null>(null)
+  const [addingTeamId, setAddingTeamId] = useState(''); const addPeopleRef = useRef<HTMLDivElement>(null); const addPeopleInputRef = useRef<HTMLInputElement>(null); const [search, setSearch] = useState('')
+  const [results, setResults] = useState<Record<string, Result>>({}); const [errors, setErrors] = useState<Record<string, string>>({}); const [directoryError, setDirectoryError] = useState(''); const [directoryLoading, setDirectoryLoading] = useState(true); const [version, setVersion] = useState(0); const [directoryVersion, setDirectoryVersion] = useState(0)
   useEffect(() => {
-    const controller = new AbortController()
-    setDirectoryLoading(true)
-    setDirectoryError('')
-    void Promise.all([
-      json<{ sprints: Sprint[] }>('/api/tomato-board/sprints', controller.signal),
-      json<{ users: User[] }>('/api/tomato-board/filters', controller.signal),
-    ]).then(([data, directory]) => {
-      const sorted = [...data.sprints].sort((a, b) => (b.startDate ?? '').localeCompare(a.startDate ?? ''))
-      setSprints(sorted)
-      setUsers(directory.users)
-      setSprint(current => current || sorted[0]?.sprintId || '')
-    }).catch(error => { if (!controller.signal.aborted) setDirectoryError(error.message) })
-      .finally(() => { if (!controller.signal.aborted) setDirectoryLoading(false) })
-    return () => controller.abort()
+    const controller = new AbortController(); setDirectoryLoading(true); setDirectoryError('')
+    void Promise.all([json<{ sprints: Sprint[] }>('/api/tomato-board/sprints', controller.signal), json<{ users: User[] }>('/api/tomato-board/filters', controller.signal)]).then(([data, directory]) => { const sorted = [...data.sprints].sort((a, b) => (b.startDate ?? '').localeCompare(a.startDate ?? '')); setSprints(sorted); setUsers(directory.users); setSprint(current => sorted.some(value => value.sprintId === current) ? current : sorted[0]?.sprintId || '') }).catch(error => { if (!controller.signal.aborted) setDirectoryError(error.message) }).finally(() => { if (!controller.signal.aborted) setDirectoryLoading(false) }); return () => controller.abort()
   }, [directoryVersion])
-  useEffect(() => { try { localStorage.setItem(TEAM_KEY, JSON.stringify(team)) } catch { /* Storage can be disabled. */ } }, [team])
-  const ownersKey = JSON.stringify([...new Set([owner, ...team])].sort())
+  useEffect(() => { try { localStorage.setItem(TEAMS_KEY, JSON.stringify(teams)) } catch {} }, [teams]); useEffect(() => { if (sprint) try { localStorage.setItem(SPRINT_KEY, sprint) } catch {} }, [sprint]); useEffect(() => { try { localStorage.setItem(OWNER_KEY, owner) } catch {} }, [owner])
+  const openTeam = teams.find(team => team.id === openTeamId); const openMembers = openTeam?.members ?? []; const ownersKey = JSON.stringify([...new Set([owner, ...(loadedTeams.has(openTeamId) ? openMembers : [])])].sort())
   useEffect(() => {
-    if (!sprint) return
-    const controller = new AbortController()
-    setResults({})
-    setErrors({})
-    const owners = JSON.parse(ownersKey) as string[]
-    // Keep CLI pressure bounded when comparing a larger team.
-    const worker = async () => {
-      while (owners.length && !controller.signal.aborted) {
-        const username = owners.shift()!
-        try {
-          const data = await json<Result>(`/api/tomato-board/story-points?${new URLSearchParams({ sprint, assignee: username })}`, controller.signal)
-          if (!controller.signal.aborted) setResults(current => ({ ...current, [username]: data }))
-        } catch (error) {
-          if (!controller.signal.aborted) setErrors(current => ({ ...current, [username]: error instanceof Error ? error.message : '读取失败' }))
-        }
-      }
-    }
-    void Promise.all([worker(), worker(), worker()])
-    return () => controller.abort()
+    if (!sprint) return; const controller = new AbortController(); const owners = (JSON.parse(ownersKey) as string[]).filter(username => !results[username] && !errors[username])
+    const worker = async () => { while (owners.length && !controller.signal.aborted) { const username = owners.shift()!; try { const data = await json<Result>(`/api/tomato-board/story-points?${new URLSearchParams({ sprint, assignee: username, refresh: String(version) })}`, controller.signal); if (!controller.signal.aborted) setResults(current => ({ ...current, [username]: data })) } catch (error) { if (!controller.signal.aborted) setErrors(current => ({ ...current, [username]: error instanceof Error ? error.message : '读取失败' })) } } }; void Promise.all([worker(), worker(), worker()]); return () => controller.abort()
   }, [sprint, ownersKey, version])
-  const personal = results[owner]
-  const items = useMemo(() => [...(personal?.items ?? [])].sort((a, b) => (b.storyPoints ?? -1) - (a.storyPoints ?? -1) || a.itemKey.localeCompare(b.itemKey)), [personal])
-  const sum = total(items)
-  const slices = items.filter(item => item.storyPoints !== null && item.storyPoints > 0)
-  let offset = 0
-  const gradient = slices.map((item, index) => {
-    const start = offset
-    offset += item.storyPoints! / sum * 100
-    return `${colors[index % colors.length]} ${start}% ${offset}%`
-  }).join(', ')
-  const userName = (username: string) => username === 'currentUser()' ? '我' : users.find(user => user.username === username)?.name ?? username
-  const ranking = team.map(username => ({ username, result: results[username], points: total(results[username]?.items ?? []) }))
-    .sort((a, b) => Number(Boolean(b.result)) - Number(Boolean(a.result)) || b.points - a.points || a.username.localeCompare(b.username))
-  const max = Math.max(1, ...ranking.map(row => row.points))
-  const available = users.filter(user => !team.includes(user.username) && `${user.name} ${user.username}`.toLowerCase().includes(search.toLowerCase()))
-  const refresh = () => { setResults({}); setErrors({}); setVersion(value => value + 1) }
-  const changeSprint = (value: string) => { setResults({}); setErrors({}); setSprint(value); setEditing(null); setNotice('') }
-  async function save() {
-    if (!editing || saving) return
-    if (!draft.trim() || !Number.isFinite(Number(draft)) || Number(draft) < 0) { setSaveError('请输入大于或等于 0 的故事点'); return }
-    setSaving(true)
-    setSaveError('')
-    try {
-      await json(`/api/tomato-board/story-point/${encodeURIComponent(editing.itemKey)}?${new URLSearchParams({ value: draft })}`, undefined, 'POST')
-      setNotice(`${editing.itemKey} 故事点已保存`)
-      setEditing(null)
-      refresh()
-    } catch (error) { setSaveError(error instanceof Error ? error.message : '保存失败') }
-    finally { setSaving(false) }
-  }
-  return <div className={css.page}>
-    <div className={css.toolbar}>
-      <div><span className={css.eyebrow}>SPRINT / STORY POINTS</span><h2>迭代故事点</h2><p>看清个人投入，比较团队分布</p></div>
-      <div className={css.controls}><label>迭代<select aria-label="选择迭代" value={sprint} disabled={directoryLoading || saving} onChange={event => changeSprint(event.target.value)}>
-        {!sprints.length && <option value="">{directoryLoading ? '正在读取迭代…' : '暂无迭代'}</option>}
-        {sprints.map(value => <option key={value.sprintId} value={value.sprintId}>{value.name} · {value.workspaceKey}{value.status === 'completed' ? '（已结束）' : ''}</option>)}
-      </select></label><Button variant="toolbar" size="sm" className={css.headerIconButton} icon={<IconRefreshOutline16 />} title="刷新迭代故事点" aria-label="刷新迭代故事点" disabled={saving} onClick={() => { refresh(); if (directoryError || !sprints.length) setDirectoryVersion(value => value + 1) }} /></div>
-    </div>
-    {directoryError && <p className={css.error} role="alert">{directoryError}，请点击刷新重试。</p>}
-    {notice && <p role="status" className={css.notice}>{notice}</p>}
-    {!directoryLoading && !directoryError && !sprints.length && <p className={css.empty}>当前没有可访问的迭代。</p>}
-    <div className={css.columns}>
-      <section className={css.panel} aria-label="个人故事点">
-        <div className={css.panelHeader}><h3>个人分布</h3><select aria-label="选择个人负责人" value={owner} disabled={saving} onChange={event => { setOwner(event.target.value); setEditing(null); setNotice('') }}>
-          <option value="currentUser()">我负责的</option>{users.map(user => <option key={user.username} value={user.username}>{user.name} · {user.username}</option>)}
-        </select></div>
-        {errors[owner] ? <p role="alert" className={css.error}>{errors[owner]}</p> : !personal ? <p className={css.empty} role="status">{sprint ? '正在读取个人故事点…' : '请选择迭代'}</p> : <>
-          {personal.truncated && <p className={css.error}>事项达到读取上限，以下为部分统计。</p>}
-          <div className={css.summary}><div><span className={css.eyebrow}>故事点总数</span><div className={css.total}>{number(sum)}<small> SP</small></div><p>{items.filter(item => item.storyPoints !== null).length} 项已估点 · {items.filter(item => item.storyPoints === null).length} 项未填写</p></div>
-            <div className={css.pie} role="img" aria-label={`个人故事点分布，共 ${number(sum)} 点；各需求明细见下方列表`} style={{ background: gradient ? `conic-gradient(${gradient})` : undefined }}><div><strong>{slices.length}</strong><span>项占比</span></div></div>
-          </div>
-          <div className={css.listHeading}><h4>需求列表</h4><span>{items.length} 项</span></div>
-          {!items.length && <p className={css.empty}>该负责人在本迭代暂无事项。</p>}
-          {items.length > 0 && !slices.length && <p className={css.notice}>暂无大于 0 的故事点，填写后即可查看分布。</p>}
-          <div className={css.items}>{items.map(item => <div className={css.item} key={item.itemKey}>
-            <span className={css.dot} style={{ background: item.storyPoints && item.storyPoints > 0 ? colors[slices.indexOf(item) % colors.length] : 'var(--dsw-alias-border-l2, #ddd)' }} />
-            <div className={css.itemText}><a href={item.tomatoUrl} target="_blank" rel="noreferrer">{item.title}</a><small>{item.itemKey} · {item.status}</small></div>
-            <strong className={css.itemPoints}>{item.storyPoints === null ? '未填写' : `${number(item.storyPoints)} SP`}</strong><button disabled={saving} onClick={() => { setEditing(item); setDraft(item.storyPoints === null ? '' : String(item.storyPoints)); setSaveError('') }}>调整</button>
-          </div>)}</div>
-        </>}
-      </section>
-      <section className={css.panel} aria-label="团队故事点">
-        <div className={css.panelHeader}><h3>团队排行</h3><button aria-expanded={adding} onClick={() => setAdding(value => !value)}>＋ 添加负责人</button></div>
-        {adding && <div className={css.addPeople}><input type="search" aria-label="搜索团队负责人" placeholder="搜索姓名或用户名…" value={search} onChange={event => setSearch(event.target.value)} /><div>{available.map(user => <button key={user.username} disabled={saving} onClick={() => setTeam(current => [...current, user.username])}>{user.name}<small>{user.username}</small><span>＋</span></button>)}{!available.length && <p>没有可添加的负责人</p>}</div></div>}
-        <div className={css.chips}>{team.map(username => <span key={username}>{userName(username)}<button disabled={saving} aria-label={`移除 ${userName(username)}`} onClick={() => setTeam(current => current.filter(value => value !== username))}>×</button></span>)}</div>
-        <p className={css.caption}>按故事点从高到低排列 · {team.length} 位负责人</p>
-        {!team.length && <div className={css.empty}><span className={css.emptyIcon}>▥</span><h4>一起看看团队的投入</h4><p>添加负责人，比较本迭代的故事点分布。</p></div>}
-        <div className={css.ranking}>{ranking.map((row, index) => <div key={row.username} className={css.rankRow}>
-          <div className={css.rankLabel}><span>{row.result ? String(index + 1).padStart(2, '0') : '—'}</span><strong>{userName(row.username)}</strong><b>{row.result ? `${number(row.points)} SP` : errors[row.username] ? '读取失败' : '读取中…'}</b></div>
-          {row.result ? <><div className={css.track}><div style={{ width: `${row.points / max * 100}%` }} /></div><small>{row.result.items.length} 个事项{row.result.truncated ? ' · 仅统计部分事项' : ''}</small></> : errors[row.username] ? <p className={css.error}>{errors[row.username]}</p> : null}
-        </div>)}</div>
-        <p className={css.footnote}>统计当前迭代全部状态的卡片；未填故事点不计入总数，多负责人卡片分别计入各负责人。团队名单保存在当前浏览器。</p>
-      </section>
-    </div>
-    {editing && <div className={css.modalBackdrop}><form className={css.dialog} role="dialog" aria-modal="true" aria-labelledby="story-edit-title" onSubmit={event => { event.preventDefault(); void save() }} onKeyDown={event => { if (event.key === 'Escape' && !saving) setEditing(null); if (event.key === 'Tab') { const nodes = event.currentTarget.querySelectorAll<HTMLElement>('input:not(:disabled), button:not(:disabled)'); const first = nodes[0]; const last = nodes[nodes.length - 1]; if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus() } else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus() } } }}>
-      <h3 id="story-edit-title">调整故事点</h3><p>{editing.itemKey} · {editing.title}</p><label>故事点<input autoFocus type="number" min="0" step="any" required value={draft} disabled={saving} onChange={event => setDraft(event.target.value)} /></label>
-      <small>保存后同步到番茄卡片，并更新个人和团队统计。</small>{saveError && <p className={css.error} role="alert">{saveError}</p>}<div className={css.dialogActions}><button type="button" disabled={saving} onClick={() => setEditing(null)}>取消</button><button type="submit" disabled={saving}>{saving ? '保存中…' : '保存故事点'}</button></div>
-    </form></div>}
-  </div>
+  const personal = results[owner]; const items = useMemo(() => [...(personal?.items ?? [])].sort((a, b) => (b.storyPoints ?? -1) - (a.storyPoints ?? -1) || a.itemKey.localeCompare(b.itemKey)), [personal]); const sum = total(items); const slices = items.filter(item => item.storyPoints !== null && item.storyPoints > 0); let offset = 0
+  const gradient = slices.map((item, index) => { const start = offset; offset += item.storyPoints! / sum * 100; return `${colors[index % colors.length]} ${start}% ${offset}%` }).join(', '); const userName = (username: string) => username === 'currentUser()' ? '我' : users.find(user => user.username === username)?.name ?? username
+  const toggleTeam = (id: string) => { setOpenTeamId(current => current === id ? '' : id); setLoadedTeams(current => new Set(current).add(id)); setAddingTeamId(''); setTeamEditor(null) }
+  const ranking = openMembers.map(username => ({ username, result: results[username], points: total(results[username]?.items ?? []) })).sort((a, b) => Number(Boolean(b.result)) - Number(Boolean(a.result)) || b.points - a.points || a.username.localeCompare(b.username)); const max = Math.max(1, ...ranking.map(row => row.points)); const available = users.filter(user => !openMembers.includes(user.username) && `${user.name} ${user.username}`.toLowerCase().includes(search.toLowerCase()))
+  const submitTeam = () => { const name = teamDraft.trim(); if (!name || !teamEditor) return; if (teamEditor.mode === 'create') { const team = { id: teamId(), name, members: [] }; setTeams(current => [...current, team]); setOpenTeamId(team.id); setLoadedTeams(current => new Set(current).add(team.id)) } else setTeams(current => current.map(team => team.id === teamEditor.id ? { ...team, name } : team)); setTeamDraft(''); setTeamEditor(null) }
+  const deleteTeam = (id: string) => { setTeams(current => current.filter(team => team.id !== id)); if (openTeamId === id) setOpenTeamId(''); setLoadedTeams(current => { const next = new Set(current); next.delete(id); return next }) }
+  const updateMembers = (id: string, updater: (values: string[]) => string[]) => setTeams(current => current.map(team => team.id === id ? { ...team, members: updater(team.members) } : team))
+  useEffect(() => { if (!addingTeamId) return; const close = (event: PointerEvent) => { if (event.target instanceof Node && !addPeopleRef.current?.contains(event.target)) { setAddingTeamId(''); setSearch('') } }; document.addEventListener('pointerdown', close, true); requestAnimationFrame(() => addPeopleInputRef.current?.focus()); return () => document.removeEventListener('pointerdown', close, true) }, [addingTeamId])
+  useEffect(() => { toolbarTarget(<div className={css.headerControls}><label><span>迭代</span><select aria-label="选择迭代" value={sprint} disabled={directoryLoading} onChange={event => { setSprint(event.target.value); setResults({}); setErrors({}); setLoadedTeams(new Set()) }}>{!sprints.length && <option value="">{directoryLoading ? '正在读取迭代…' : '暂无迭代'}</option>}{sprints.map(value => <option key={value.sprintId} value={value.sprintId}>{value.name} · {value.workspaceKey}{value.status === 'completed' ? '（已结束）' : ''}</option>)}</select></label><Button variant="toolbar" size="sm" className={css.headerIconButton} icon={<IconRefreshOutline16 />} title="刷新" aria-label="刷新迭代故事点" onClick={() => { setResults({}); setErrors({}); setVersion(value => value + 1); if (directoryError || !sprints.length) setDirectoryVersion(value => value + 1) }} /></div>); return () => toolbarTarget(null) }, [directoryError, directoryLoading, sprint, sprints, toolbarTarget])
+  return <div className={css.page}>{directoryError && <p className={css.error}>{directoryError}，请点击刷新重试。</p>}<div className={css.columns}>
+    <section className={css.panel} aria-label="个人故事点"><div className={css.panelHeader}><h3>个人分布</h3><select aria-label="选择个人负责人" value={owner} onChange={event => setOwner(event.target.value)}><option value="currentUser()">我负责的</option>{users.map(user => <option key={user.username} value={user.username}>{user.name} · {user.username}</option>)}</select></div>{errors[owner] ? <p className={css.error}>{errors[owner]}</p> : !personal ? <p className={css.empty}>{sprint ? '正在读取个人故事点…' : '请选择迭代'}</p> : <><div className={css.summary}><div><span className={css.eyebrow}>故事点总数</span><div className={css.total}>{number(sum)}<small> SP</small></div></div><div className={css.pie} style={{ background: gradient ? `conic-gradient(${gradient})` : undefined }}><div><strong>{slices.length}</strong><span>项占比</span></div></div></div><div className={css.listHeading}><h4>需求列表</h4><span>{items.length} 项</span></div>{!items.length && <p className={css.empty}>该负责人在本迭代暂无事项。</p>}<div>{items.map(item => <div className={css.item} key={item.itemKey} role="button" tabIndex={0} aria-label={`打开 ${item.itemKey} 的对话`} onClick={() => onOpenItem(item)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onOpenItem(item) } }}><span className={css.dot} style={{ background: item.storyPoints && item.storyPoints > 0 ? colors[slices.indexOf(item) % colors.length] : 'var(--dsw-alias-border-l2, #ddd)' }} /><div className={css.itemText}><span className={css.itemTitle}>{item.title}</span><small>{item.itemKey}</small><span className={css.statusTag}>{item.status}</span></div><strong className={css.itemPoints}>{item.storyPoints === null ? '未估点' : `${number(item.storyPoints)} SP`}</strong><Button className={css.tomatoLink} variant="ghost" size="sm" title="在番茄中打开事项" aria-label={`在番茄中打开 ${item.itemKey}`} onClick={event => { event.stopPropagation(); window.open(item.tomatoUrl, '_blank', 'noopener,noreferrer') }} onKeyDown={event => event.stopPropagation()}>↗</Button></div>)}</div></>}</section>
+    <section className={css.panel} aria-label="团队故事点"><div className={css.teamsHeader}><h3>团队分布</h3><button className={css.addTeamButton} aria-label="创建团队" title="创建团队" onClick={() => { setTeamEditor({ mode: 'create' }); setTeamDraft('') }}>＋ 创建团队</button></div>{teamEditor?.mode === 'create' && <form className={css.teamEditor} onSubmit={event => { event.preventDefault(); submitTeam() }}><input autoFocus placeholder="团队名称" value={teamDraft} onChange={event => setTeamDraft(event.target.value)} /><button type="button" onClick={() => setTeamEditor(null)}>取消</button><button type="submit">创建</button></form>}<div className={css.teamAccordions}>{teams.map(team => { const open = openTeamId === team.id; const rows = open ? ranking : []; return <article className={css.teamAccordion} key={team.id}><div className={css.teamAccordionHeader}><button className={css.teamToggle} aria-expanded={open} onClick={() => toggleTeam(team.id)}><span className={css.chevron}>›</span><strong>{team.name}</strong><small>{team.members.length} 人</small></button><button className={css.renameTeam} aria-label={`改名 ${team.name}`} title="改名" onClick={() => { setTeamEditor({ mode: 'rename', id: team.id }); setTeamDraft(team.name); setOpenTeamId(team.id) }}>✎</button><div className={css.teamRowActions}><button aria-label={`删除 ${team.name}`} title="删除" onClick={() => deleteTeam(team.id)}>×</button></div></div>{teamEditor?.mode === 'rename' && teamEditor.id === team.id && <form className={css.teamEditor} onSubmit={event => { event.preventDefault(); submitTeam() }}><input autoFocus value={teamDraft} onChange={event => setTeamDraft(event.target.value)} /><button type="button" onClick={() => setTeamEditor(null)}>取消</button><button type="submit">保存</button></form>}{open && <div className={css.teamBody}><div className={css.teamBodyToolbar}><span>{team.members.length ? '成员故事点' : '暂无成员'}</span><div ref={addingTeamId === team.id ? addPeopleRef : undefined} className={css.addPeopleRoot}><button className={css.smallAddButton} onClick={() => setAddingTeamId(current => current === team.id ? '' : team.id)}>＋ 添加成员</button>{addingTeamId === team.id && <div className={css.addPeople} role="dialog"><div className={css.addPeopleTitle}><strong>添加成员</strong><button onClick={() => setAddingTeamId('')}>×</button></div><input ref={addPeopleInputRef} value={search} onChange={event => setSearch(event.target.value)} placeholder="搜索姓名或用户名…" /><div>{available.map(user => <button key={user.username} onClick={() => { updateMembers(team.id, current => [...current, user.username]); setAddingTeamId(''); setSearch('') }}>{user.name}<small>{user.username}</small><span>＋</span></button>)}{!available.length && <p>没有可添加的成员</p>}</div></div>}</div></div><div className={css.ranking}>{rows.map((row, index) => <div key={row.username} className={css.rankRow}><div className={css.memberRow}><button className={css.rankLabel} aria-pressed={owner === row.username} onClick={() => setOwner(row.username)}><i className={css.rankFill} style={{ width: `${row.points / max * 100}%` }} /><span className={css.rankIndex}>{String(index + 1).padStart(2, '0')}</span><span className={css.memberAvatar}>{userName(row.username).slice(0, 1)}</span><span className={css.memberIdentity}><strong>{userName(row.username)}</strong><small>{row.result ? `${row.result.items.length} 个事项` : errors[row.username] ? '读取失败' : '读取中…'}</small></span><b>{row.result ? `${number(row.points)} SP` : '—'}</b></button><button className={css.removeMember} aria-label={`移除 ${userName(row.username)}`} title="移除成员" onClick={() => updateMembers(team.id, current => current.filter(value => value !== row.username))}>×</button></div></div>)}</div>{!team.members.length && <div className={css.teamBodyEmpty}>添加成员后查看故事点分布</div>}</div>}</article> })}</div>{!teams.length && <div className={css.empty}>点击右上角加号创建团队。</div>}</section>
+  </div></div>
 }

@@ -18,6 +18,8 @@ interface PullRequest {
   updatedAt: string
   url: string
   draft: boolean
+  sourceBranch: string
+  targetBranch: string
 }
 
 interface RepositoryResult {
@@ -709,24 +711,18 @@ function PrAssistantPanel({ ctx, close }: { ctx: Context; close: () => void }) {
             )
           ) : null}
         </main>
-      ) : (<>
-        <div className={css.summary}>
-          <div><strong>{total}</strong><span>Open PR</span></div>
-          <div><strong>{visibleResults.filter(item => item.openCount > 0).length}</strong><span>等待审查的仓库</span></div>
-          <div><strong>{visibleResults.filter(item => item.error).length}</strong><span>需要配置</span></div>
-        </div>
+      ) : (
         <main className={css.grid}>
         {filtered.map(result => (
           <article className={css.repo} key={result.workspaceId}>
             <div className={css.repoHeader}>
-              <div>
+              <div className={css.repoIdentity}>
                 <span className={css.provider}>{result.provider ?? 'GIT'}</span>
-                <h2>{result.repository ?? result.workspaceTitle}</h2>
-                <p>{result.workspaceTitle}</p>
+                <h2 title={result.repository ?? result.workspaceTitle}>{result.repository ?? result.workspaceTitle}</h2>
               </div>
               <div className={css.repoTools}>
+                <span className={result.openCount ? css.countActive : css.count}>{result.openCount} 个 PR</span>
                 <button className={css.hideRepo} type="button" onClick={() => hideRepository(result.workspaceId)}>隐藏</button>
-                <span className={result.openCount ? css.countActive : css.count}>{result.openCount}</span>
               </div>
             </div>
             {result.error ? (
@@ -740,6 +736,12 @@ function PrAssistantPanel({ ctx, close }: { ctx: Context; close: () => void }) {
                       <span className={css.prNumber}>#{pr.number}</span>
                       <span className={css.prTitle}>{pr.title}</span>
                       {pr.draft ? <span className={css.draft}>草稿</span> : null}
+                      {pr.sourceBranch || pr.targetBranch ? (
+                        <span className={css.branches}>
+                          <span className={css.sourceBranch} title={`来源分支：${pr.sourceBranch || '未知'}`}><b>来源</b><code>{pr.sourceBranch || '未知'}</code></span>
+                          <span className={css.targetBranch} title={`目标分支：${pr.targetBranch || '未知'}`}><b>目标</b><code>{pr.targetBranch || '未知'}</code></span>
+                        </span>
+                      ) : null}
                       <span className={css.meta}>{pr.author || '未知作者'} · {relativeTime(pr.updatedAt)}</span>
                     </button>
                     <button className={css.externalLink} type="button" aria-label="打开 PR" title="打开 PR" onClick={() => window.open(pr.url, '_blank', 'noopener,noreferrer')}>
@@ -757,7 +759,7 @@ function PrAssistantPanel({ ctx, close }: { ctx: Context; close: () => void }) {
         ))}
         {!loading && filtered.length === 0 ? <div className={css.noResults}>没有匹配的仓库</div> : null}
         </main>
-      </>)}</div>
+      )}</div>
       {reviewOpen && selection && detail ? (
         <AiReviewDialog
           ctx={ctx}

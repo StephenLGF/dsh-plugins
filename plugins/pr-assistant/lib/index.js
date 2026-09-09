@@ -382,13 +382,19 @@ async function loadRepository(path, config) {
 			const item = value && typeof value === "object" ? value : {};
 			const authorValue = item.user ?? item.author;
 			const author = authorValue && typeof authorValue === "object" ? authorValue : {};
+			const headValue = item.head;
+			const head = headValue && typeof headValue === "object" ? headValue : {};
+			const baseValue = item.base;
+			const base = baseValue && typeof baseValue === "object" ? baseValue : {};
 			return {
 				number: Number(item.number || item.iid || item.id || 0),
 				title: String(item.title ?? ""),
 				author: String(author.login ?? author.name ?? ""),
 				updatedAt: String(item.updated_at ?? ""),
 				url: String(item.html_url || item.web_url || item.url || ""),
-				draft: item.draft === true || item.state === "drafted"
+				draft: item.draft === true || item.state === "drafted",
+				sourceBranch: String(item.source_branch || head.ref || ""),
+				targetBranch: String(item.target_branch || base.ref || "")
 			};
 		})
 	};

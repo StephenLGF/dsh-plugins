@@ -4,6 +4,6 @@
       config:
         executable: gitee
         profile: osc
-        iql: "负责人 = currentUser() and 所属空间 in ['Gitee-Team', 'Gitee-Test'] and 类型 in ['Story', 'EnablerStory', 'Bug', '测试缺陷']"
+        iql: ""
         tomatoOrigin: https://osc.gitee.work
         tomatoTenant: xly-poc

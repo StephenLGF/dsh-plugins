@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import type { Context } from '@deepseek-ai/cordis'
 import type {} from '@deepseek-ai/dsh-api-session-controller/client'
 import type { WorkspaceView } from '@deepseek-ai/dsh-api-workspace-controller/client'
@@ -13,16 +13,30 @@ import {
 import type { PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import { SessionId } from '@deepseek-ai/dsh-session/types'
 import css from './tomato-board.module.css'
+import { StoryPoints } from './StoryPoints'
 
-interface TomatoItem {
+export interface TomatoItem {
   itemKey: string
   title: string
   status: string
   itemType: string
   workspace: string
+  workspaceKey: string
+  workspaceName: string
   creator: string
+  assignees: string[]
   priority: string
   tomatoUrl: string
+}
+
+interface FilterDirectory {
+  users: Array<{ username: string; name: string }>
+  workspaces: Array<{ key: string; name: string }>
+}
+
+interface LaneOrder {
+  head: string | null
+  next: Record<string, string | null>
 }
 
 interface TomatoTransition {
@@ -65,7 +79,6 @@ const snapshot = () => state
 // 进而错误地在对话头上渲染出状态流转按钮并触发无意义的 CLI 调用。
 const TOMATO_ITEM_KEY_PATTERN = /^\[([A-Za-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)*-\d+)\]/u
 
-const TOMATO_TYPE_OPTIONS = ['测试缺陷', '缺陷', 'Bug', 'EnablerStory', 'Story', 'Task']
 const TOMATO_STATUS_ORDER = [
   '新建', 'Bugfix', '修复中', '开发中', '待测试', '测试中', '测试通过', '已完成',
   '已取消', '延期解决', '测试完成', '待开发', '不修复', '已挂起',
@@ -73,6 +86,44 @@ const TOMATO_STATUS_ORDER = [
 const TOMATO_FILTER_BLACKLIST_KEY = 'taskboard.tomatoFilterBlacklist.v1'
 const TOMATO_SESSION_LINKS_KEY = 'taskboard.tomatoSessionLinks.v1'
 const TOMATO_MUTED_ITEMS_KEY = 'taskboard.tomatoMutedItems.v1'
+const TOMATO_LANE_ORDER_KEY = 'taskboard.tomatoLaneOrder.v1'
+
+function readLaneOrder(): LaneOrder {
+  try {
+    const value = JSON.parse(window.localStorage.getItem(TOMATO_LANE_ORDER_KEY) ?? '{}')
+    return {
+      head: typeof value?.head === 'string' ? value.head : null,
+      next: value?.next && typeof value.next === 'object' ? value.next as Record<string, string | null> : {},
+    }
+  } catch {
+    return { head: null, next: {} }
+  }
+}
+
+function laneOrderValues(order: LaneOrder): string[] {
+  const values: string[] = []
+  const seen = new Set<string>()
+  let current = order.head
+  while (current && !seen.has(current) && values.length < 1000) {
+    values.push(current)
+    seen.add(current)
+    current = order.next[current] ?? null
+  }
+  return values
+}
+
+function createLaneOrder(values: string[]): LaneOrder {
+  const next: Record<string, string | null> = {}
+  values.forEach((value, index) => { next[value] = values[index + 1] ?? null })
+  return { head: values[0] ?? null, next }
+}
+
+function applyLaneOrder(statuses: string[], order: LaneOrder): string[] {
+  const available = new Set(statuses)
+  const tracked = laneOrderValues(order).filter(status => available.has(status))
+  const trackedSet = new Set(tracked)
+  return [...tracked, ...statuses.filter(status => !trackedSet.has(status))]
+}
 
 function readSessionLinks(): Record<string, string> {
   try {
@@ -94,15 +145,16 @@ function saveSessionLink(itemKey: string, sessionId: SessionId) {
   window.localStorage.setItem(TOMATO_SESSION_LINKS_KEY, JSON.stringify(links))
 }
 
-function readFilterBlacklist(): { types: Set<string>; statuses: Set<string> } {
+function readFilterBlacklist(): { types: Set<string>; statuses: Set<string>; workspaces: Set<string> } {
   try {
     const value = JSON.parse(window.localStorage.getItem(TOMATO_FILTER_BLACKLIST_KEY) ?? '{}')
     return {
       types: new Set(Array.isArray(value?.types) ? value.types.filter((item: unknown): item is string => typeof item === 'string') : []),
       statuses: new Set(Array.isArray(value?.statuses) ? value.statuses.filter((item: unknown): item is string => typeof item === 'string') : []),
+      workspaces: new Set(Array.isArray(value?.workspaces) ? value.workspaces.filter((item: unknown): item is string => typeof item === 'string') : []),
     }
   } catch {
-    return { types: new Set(), statuses: new Set() }
+    return { types: new Set(), statuses: new Set(), workspaces: new Set() }
   }
 }
 
@@ -115,10 +167,11 @@ function readMutedItems(): Set<string> {
   }
 }
 
-async function refresh() {
+async function refresh(assignee = 'currentUser()') {
   emit({ loading: true, error: null })
   try {
-    const response = await fetch('/api/tomato-board/items', { headers: { accept: 'application/json' } })
+    const query = new URLSearchParams({ assignee })
+    const response = await fetch(`/api/tomato-board/items?${query}`, { headers: { accept: 'application/json' } })
     const body = await response.json() as { items?: TomatoItem[]; truncated?: boolean; error?: string }
     if (!response.ok) throw new Error(body.error || `请求失败 (${response.status})`)
     emit({ items: body.items ?? [], truncated: body.truncated === true })
@@ -141,6 +194,15 @@ function TomatoBoardAction({ wide, openWorkbench }: { wide: boolean; openWorkben
     <button className={css.sidebarAction} type="button" title="番茄工作台" onClick={openWorkbench}>
       <span className={css.tomatoIcon} aria-hidden="true">T</span>
       {wide && <span>番茄工作台</span>}
+    </button>
+  )
+}
+
+function TomatoBoardTopbarAction({ openWorkbench }: { openWorkbench: () => void }) {
+  return (
+    <button className={css.topbarAction} type="button" title="打开番茄工作台" onClick={openWorkbench}>
+      <span className={css.tomatoIcon} aria-hidden="true">T</span>
+      <span>番茄工作台</span>
     </button>
   )
 }
@@ -242,9 +304,19 @@ function CreateConversationDialog({ ctx, item }: { ctx: Context; item: TomatoIte
 function TomatoBoardPanel({ ctx }: { ctx: Context }) {
   const board = useSyncExternalStore(subscribe, snapshot, snapshot)
   const workbenchRef = useRef<HTMLElement>(null)
+  const filterMenuRef = useRef<HTMLDetailsElement>(null)
+  const [page, setPage] = useState<'board' | 'points'>('board')
+  const [storyToolbar, setStoryToolbar] = useState<React.ReactNode>(null)
   const [search, setSearch] = useState('')
   const [blacklist, setBlacklist] = useState(readFilterBlacklist)
   const [mutedItems, setMutedItems] = useState(readMutedItems)
+  const [selectedAssignee, setSelectedAssignee] = useState('currentUser()')
+  const [filterDirectory, setFilterDirectory] = useState<FilterDirectory>({ users: [], workspaces: [] })
+  const [laneOrder, setLaneOrder] = useState(readLaneOrder)
+  const [draggedLane, setDraggedLane] = useState<string | null>(null)
+  const [dropLane, setDropLane] = useState<{ status: string; after: boolean } | null>(null)
+  const laneElements = useRef(new Map<string, HTMLElement>())
+  const previousLanePositions = useRef(new Map<string, DOMRect>())
   const sessions = useSyncExternalStore(
     listener => ctx.sessions.list.subscribe(listener),
     () => ctx.sessions.list.getSnapshot(),
@@ -256,6 +328,13 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
   }, [board.error, board.items.length, board.loading, board.open])
   useEffect(() => {
     if (!board.open) return
+    void fetch('/api/tomato-board/filters', { headers: { accept: 'application/json' } })
+      .then(response => response.ok ? response.json() : Promise.reject(new Error(`HTTP ${response.status}`)))
+      .then(value => setFilterDirectory(value as FilterDirectory))
+      .catch(() => {})
+  }, [board.open])
+  useEffect(() => {
+    if (!board.open) return
     const closeOnOutsideNavigation = (event: PointerEvent) => {
       if (!(event.target instanceof Element)) return
       if (workbenchRef.current?.contains(event.target)) return
@@ -265,6 +344,43 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
     document.addEventListener('pointerdown', closeOnOutsideNavigation, true)
     return () => document.removeEventListener('pointerdown', closeOnOutsideNavigation, true)
   }, [board.open])
+  useEffect(() => {
+    const closeFilterMenu = (event: PointerEvent) => {
+      const menu = filterMenuRef.current
+      if (menu?.open && event.target instanceof Node && !menu.contains(event.target)) menu.open = false
+    }
+    const closeFilterMenuOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && filterMenuRef.current?.open) filterMenuRef.current.open = false
+    }
+    document.addEventListener('pointerdown', closeFilterMenu, true)
+    document.addEventListener('keydown', closeFilterMenuOnEscape)
+    return () => {
+      document.removeEventListener('pointerdown', closeFilterMenu, true)
+      document.removeEventListener('keydown', closeFilterMenuOnEscape)
+    }
+  }, [])
+  useLayoutEffect(() => {
+    const previous = previousLanePositions.current
+    if (previous.size === 0) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      previous.clear()
+      return
+    }
+    for (const [status, element] of laneElements.current) {
+      const before = previous.get(status)
+      if (!before) continue
+      const after = element.getBoundingClientRect()
+      const deltaX = before.left - after.left
+      const deltaY = before.top - after.top
+      if (deltaX || deltaY) {
+        element.animate(
+          [{ transform: `translate(${deltaX}px, ${deltaY}px)` }, { transform: 'translate(0, 0)' }],
+          { duration: 240, easing: 'cubic-bezier(.2,.8,.2,1)' },
+        )
+      }
+    }
+    previous.clear()
+  }, [laneOrder])
   if (!board.open) return null
 
   function openItem(item: TomatoItem) {
@@ -288,21 +404,27 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
   const filteredItems = board.items.filter(item => (
     !blacklist.types.has(item.itemType)
     && !blacklist.statuses.has(item.status)
+    && !blacklist.workspaces.has(item.workspaceKey || item.workspaceName || item.workspace)
     && (!normalizedSearch || [
-      item.itemKey, item.title, item.itemType, item.status, item.workspace, item.creator, item.priority,
+      item.itemKey, item.title, item.itemType, item.status, item.workspaceKey, item.workspaceName, item.creator, item.assignees.join(' '), item.priority,
     ].join(' ').toLowerCase().includes(normalizedSearch))
   ))
-  const typeOptions = [...new Set([...TOMATO_TYPE_OPTIONS, ...board.items.map(item => item.itemType).filter(Boolean)])]
-  const statusOptions = [...new Set([
+  const typeOptions = [...new Set(board.items.map(item => item.itemType).filter(Boolean))].sort((left, right) => left.localeCompare(right))
+  const statusOptions = applyLaneOrder([...new Set([
     ...TOMATO_STATUS_ORDER,
     ...board.items.map(item => item.status).filter(status => !TOMATO_STATUS_ORDER.includes(status)),
-  ])]
-  const statuses = [...new Set([
+  ])], laneOrder)
+  const workspaceOptions = [...new Map([
+    ...filterDirectory.workspaces.map(workspace => [workspace.key || workspace.name, workspace.name && workspace.key && workspace.name !== workspace.key ? `${workspace.name} (${workspace.key})` : workspace.key || workspace.name] as const),
+    ...board.items.map(item => [item.workspaceKey || item.workspaceName || item.workspace, item.workspaceName && item.workspaceKey && item.workspaceName !== item.workspaceKey ? `${item.workspaceName} (${item.workspaceKey})` : item.workspaceKey || item.workspaceName] as const),
+  ].filter(([value]) => Boolean(value))).entries()].map(([value, label]) => ({ value, label }))
+  const defaultStatuses = [...new Set([
     ...TOMATO_STATUS_ORDER.filter(status => filteredItems.some(item => item.status === status)),
     ...filteredItems.map(item => item.status).filter(status => !TOMATO_STATUS_ORDER.includes(status)),
   ])]
+  const statuses = applyLaneOrder(defaultStatuses, laneOrder)
 
-  const toggleBlacklist = (kind: 'types' | 'statuses', value: string) => setBlacklist(current => {
+  const toggleBlacklist = (kind: 'types' | 'statuses' | 'workspaces', value: string) => setBlacklist(current => {
     const nextValues = new Set(current[kind])
     if (nextValues.has(value)) nextValues.delete(value)
     else nextValues.add(value)
@@ -310,6 +432,7 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
     window.localStorage.setItem(TOMATO_FILTER_BLACKLIST_KEY, JSON.stringify({
       types: [...next.types],
       statuses: [...next.statuses],
+      workspaces: [...next.workspaces],
     }))
     return next
   })
@@ -322,64 +445,124 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
     return next
   })
 
+  const moveLane = (dragged: string, target: string, after: boolean) => {
+    if (dragged === target) return
+    previousLanePositions.current = new Map([...laneElements.current].map(([status, element]) => [status, element.getBoundingClientRect()]))
+    setLaneOrder(current => {
+      const visible = applyLaneOrder(defaultStatuses, current).filter(status => status !== dragged)
+      const targetIndex = visible.indexOf(target)
+      visible.splice(targetIndex + (after ? 1 : 0), 0, dragged)
+      const previousTracked = laneOrderValues(current)
+      const trackedSet = new Set([...previousTracked, dragged, target])
+      const hiddenTracked = previousTracked.filter(status => !visible.includes(status))
+      const next = createLaneOrder([...visible.filter(status => trackedSet.has(status)), ...hiddenTracked])
+      window.localStorage.setItem(TOMATO_LANE_ORDER_KEY, JSON.stringify(next))
+      return next
+    })
+  }
+
   return (
     <section ref={workbenchRef} className={css.workbench} aria-label="番茄工作台">
       <header className={css.header}>
-        <div>
+        <div className={css.titleRow}>
           <h1>番茄工作台</h1>
-          <p>{board.loading ? '正在读取番茄事项…' : `显示 ${filteredItems.length} / ${board.items.length} 个事项`}</p>
-        </div>
-        <div className={css.actions}>
-          <label className={css.searchField}>
-            <span aria-hidden="true">⌕</span>
-            <input
-              type="search"
-              value={search}
-              onChange={event => setSearch(event.target.value)}
-              placeholder="搜索标题或 tag…"
-              aria-label="搜索标题或 tag"
+          <div className={css.actions}>
+            {page === 'points' && storyToolbar}
+            {page === 'board' && <><label className={css.searchField}>
+              <span aria-hidden="true">⌕</span>
+              <input
+                type="search"
+                value={search}
+                onChange={event => setSearch(event.target.value)}
+                placeholder="搜索标题或 tag…"
+                aria-label="搜索标题或 tag"
+              />
+              {search && <button type="button" aria-label="清空搜索词" onClick={() => setSearch('')}>×</button>}
+            </label>
+            <details ref={filterMenuRef} className={css.filterMenu}>
+              <summary aria-label="空间、负责人、类型和状态筛选" title="空间、负责人、类型和状态筛选">
+                <span aria-hidden="true">▽</span>
+                {(blacklist.types.size > 0 || blacklist.statuses.size > 0 || blacklist.workspaces.size > 0 || selectedAssignee !== 'currentUser()') && <i />}
+              </summary>
+              <div className={css.filterPopover}>
+                <WorkspaceFilterRow options={workspaceOptions} hidden={blacklist.workspaces} onToggle={value => toggleBlacklist('workspaces', value)} />
+                <AssigneePicker users={filterDirectory.users} value={selectedAssignee} onChange={value => { setSelectedAssignee(value); void refresh(value) }} />
+                <FilterRow label="类型" options={typeOptions} hidden={blacklist.types} onToggle={value => toggleBlacklist('types', value)} />
+                <FilterRow label="状态" options={statusOptions} hidden={blacklist.statuses} onToggle={value => toggleBlacklist('statuses', value)} />
+              </div>
+            </details>
+            <Button
+              variant="toolbar"
+              size="sm"
+              className={css.headerIconButton}
+              icon={<IconRefreshOutline16 />}
+              title="刷新番茄事项"
+              aria-label="刷新番茄事项"
+              disabled={board.loading}
+              onClick={() => void refresh(selectedAssignee)}
             />
-            {search && <button type="button" aria-label="清空搜索词" onClick={() => setSearch('')}>×</button>}
-          </label>
-          <details className={css.filterMenu}>
-            <summary aria-label="类型和状态筛选" title="类型和状态筛选">
-              <span aria-hidden="true">▽</span>
-              {(blacklist.types.size > 0 || blacklist.statuses.size > 0) && <i />}
-            </summary>
-            <div className={css.filterPopover}>
-              <FilterRow label="类型" options={typeOptions} hidden={blacklist.types} onToggle={value => toggleBlacklist('types', value)} />
-              <FilterRow label="状态" options={statusOptions} hidden={blacklist.statuses} onToggle={value => toggleBlacklist('statuses', value)} />
-            </div>
-          </details>
-          <Button
-            variant="toolbar"
-            size="sm"
-            className={css.headerIconButton}
-            icon={<IconRefreshOutline16 />}
-            title="刷新番茄事项"
-            aria-label="刷新番茄事项"
-            disabled={board.loading}
-            onClick={() => void refresh()}
-          />
-          <Button
-            variant="toolbar"
-            size="sm"
-            className={css.headerIconButton}
-            icon={<IconCloseOutline16 />}
-            title="关闭番茄工作台"
-            aria-label="关闭番茄工作台"
-            onClick={closeWorkbench}
-          />
+            </>}
+            <Button
+              variant="toolbar"
+              size="sm"
+              className={css.headerIconButton}
+              icon={<IconCloseOutline16 />}
+              title="关闭番茄工作台"
+              aria-label="关闭番茄工作台"
+              onClick={closeWorkbench}
+            />
+          </div>
         </div>
+        <nav className={css.pageTabs} aria-label="番茄工作台页面">
+          <button type="button" aria-current={page === 'board' ? 'page' : undefined} onClick={() => setPage('board')}>事项看板</button>
+          <button type="button" aria-current={page === 'points' ? 'page' : undefined} onClick={() => setPage('points')}>迭代投入</button>
+        </nav>
       </header>
+      {page === 'points' ? <StoryPoints toolbarTarget={setStoryToolbar} onOpenItem={openItem} /> : <>
       {board.error && <div className={css.error} role="alert">{board.error}</div>}
       {board.truncated && <p className={css.notice} role="status">事项数量已达配置上限，当前仅展示前 {board.items.length} 条。</p>}
       <div className={css.board}>
         {statuses.map(status => {
           const items = filteredItems.filter(item => item.status === status)
           return (
-            <section className={css.lane} key={status} aria-labelledby={`tomato-lane-${status}`}>
-              <header className={css.laneHeader}>
+            <section
+              ref={element => { if (element) laneElements.current.set(status, element); else laneElements.current.delete(status) }}
+              className={`${css.lane} ${draggedLane === status ? css.laneDragging : ''} ${dropLane?.status === status ? (dropLane.after ? css.laneDropAfter : css.laneDropBefore) : ''}`}
+              key={status}
+              aria-labelledby={`tomato-lane-${status}`}
+              onDragOver={event => {
+                if (!draggedLane || draggedLane === status) return
+                event.preventDefault()
+                const bounds = event.currentTarget.getBoundingClientRect()
+                setDropLane({ status, after: event.clientX >= bounds.left + bounds.width / 2 })
+              }}
+              onDrop={event => {
+                event.preventDefault()
+                if (draggedLane && dropLane?.status === status) moveLane(draggedLane, status, dropLane.after)
+                setDraggedLane(null)
+                setDropLane(null)
+              }}
+            >
+              <header
+                className={css.laneHeader}
+                draggable
+                title="拖拽调整泳道顺序"
+                  onDragStart={event => {
+                    event.dataTransfer.effectAllowed = 'move'
+                    event.dataTransfer.setData('text/plain', status)
+                    const lane = event.currentTarget.parentElement
+                    if (lane) {
+                      const bounds = lane.getBoundingClientRect()
+                      event.dataTransfer.setDragImage(
+                        lane,
+                        Math.min(Math.max(event.clientX - bounds.left, 0), bounds.width),
+                        Math.min(Math.max(event.clientY - bounds.top, 0), bounds.height),
+                      )
+                    }
+                    setDraggedLane(status)
+                  }}
+                onDragEnd={() => { setDraggedLane(null); setDropLane(null) }}
+              >
                 <h2 id={`tomato-lane-${status}`}>{status}</h2>
                 <span>{items.length}</span>
               </header>
@@ -433,7 +616,12 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
                       </div>
                     </div>
                     <strong>{item.title}</strong>
-                    <span className={css.meta}>{[item.itemType, item.priority, item.creator].filter(Boolean).join(' · ')}</span>
+                    <div className={css.cardMeta}>
+                      <span className={css.typeTag} style={typeStyle(item.itemType)}>{item.itemType}</span>
+                      {(item.workspaceName || item.workspaceKey) && <span className={`${css.metaTag} ${css.workspaceTag}`} title="空间">{item.workspaceName && item.workspaceKey && item.workspaceName !== item.workspaceKey ? `${item.workspaceName} (${item.workspaceKey})` : item.workspaceKey || item.workspaceName}</span>}
+                      {item.priority && <span className={`${css.metaTag} ${css.priorityTag}`} data-priority={priorityLabel(item.priority)} title="优先级">{priorityLabel(item.priority)}</span>}
+                      {item.creator && <span className={`${css.metaTag} ${css.creatorTag}`} title="创建人">{item.creator}</span>}
+                    </div>
                   </article>
                 ))}
               </div>
@@ -444,9 +632,33 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
           <div className={css.empty}>当前没有可显示的番茄事项</div>
         )}
       </div>
+      </>}
       {board.selectedItem ? <CreateConversationDialog ctx={ctx} item={board.selectedItem} /> : null}
     </section>
   )
+}
+
+const PRIORITY_LABELS: Record<string, string> = {
+  '69e65065-4b34-4109-bca9-0154e548554a': 'P0',
+  '8f7912a5-9176-4a79-a269-2269ac42b5a2': 'P1',
+  'ca8c3e43-3e7b-444d-8940-d0967d944921': 'P2',
+  'ec31e4c1-b55b-479d-be97-86d5f7bf38ef': 'P2',
+  '1a3e1092-7d70-42ee-ad38-0e8d953c4c23': 'P3',
+  'faae52da-28c8-46fc-96dd-db9cdb28b557': 'P4',
+}
+const priorityLabel = (value: string) => PRIORITY_LABELS[value] ?? value
+
+const TYPE_TONES: Record<string, string> = {
+  Story: '#2f7d72', EnablerStory: '#2777a8', Task: '#7b61a8', Bug: '#c34f43', 缺陷: '#c34f43', 测试缺陷: '#d06438', Epic: '#9a6b24', Feature: '#3f68ad',
+}
+function typeTone(type: string): string {
+  if (TYPE_TONES[type]) return TYPE_TONES[type]
+  const palette = ['#2f7d72', '#2777a8', '#7b61a8', '#c34f43', '#9a6b24', '#51753a', '#a14f78']
+  return palette[[...type].reduce((hash, char) => hash + char.charCodeAt(0), 0) % palette.length]!
+}
+function typeStyle(type: string) {
+  const tone = typeTone(type)
+  return { '--type-tone': tone } as React.CSSProperties
 }
 
 function FilterRow({ label, options, hidden, onToggle }: {
@@ -462,14 +674,89 @@ function FilterRow({ label, options, hidden, onToggle }: {
         {options.map(option => (
           <button
             key={option}
-            className={hidden.has(option) ? '' : css.selectedFilter}
+            className={`${hidden.has(option) ? '' : css.selectedFilter} ${label === '类型' ? css.typeFilter : ''}`}
+            style={label === '类型' ? typeStyle(option) : undefined}
             type="button"
             aria-pressed={!hidden.has(option)}
             onClick={() => onToggle(option)}
           >
-            {option}
+            {label === '类型' && <i aria-hidden="true" />}{option}
           </button>
         ))}
+      </div>
+    </div>
+  )
+}
+
+function WorkspaceFilterRow({ options, hidden, onToggle }: {
+  options: Array<{ value: string; label: string }>
+  hidden: ReadonlySet<string>
+  onToggle: (value: string) => void
+}) {
+  return (
+    <div className={css.filterRow}>
+      <span>空间</span>
+      <div>
+        {options.map(option => (
+          <button
+            key={option.value}
+            className={hidden.has(option.value) ? '' : css.selectedFilter}
+            type="button"
+            aria-pressed={!hidden.has(option.value)}
+            onClick={() => onToggle(option.value)}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function AssigneePicker({ users, value, onChange }: {
+  users: FilterDirectory['users']
+  value: string
+  onChange: (value: string) => void
+}) {
+  const rootRef = useRef<HTMLDivElement>(null)
+  const [open, setOpen] = useState(false)
+  const [query, setQuery] = useState('')
+  const options = useMemo(() => [{ username: 'currentUser()', name: '我负责的' }, ...users.filter(user => user.username !== 'currentUser()')], [users])
+  const selected = options.find(option => option.username === value) ?? options[0]
+  const needle = query.trim().toLowerCase()
+  const filtered = needle
+    ? options.filter(option => `${option.name} ${option.username}`.toLowerCase().includes(needle))
+    : options
+
+  useEffect(() => {
+    if (!open) return
+    const close = (event: PointerEvent) => {
+      if (event.target instanceof Node && !rootRef.current?.contains(event.target)) setOpen(false)
+    }
+    document.addEventListener('pointerdown', close, true)
+    return () => document.removeEventListener('pointerdown', close, true)
+  }, [open])
+
+  return (
+    <div className={css.assigneeFilter}>
+      <span>负责人</span>
+      <div ref={rootRef} className={css.assigneePicker}>
+        <Button variant="outline" size="sm" className={css.assigneeTrigger} aria-haspopup="listbox" aria-expanded={open} onClick={() => { setOpen(current => !current); setQuery('') }}>
+          <span>{selected?.name ?? value}</span><IconChevronDownOutline14 />
+        </Button>
+        {open ? (
+          <div className={css.assigneeDropdown}>
+            <input autoFocus type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="搜索昵称或用户名…" aria-label="搜索负责人" />
+            <div role="listbox" aria-label="负责人">
+              {filtered.map(option => (
+                <button key={option.username} type="button" role="option" aria-selected={option.username === value} onClick={() => { onChange(option.username); setOpen(false); setQuery('') }}>
+                  <strong>{option.name}</strong>{option.name !== option.username && option.username !== 'currentUser()' ? <small>{option.username}</small> : null}
+                </button>
+              ))}
+              {filtered.length === 0 ? <p>没有匹配的负责人</p> : null}
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   )
@@ -649,19 +936,26 @@ function TomatoConversationShortcut({ ctx, sessionId, useSessions }: PropsRuntim
 export const inject = ['slots', 'sessions', 'workspaces']
 
 export function apply(ctx: Context): void {
+  const openWorkbench = () => {
+    if (disposeWorkbench) return
+    emit({ open: true })
+    disposeWorkbench = ctx.slots.register(
+      { name: 'conversation', priority: -100 },
+      () => <TomatoBoardPanel ctx={ctx} />,
+    )
+  }
   ctx.slots.inject('conversation.session.header.actions', () => ctx.slots.register(
     { name: 'conversation.session.header.actions', id: 'tomato-shortcut', order: 12 },
     props => <TomatoConversationShortcut {...props} ctx={ctx} />,
   ))
   ctx.slots.inject('sidebar.footer.action', () => ctx.slots.register(
     { name: 'sidebar.footer.action', id: 'tomato-board' },
-    props => <TomatoBoardAction {...props} openWorkbench={() => {
-      if (disposeWorkbench) return
-      emit({ open: true })
-      disposeWorkbench = ctx.slots.register(
-        { name: 'conversation', priority: -100 },
-        () => <TomatoBoardPanel ctx={ctx} />,
-      )
-    }} />,
+    props => <TomatoBoardAction {...props} openWorkbench={openWorkbench} />,
+  ))
+  // The shell's session header is the visible top bar in the Web client.  Keep the
+  // sidebar shortcut as a compact fallback for narrow or collapsed layouts.
+  ctx.slots.inject('conversation.session.header.actions', () => ctx.slots.register(
+    { name: 'conversation.session.header.actions', id: 'tomato-board-topbar', order: 11 },
+    () => <TomatoBoardTopbarAction openWorkbench={openWorkbench} />,
   ))
 }

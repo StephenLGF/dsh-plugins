@@ -1,6 +1,6 @@
 {
   "name": "@stephen1620/dsh-pr-assistant",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Pull request overview for DeepSeek Harness workspaces",
   "license": "MIT",
   "repository": {

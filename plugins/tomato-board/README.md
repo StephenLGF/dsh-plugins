@@ -28,15 +28,29 @@ npx @deepseek-ai/dsh plugin --profile desktop add .
 
 ## 功能
 
-- 在 Harness 侧栏打开番茄工作台，按状态展示当前用户负责的事项。
-- 支持标题、编号、创建人搜索和事项类型筛选。
-- 支持手动置灰卡片；标记保存在当前客户端的 `localStorage`，刷新或重启后仍然保留，但不会同步到番茄、其他浏览器或设备。
-- 点击卡片时优先打开已关联的 Harness 对话。
-- 尚未关联时选择 Harness 项目，并在对应仓库中创建原生对话。
-- 在对话标题栏查询当前状态，并一键执行可用的番茄状态流转；“待测试”因必填字段失败时，自动交给当前 AI 对话分析并继续处理。
-- 在卡片和对话标题栏快速跳转到番茄事项页面。
+### 事项看板
 
-当前版本不包含拖拽排序和独立的事项详情页。
+- 在 Harness 侧栏或对话顶部栏打开番茄工作台，按状态展示事项。
+- 支持标题、编号、创建人搜索，以及负责人、空间、类型和状态筛选。
+- 支持拖动状态列调整顺序、手动置灰卡片；偏好保存在当前浏览器。
+- 点击卡片优先打开已关联对话；未关联时选择 Harness 项目并创建对话。
+- 卡片上的独立外链按钮可直接打开番茄事项。
+- 对话顶部栏支持查询状态和执行流转；“待测试”因必填字段失败时，可交给当前 AI 对话继续处理。
+
+### 迭代投入
+
+- 顶部 Tab 切换「事项看板 / 迭代投入」，迭代选择器支持切换迭代并记住上次选择。
+- 左侧切换负责人，展示故事点总数、环形分布图和需求列表。
+- 需求卡片与事项看板共用对话关联逻辑，点击打开已有对话或选择项目创建新对话；独立的 ↗ 按钮跳转番茄。
+- 右侧支持创建、改名和删除多个团队，添加或移除成员，以横向排行榜展示每个人的故事点。
+- 点击排行榜成员可切换左侧负责人；第一个团队默认展开并加载，其他团队按展开需要加载。
+- 团队、成员及负责人选择保存在当前浏览器，不同步到番茄或其他设备。
+
+统计读取卡片的 `StoryPoint` 字段，仅包含所选迭代中的 `Story`、`EnablerStory` 和 `Task`，包含全部状态。未填写故事点的需求保留在列表，不参与总数和饼图；0 点保留为已估点记录，不占饼图面积。多负责人需求分别计入各负责人。需要调整故事点时，使用外链按钮进入番茄修改，然后刷新统计。
+
+## 0.2.0 更新
+
+新增「迭代投入」页面、多个团队管理和个人故事点分布；需求卡片支持打开 Harness 对话及独立跳转番茄；完善顶部栏、看板筛选与状态列排序。
 
 ## 必备环境
 
@@ -51,7 +65,7 @@ npx @deepseek-ai/dsh plugin --profile desktop add .
 ```bash
 gitee version
 gitee config list
-gitee team item search --profile osc --page 1 --page-size 1 --iql "负责人 = currentUser()"
+gitee team item search --profile osc --page 1 --size 1 --iql "负责人 = currentUser()"
 ```
 
 插件只调用本机的 `gitee` CLI，不保存 Gitee PAT 或登录信息。
@@ -64,7 +78,17 @@ command -v gitee
 
 ## 安装
 
-### 从 npm 安装（发布 npm 后推荐）
+当前版本：`0.2.0`。已安装用户在对应 profile 目录升级：
+
+```bash
+cd ~/.dsh/profiles/desktop # Web 用户改为 web
+pnpm add @stephen1620/dsh-tomato-board@0.2.0
+```
+
+保留已有 `dsh.profile.bundles` 注册项，升级后完全退出并重新打开 Harness。
+
+
+### 从 npm 安装（推荐）
 
 ```bash
 npx @deepseek-ai/dsh plugin --profile web add @stephen1620/dsh-tomato-board
@@ -112,12 +136,13 @@ npx @deepseek-ai/dsh plugin --profile web remove @stephen1620/dsh-tomato-board
 | --- | --- | --- |
 | `executable` | `gitee` | Gitee CLI 可执行文件名或绝对路径 |
 | `profile` | `osc` | Gitee CLI profile |
-| `iql` | 当前用户负责的 Story、Bug 等 | 工作台查询条件 |
+| `iql` | 空字符串 | 看板附加查询条件，负责人由界面选择；不影响迭代投入统计 |
 | `tomatoOrigin` | `https://osc.gitee.work` | 番茄站点地址 |
 | `tomatoTenant` | `xly-poc` | 番茄租户 |
 | `cacheTtlMs` | `15000` | 事项查询缓存时间（毫秒，最大 300000） |
 | `maxItems` | `5000` | 单次最多读取的事项数（最大 20000） |
 | `excludedStatuses` | `测试通过` 等 | 不在工作台展示的状态列表 |
+| `priorityNames` | 常用 P0–P4 UUID 映射 | 按租户覆盖优先级 UUID 与显示名的对应关系 |
 
 如需覆盖配置，可在 Harness 的用户 patch 中对 `tomato-board` 节点进行修改。最终生效配置可用下面的命令检查：
 
@@ -155,8 +180,8 @@ pnpm --dir packages/client/tomato-board bundle
 cd plugins/tomato-board
 npm version patch --no-git-tag-version # 或 minor / major
 git add package.json
-git commit -m "release(tomato-board): v0.1.1"
-git tag tomato-board-v0.1.1
+git commit -m "release(tomato-board): v0.2.0"
+git tag tomato-board-v0.2.0
 git push origin main --follow-tags
 ```
 
@@ -169,7 +194,7 @@ pnpm publish --access public
 
 `prepack` 会检查 `lib` 是否完整且客户端产物是否与当前源码一致，不会在独立仓库中重新执行依赖 Harness workspace 的构建。
 
-作用域包首次发布必须使用 `--access public`。发布前应确认 npm 账号拥有 `@stephenlgf` scope；如果没有，需要改用自己可发布的 scope，并同步修改包名、README 安装命令和 Harness 卸载命令。
+作用域包首次发布必须使用 `--access public`。发布前应确认 npm 账号拥有 `@stephen1620` scope；如果没有，需要改用自己可发布的 scope，并同步修改包名、README 安装命令和 Harness 卸载命令。
 
 ## License
 

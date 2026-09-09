@@ -8,6 +8,7 @@ interface Config {
     cacheTtlMs?: number;
     maxItems?: number;
     excludedStatuses?: string[];
+    priorityNames?: Record<string, string>;
 }
 export declare const name = "tomato-board";
 export declare const inject: string[];

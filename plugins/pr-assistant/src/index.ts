@@ -360,6 +360,10 @@ async function loadRepository(path: string, config: Config) {
       const item = value && typeof value === 'object' ? value as Record<string, unknown> : {}
       const authorValue = item.user ?? item.author
       const author = authorValue && typeof authorValue === 'object' ? authorValue as Record<string, unknown> : {}
+      const headValue = item.head
+      const head = headValue && typeof headValue === 'object' ? headValue as Record<string, unknown> : {}
+      const baseValue = item.base
+      const base = baseValue && typeof baseValue === 'object' ? baseValue as Record<string, unknown> : {}
       return {
         number: Number(item.number || item.iid || item.id || 0),
         title: String(item.title ?? ''),
@@ -367,6 +371,8 @@ async function loadRepository(path: string, config: Config) {
         updatedAt: String(item.updated_at ?? ''),
         url: String(item.html_url || item.web_url || item.url || ''),
         draft: item.draft === true || item.state === 'drafted',
+        sourceBranch: String(item.source_branch || head.ref || ''),
+        targetBranch: String(item.target_branch || base.ref || ''),
       }
     }),
   }
