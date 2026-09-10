@@ -49,6 +49,10 @@ npx @deepseek-ai/dsh plugin --profile desktop add .
 
 统计读取卡片的 `StoryPoint` 字段，仅包含所选迭代中的 `Story`、`EnablerStory` 和 `Task`，包含全部状态。未填写故事点的需求保留在列表，不参与总数和饼图；0 点保留为已估点记录，不占饼图面积。多负责人需求分别计入各负责人。需要调整故事点时，使用外链按钮进入番茄修改，然后刷新统计。
 
+## 0.3.1 更新
+
+团队成员行选中与悬停改为边框高亮（选中实线、悬停半透明），选中头像实心；SP 背景进度条不透明度提高一倍。
+
 ## 0.3.0 更新
 
 顶部栏对齐 Harness 对话页样式；团队改为折叠卡片并支持创建、改名、删除与成员管理；全站统一胶囊 Tag 组件（仅类型带色）；空间筛选改为多选下拉并按当前负责人事项派生；迭代统计严格限定 Story / EnablerStory / Task；需求卡片显示状态与未估点标记。
@@ -83,11 +87,11 @@ command -v gitee
 
 ## 安装
 
-当前版本：`0.3.0`。已安装用户在对应 profile 目录升级：
+当前版本：`0.3.1`。已安装用户在对应 profile 目录升级：
 
 ```bash
 cd ~/.dsh/profiles/desktop # Web 用户改为 web
-pnpm add @stephen1620/dsh-tomato-board@0.3.0
+pnpm add @stephen1620/dsh-tomato-board@0.3.1
 ```
 
 保留已有 `dsh.profile.bundles` 注册项，升级后完全退出并重新打开 Harness。
