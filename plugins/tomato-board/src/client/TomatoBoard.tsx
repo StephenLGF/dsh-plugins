@@ -1005,7 +1005,9 @@ export function apply(ctx: Context): void {
     if (disposeWorkbench) return
     emit({ open: true })
     disposeWorkbench = ctx.slots.register(
-      { name: 'conversation', priority: -100 },
+      // `conversation` is not a declared root slot.  The conversation panel is
+      // mounted through the layout's declared `main.conversation` child slot.
+      { name: 'main.conversation', priority: -100 },
       () => <TomatoBoardPanel ctx={ctx} />,
     )
   }
