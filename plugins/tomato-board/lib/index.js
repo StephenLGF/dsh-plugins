@@ -207,7 +207,7 @@ async function loadItems(config, assignee) {
 			"--iql",
 			iql,
 			"--fields",
-			"priority,createdBy,assignee",
+			"key,name,status,itemType,workspace,priority,createdBy,assignee",
 			"--output",
 			"json"
 		], {
@@ -373,7 +373,7 @@ async function loadStoryItems(config, sprint, assignee) {
 			"--iql",
 			iql,
 			"--fields",
-			"StoryPoint,assignee,sprint",
+			"key,name,status,itemType,StoryPoint,assignee,sprint",
 			"--page",
 			String(page),
 			"--size",

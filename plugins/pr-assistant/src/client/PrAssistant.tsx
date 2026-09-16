@@ -808,7 +808,9 @@ export function apply(ctx: Context): void {
         dispose?.()
       }
       disposeWorkbench = ctx.slots.register(
-        { name: 'conversation', priority: -100 },
+        // `conversation` is not a declared root slot; register under the
+        // layout's declared `main.conversation` child slot instead.
+        { name: 'main.conversation', priority: -100 },
         () => <PrAssistantPanel ctx={ctx} close={close} />,
       )
     }} />,

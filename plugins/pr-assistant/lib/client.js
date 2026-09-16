@@ -1073,7 +1073,8 @@ window.__ModuleLoader__.load({
 						dispose?.();
 					};
 					disposeWorkbench = ctx.slots.register({
-						name: "conversation",
+						// `conversation` is not a declared root slot; use the layout child.
+						name: "main.conversation",
 						priority: -100
 					}, () => /* @__PURE__ */ (0, react_jsx_runtime.jsx)(PrAssistantPanel, {
 						ctx,
