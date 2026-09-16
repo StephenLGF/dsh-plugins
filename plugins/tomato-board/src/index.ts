@@ -233,7 +233,7 @@ async function loadItems(config: Config, assignee: string) {
       '--page', String(page),
       '--size', '50',
       '--iql', iql,
-      '--fields', 'priority,createdBy,assignee',
+      '--fields', 'key,name,status,itemType,workspace,priority,createdBy,assignee',
       '--output', 'json',
     ], {
       timeout: 120_000,
@@ -342,7 +342,7 @@ async function loadStoryItems(config: Config, sprint: string, assignee: string) 
   const items = new Map<string, ReturnType<typeof normalizeItem> & { storyPoints: number | null; tomatoUrl: string }>()
   const limit = Math.max(1, Math.min(config.maxItems ?? 5000, 20_000))
   for (let page = 1; ; page += 1) {
-    const payload = await runJson(config, ['team', 'item', 'search', '--iql', iql, '--fields', 'StoryPoint,assignee,sprint', '--page', String(page), '--size', '50']) as Record<string, unknown>
+    const payload = await runJson(config, ['team', 'item', 'search', '--iql', iql, '--fields', 'key,name,status,itemType,StoryPoint,assignee,sprint', '--page', String(page), '--size', '50']) as Record<string, unknown>
     const values = unwrapItems(payload)
     for (const raw of values) {
       const item = normalizeItem(raw)
