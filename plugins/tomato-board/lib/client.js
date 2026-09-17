@@ -1148,11 +1148,13 @@ window.__ModuleLoader__.load({
 			function openItem(item) {
 				const stored = linkedSessionId(item.itemKey);
 				const titlePrefix = `[${item.itemKey}]`;
+				const hasConversation = (id) => sessions.byId[id]?.blank === false;
 				const discovered = sessions.ids.find((id) => {
 					const summary = sessions.byId[id];
-					return summary?.title?.startsWith(titlePrefix) || summary?.displayTitle.startsWith(titlePrefix);
+					const matched = summary?.title?.startsWith(titlePrefix) === true || summary?.displayTitle?.startsWith(titlePrefix) === true;
+					return matched && hasConversation(id);
 				});
-				const associated = stored && sessions.byId[stored] ? stored : discovered;
+				const associated = stored && hasConversation(stored) ? stored : discovered;
 				if (associated) {
 					saveSessionLink(item.itemKey, associated);
 					ctx.sessions.open(associated);

@@ -395,11 +395,15 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
   function openItem(item: TomatoItem) {
     const stored = linkedSessionId(item.itemKey)
     const titlePrefix = `[${item.itemKey}]`
+    // 只有至少跑过一轮对话的会话才算「已关联」：blank 会话（创建后没跑起来、
+    // 流程失败留下的空壳等）不拦截点击，让它走选项目的新建流程。
+    const hasConversation = (id: SessionId) => sessions.byId[id]?.blank === false
     const discovered = sessions.ids.find(id => {
       const summary = sessions.byId[id]
-      return summary?.title?.startsWith(titlePrefix) || summary?.displayTitle.startsWith(titlePrefix)
+      const matched = summary?.title?.startsWith(titlePrefix) === true || summary?.displayTitle?.startsWith(titlePrefix) === true
+      return matched && hasConversation(id)
     })
-    const associated = stored && sessions.byId[stored] ? stored : discovered
+    const associated = stored && hasConversation(stored) ? stored : discovered
     if (associated) {
       saveSessionLink(item.itemKey, associated)
       ctx.sessions.open(associated)

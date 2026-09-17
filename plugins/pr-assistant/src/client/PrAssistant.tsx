@@ -117,13 +117,16 @@ function removeReviewSession(repository: RepositoryResult, pullRequest: PullRequ
 }
 
 function findReviewSession(ctx: Context, repository: RepositoryResult, pullRequest: PullRequest): HarnessSessionId | null {
-  const linked = linkedReviewSession(repository, pullRequest)
-  if (linked && ctx.sessions.binding(linked)) return linked
-  const expectedTitle = `[PR #${pullRequest.number}] ${pullRequest.title}`
   const snapshot = ctx.sessions.list.getSnapshot()
+  // 只有至少跑过一轮对话的评审会话才算「已关联」：blank 会话（创建后没跑起来、
+  // 流程失败留下的空壳等）不拦截入口，让它走选项目的新建评审流程。
+  const hasConversation = (id: HarnessSessionId) => snapshot.byId[id]?.blank === false
+  const linked = linkedReviewSession(repository, pullRequest)
+  if (linked && hasConversation(linked)) return linked
+  const expectedTitle = `[PR #${pullRequest.number}] ${pullRequest.title}`
   return snapshot.ids.find(id => {
     const summary = snapshot.byId[id]
-    return summary?.title === expectedTitle && summary.cwd === repository.localPath
+    return summary?.title === expectedTitle && summary.cwd === repository.localPath && summary.blank === false
   }) ?? null
 }
 
