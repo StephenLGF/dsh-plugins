@@ -136,13 +136,14 @@ window.__ModuleLoader__.load({
 			window.localStorage.setItem(REVIEW_SESSION_LINKS_KEY, JSON.stringify(links));
 		}
 		function findReviewSession(ctx, repository, pullRequest) {
-			const linked = linkedReviewSession(repository, pullRequest);
-			if (linked && ctx.sessions.binding(linked)) return linked;
-			const expectedTitle = `[PR #${pullRequest.number}] ${pullRequest.title}`;
 			const snapshot = ctx.sessions.list.getSnapshot();
+			const hasConversation = (id) => snapshot.byId[id]?.blank === false;
+			const linked = linkedReviewSession(repository, pullRequest);
+			if (linked && hasConversation(linked)) return linked;
+			const expectedTitle = `[PR #${pullRequest.number}] ${pullRequest.title}`;
 			return snapshot.ids.find((id) => {
 				const summary = snapshot.byId[id];
-				return summary?.title === expectedTitle && summary.cwd === repository.localPath;
+				return summary?.title === expectedTitle && summary.cwd === repository.localPath && summary.blank === false;
 			}) ?? null;
 		}
 		function useReviewResult(ctx, sessionId) {
