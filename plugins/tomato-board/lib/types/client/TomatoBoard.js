@@ -628,7 +628,7 @@ export function apply(ctx) {
         if (disposeWorkbench)
             return;
         emit({ open: true });
-        disposeWorkbench = ctx.slots.inject('conversation.view', () => ctx.slots.register({ name: 'conversation.view', id: 'tomato-board', label: '番茄工作台', order: -100 }, () => _jsx(TomatoBoardPanel, { ctx: ctx })));
+        disposeWorkbench = ctx.slots.inject('shell.overlay', () => ctx.slots.register({ name: 'shell.overlay', id: 'tomato-board-panel' }, () => _jsx(TomatoBoardPanel, { ctx: ctx })));
     };
     ctx.slots.inject('conversation.session.header.actions', () => ctx.slots.register({ name: 'conversation.session.header.actions', id: 'tomato-shortcut', order: 12 }, props => _jsx(TomatoConversationShortcut, { ...props, ctx: ctx })));
     ctx.slots.inject('sidebar.footer.action', () => ctx.slots.register({ name: 'sidebar.footer.action', id: 'tomato-board' }, props => _jsx(TomatoBoardAction, { ...props, openWorkbench: openWorkbench })));
