@@ -357,13 +357,13 @@
   border-radius: 12px;
   color: var(--dsw-alias-state-success-primary);
   background: var(--dsw-alias-state-success-secondary);
-  animation: fadeInOut 2s ease-in-out;
+  animation: fadeInOut 2.5s ease-in-out forwards;
 }
 
 @keyframes fadeInOut {
   0% { opacity: 0; transform: translateY(-8px); }
-  15% { opacity: 1; transform: translateY(0); }
-  85% { opacity: 1; transform: translateY(0); }
+  20% { opacity: 1; transform: translateY(0); }
+  80% { opacity: 1; transform: translateY(0); }
   100% { opacity: 0; transform: translateY(-8px); }
 }
 
