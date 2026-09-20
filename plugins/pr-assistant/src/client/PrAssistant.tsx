@@ -18,6 +18,7 @@ interface PullRequest {
   updatedAt: string
   url: string
   draft: boolean
+  conflictStatus: 'conflicting' | 'mergeable' | 'unknown'
   sourceBranch: string
   targetBranch: string
 }
@@ -48,7 +49,7 @@ interface PullRequestDetail {
   additions: number
   deletions: number
   changedFiles: number
-  hasConflict: boolean
+  conflictStatus: 'conflicting' | 'mergeable' | 'unknown'
   mergeStatus: string
   commits: Array<{
     sha: string
@@ -79,11 +80,41 @@ interface ReviewResult {
   time: number
 }
 
+interface ConflictLink {
+  operationId: string
+  sessionId: string
+  path: string
+  sourceBranch: string
+  targetBranch: string
+  sourceSha: string
+  targetSha: string
+}
+
+interface ConflictGitStatus {
+  operationId: string
+  sourceBranch: string
+  targetBranch: string
+  sourceSha: string
+  targetSha: string
+  currentBranch: string
+  headSha: string
+  clean: boolean
+  unresolved: string[]
+  targetMerged: boolean
+  hasCommit: boolean
+  pushReady: boolean
+  changedFiles: Array<{ status: string; path: string }>
+  commits: Array<{ sha: string; title: string }>
+  diff: string
+  diffTruncated: boolean
+}
+
 const EMPTY_REVIEW_EVENTS = { entries: [], hasMore: false, revision: 0, change: { kind: 'replace' as const, entries: [] } }
 
 let disposeWorkbench: (() => void) | null = null
 const HIDDEN_REPOSITORIES_KEY = 'prAssistant.hiddenRepositories.v1'
 const REVIEW_SESSION_LINKS_KEY = 'prAssistant.reviewSessionLinks.v1'
+const CONFLICT_LINKS_KEY = 'prAssistant.conflictLinks.v1'
 type HarnessSessionId = Parameters<Context['sessions']['binding']>[0]
 
 function reviewLinkKey(repository: RepositoryResult, pullRequest: PullRequest) {
@@ -110,10 +141,24 @@ function saveReviewSession(repository: RepositoryResult, pullRequest: PullReques
   window.localStorage.setItem(REVIEW_SESSION_LINKS_KEY, JSON.stringify(links))
 }
 
-function removeReviewSession(repository: RepositoryResult, pullRequest: PullRequest) {
-  const links = readReviewSessionLinks()
-  delete links[reviewLinkKey(repository, pullRequest)]
-  window.localStorage.setItem(REVIEW_SESSION_LINKS_KEY, JSON.stringify(links))
+function readConflictLinks(): Record<string, ConflictLink> {
+  try {
+    const value = JSON.parse(window.localStorage.getItem(CONFLICT_LINKS_KEY) ?? '{}')
+    return value && typeof value === 'object' ? value as Record<string, ConflictLink> : {}
+  } catch {
+    return {}
+  }
+}
+
+function conflictLink(repository: RepositoryResult, pullRequest: PullRequest): ConflictLink | null {
+  const value = readConflictLinks()[reviewLinkKey(repository, pullRequest)]
+  return value && typeof value.operationId === 'string' && typeof value.sessionId === 'string' ? value : null
+}
+
+function saveConflictLink(repository: RepositoryResult, pullRequest: PullRequest, value: ConflictLink) {
+  const links = readConflictLinks()
+  links[reviewLinkKey(repository, pullRequest)] = value
+  window.localStorage.setItem(CONFLICT_LINKS_KEY, JSON.stringify(links))
 }
 
 function findReviewSession(ctx: Context, repository: RepositoryResult, pullRequest: PullRequest): HarnessSessionId | null {
@@ -382,6 +427,53 @@ function CommitView({ commits, repositoryPath }: { commits: CommitSummary[]; rep
   )
 }
 
+function conflictLabel(detail: PullRequestDetail) {
+  if (detail.conflictStatus === 'conflicting') return '存在冲突'
+  if (detail.conflictStatus === 'mergeable') return '无冲突'
+  return '待平台检测'
+}
+
+function buildReviewPrompt(repository: RepositoryResult, pullRequest: PullRequest, detail: PullRequestDetail) {
+  const commits = detail.commits.length
+    ? detail.commits.map((commit, index) => `${index + 1}. ${commit.sha.slice(0, 12)} ${commit.title || '无提交说明'}（${commit.author || '未知作者'}）`).join('\n')
+    : '提交信息暂不可用。'
+  const description = detail.description.trim() || '未提供 PR 说明。'
+  const platformCommand = repository.provider === 'gitee'
+    ? `如需补充证据，可使用只读命令 gitee code pr view ${pullRequest.number} 和 gitee code pr diff ${pullRequest.number}。`
+    : `如需补充证据，可使用 GitHub API 或当前可用的 GitHub 工具读取 PR #${pullRequest.number} 的完整 diff。`
+
+  return [
+    `请对当前仓库的 PR #${pullRequest.number} 做一次严格的代码评审。`,
+    `标题：${detail.title}`,
+    `分支：${detail.sourceBranch} → ${detail.targetBranch}`,
+    `PR 说明：\n${description}`,
+    `当前摘要：${detail.changedFiles} 个文件，+${detail.additions}/-${detail.deletions}，合并状态：${conflictLabel(detail)}${detail.mergeStatus ? `（平台原始状态：${detail.mergeStatus}）` : ''}。`,
+    `本 PR 的提交记录（共 ${detail.commitCount ?? detail.commits.length} 个）：\n${commits}`,
+    '先结合 PR 说明和每条 commit 的标题理解需求目标与实现演进，再检查最终 diff。不要把明确属于需求目标的行为变化本身当成风险；只有当实现偏离目标、破坏既有约束，或存在可复现缺陷时才报告。commit 信息用于理解意图，不能替代代码证据。',
+    platformCommand,
+    '重点检查正确性、回归风险、安全性、并发/状态一致性、边界条件、性能和缺失测试。',
+    '只报告可以用代码证据证明的问题；每条问题标注严重级别、文件路径、紧凑行号范围、触发场景和修复建议。',
+    '回复必须简明且仅保留必要信息：不要复述 PR 背景、检查过程或给出泛化建议；每个问题最多一个短段落。',
+    '如果没有发现问题，只回复“未发现明确问题”，必要时再用一行列出关键未验证风险。',
+    '本次只做只读评审；不要修改代码、提交分支、合并 PR 或向代码平台发表评论，除非我之后明确授权。',
+  ].join('\n')
+}
+
+function buildConflictPrompt(pullRequest: PullRequest, operation: ConflictLink) {
+  return [
+    `请在当前本地仓库中处理 PR #${pullRequest.number} 的合并冲突。`,
+    `源分支：${operation.sourceBranch}（预检版本 ${operation.sourceSha}）`,
+    `目标分支：${operation.targetBranch}（预检版本 ${operation.targetSha}）`,
+    '你已获得修改仓库的授权，但绝对不要 push、force push、rebase、reset --hard 或清理用户文件。',
+    `第一步确认仓库路径为 ${operation.path}，执行 git status，并切换/确认当前分支必须是 ${operation.sourceBranch}；若不一致或工作区不干净，立即停止并说明。`,
+    `使用锁定的目标提交 ${operation.targetSha} 合并到当前源分支（git merge --no-ff --no-commit ${operation.targetSha}），逐项解决冲突。`,
+    '理解源分支与目标分支双方意图后再解决，不得简单选择 ours/theirs 覆盖；解决后检查不存在未合并文件，并运行 git diff --check。',
+    '识别并运行与改动相关的仓库测试或类型检查；如果测试失败，修复后重试。无法运行的测试必须明确说明原因。',
+    `确认无未解决冲突后提交，提交标题使用“Resolve conflicts for PR #${pullRequest.number}”。只提交本次冲突处理产生的修改。`,
+    '最终回复必须包含：1. 提交 hash；2. 测试命令及结果；3. 修改位置（文件及关键区域）；4. 每处冲突的处理逻辑。不要执行 push，推送由用户在 PR 助手中确认。',
+  ].join('\n')
+}
+
 function flattenModels(catalog: ModelCatalog): ReviewModel[] {
   const models: ReviewModel[] = []
   const routableProviders = new Set(catalog.routableProviders)
@@ -453,21 +545,7 @@ function AiReviewDialog({
       if (!session) throw new Error('新建评审对话未能在 Harness 中加载')
       const renamed = await session.rename(`[PR #${pullRequest.number}] ${pullRequest.title}`)
       if (!renamed.ok) throw new Error(`评审对话命名失败：${renamed.error.message}`)
-      const platformCommand = repository.provider === 'gitee'
-        ? `使用只读命令 gitee code pr view ${pullRequest.number} 和 gitee code pr diff ${pullRequest.number} 获取完整证据。`
-        : `使用 GitHub API 或当前可用的 GitHub 工具读取 PR #${pullRequest.number} 的完整提交与 diff。`
-      const prompt = [
-        `请对当前仓库的 PR #${pullRequest.number} 做一次严格的代码评审。`,
-        `标题：${detail.title}`,
-        `分支：${detail.sourceBranch} → ${detail.targetBranch}`,
-        `当前摘要：${detail.changedFiles} 个文件，+${detail.additions}/-${detail.deletions}，${detail.hasConflict ? '存在合并风险' : '未检测到冲突'}。`,
-        platformCommand,
-        '重点检查正确性、回归风险、安全性、并发/状态一致性、边界条件、性能和缺失测试。',
-        '只报告可以用代码证据证明的问题；每条问题标注严重级别、文件路径、紧凑行号范围、触发场景和修复建议。',
-        '回复必须简明且仅保留必要信息：不要复述 PR 背景、检查过程或给出泛化建议；每个问题最多一个短段落。',
-        '如果没有发现问题，只回复“未发现明确问题”，必要时再用一行列出关键未验证风险。',
-        '本次只做只读评审；不要修改代码、提交分支、合并 PR 或向代码平台发表评论，除非我之后明确授权。',
-      ].join('\n')
+      const prompt = buildReviewPrompt(repository, pullRequest, detail)
       const prompted = await session.prompt([{ type: 'text', text: prompt }], 'queue')
       if (!prompted.ok) throw new Error(`评审任务发送失败：${prompted.error.message}`)
       saveReviewSession(repository, pullRequest, sessionId)
@@ -521,6 +599,13 @@ function PrAssistantPanel({ ctx, close }: { ctx: Context; close: () => void }) {
   const [detailError, setDetailError] = useState<string | null>(null)
   const [reviewOpen, setReviewOpen] = useState(false)
   const [commitView, setCommitView] = useState(false)
+  const [conflict, setConflict] = useState<ConflictLink | null>(null)
+  const [conflictStatus, setConflictStatus] = useState<ConflictGitStatus | null>(null)
+  const [conflictBusy, setConflictBusy] = useState(false)
+  const [conflictError, setConflictError] = useState<string | null>(null)
+  const [pushed, setPushed] = useState(false)
+  const [commentBusy, setCommentBusy] = useState(false)
+  const [commentStatus, setCommentStatus] = useState<string | null>(null)
   const workspaces = useSyncExternalStore(
     listener => ctx.workspaces.list.subscribe(listener),
     () => ctx.workspaces.list.getSnapshot(),
@@ -543,7 +628,7 @@ function PrAssistantPanel({ ctx, close }: { ctx: Context; close: () => void }) {
     if (!selection) return
     setCommitView(false)
     const controller = new AbortController()
-    const query = new URLSearchParams({ path: selection.repository.localPath, number: String(selection.pullRequest.number) })
+    const query = new URLSearchParams({ path: selection.repository.localPath, number: String(selection.pullRequest.number), _t: String(Date.now()) })
     setDetail(null)
     setDetailError(null)
     setDetailLoading(true)
@@ -562,6 +647,30 @@ function PrAssistantPanel({ ctx, close }: { ctx: Context; close: () => void }) {
     })
     return () => controller.abort()
   }, [selection])
+  useEffect(() => {
+    setConflict(selection ? conflictLink(selection.repository, selection.pullRequest) : null)
+    setConflictStatus(null)
+    setConflictError(null)
+    setPushed(false)
+    setCommentStatus(null)
+  }, [selection])
+  useEffect(() => {
+    if (!conflict) return
+    let active = true
+    let timer: number | undefined
+    const refreshStatus = async () => {
+      try {
+        const query = new URLSearchParams({ operationId: conflict.operationId })
+        const status = await readApiJson<ConflictGitStatus>(await fetch(`/api/pr-assistant/conflict/status?${query}`, { headers: { accept: 'application/json' } }))
+        if (active) setConflictStatus(status)
+      } catch (reason) {
+        if (active) setConflictError(reason instanceof Error ? reason.message : '冲突处理状态读取失败')
+      }
+      if (active) timer = window.setTimeout(refreshStatus, 2000)
+    }
+    void refreshStatus()
+    return () => { active = false; if (timer !== undefined) window.clearTimeout(timer) }
+  }, [conflict])
   useEffect(() => {
     const closeOnOutsideNavigation = (event: PointerEvent) => {
       if (!(event.target instanceof Element) || panelRef.current?.contains(event.target)) return
@@ -602,26 +711,96 @@ function PrAssistantPanel({ ctx, close }: { ctx: Context; close: () => void }) {
     })
   }
 
+  async function publishReviewToPr() {
+    if (!selection || !reviewResult || commentBusy) return
+    if (reviewResult.text.length > 20_000) {
+      setCommentStatus('AI 分析结果超过 20000 个字符，无法发布，请先在会话中精简内容。')
+      return
+    }
+    if (!window.confirm(`确认将当前 AI 分析结果评论到 PR #${selection.pullRequest.number}？\n\n发布后会对仓库协作者可见。`)) return
+    setCommentBusy(true)
+    setCommentStatus(null)
+    try {
+      await readApiJson<{ published: true }>(await fetch('/api/pr-assistant/review/comment', {
+        method: 'POST',
+        headers: { accept: 'application/json', 'content-type': 'application/json', 'x-pr-assistant-action': '1' },
+        body: JSON.stringify({
+          path: selection.repository.localPath,
+          number: selection.pullRequest.number,
+          body: reviewResult.text,
+        }),
+      }))
+      setCommentStatus('已成功评论到 PR。')
+    } catch (reason) {
+      setCommentStatus(reason instanceof Error ? reason.message : 'PR 评论发布失败')
+    } finally {
+      setCommentBusy(false)
+    }
+  }
+
+  async function startConflictResolution() {
+    if (!selection || !detail || conflictBusy) return
+    setConflictBusy(true)
+    setConflictError(null)
+    try {
+      const response = await fetch('/api/pr-assistant/conflict/preflight', {
+        method: 'POST',
+        headers: { accept: 'application/json', 'content-type': 'application/json', 'x-pr-assistant-action': '1' },
+        body: JSON.stringify({ path: selection.repository.localPath, number: selection.pullRequest.number }),
+      })
+      const preflight = await readApiJson<Omit<ConflictLink, 'sessionId'>>(response)
+      const sessionId = await ctx.sessions.create({ cwd: preflight.path })
+      const catalog = await ctx.remote.session.modelCatalog()
+      if (!catalog.ok) throw new Error(`模型列表读取失败：${catalog.error.message}`)
+      const selected = catalog.value.default
+      const selectedResult = await ctx.remote.session.selectModel({ sessionId, ...selected })
+      if (!selectedResult.ok) throw new Error(`模型选择失败：${selectedResult.error.message}`)
+      const session = ctx.sessions.binding(sessionId)?.session
+      if (!session) throw new Error('新建冲突处理对话未能在 Harness 中加载')
+      const renamed = await session.rename(`[PR #${selection.pullRequest.number}] 处理合并冲突`)
+      if (!renamed.ok) throw new Error(`对话命名失败：${renamed.error.message}`)
+      const link: ConflictLink = { ...preflight, sessionId: String(sessionId) }
+      const prompted = await session.prompt([{ type: 'text', text: buildConflictPrompt(selection.pullRequest, link) }], 'queue')
+      if (!prompted.ok) throw new Error(`冲突处理任务发送失败：${prompted.error.message}`)
+      saveConflictLink(selection.repository, selection.pullRequest, link)
+      setConflict(link)
+      ctx.sessions.open(sessionId)
+    } catch (reason) {
+      setConflictError(reason instanceof Error ? reason.message : '冲突处理启动失败')
+    } finally {
+      setConflictBusy(false)
+    }
+  }
+
+  async function pushConflictResolution() {
+    if (!conflict || !conflictStatus?.pushReady || conflictBusy) return
+    if (!window.confirm(`确认将 ${conflictStatus.headSha.slice(0, 12)} 推送到 origin/${conflict.sourceBranch}？`)) return
+    setConflictBusy(true)
+    setConflictError(null)
+    try {
+      await readApiJson<{ pushed: true }>(await fetch('/api/pr-assistant/conflict/push', {
+        method: 'POST',
+        headers: { accept: 'application/json', 'content-type': 'application/json', 'x-pr-assistant-action': '1' },
+        body: JSON.stringify({ operationId: conflict.operationId, expectedHead: conflictStatus.headSha }),
+      }))
+      setPushed(true)
+    } catch (reason) {
+      setConflictError(reason instanceof Error ? reason.message : '推送失败')
+    } finally {
+      setConflictBusy(false)
+    }
+  }
+
   function openAiReview() {
     if (!selection) return
-    if (reviewResult) {
-      setReviewOpen(true)
-      return
-    }
-    const sessionId = findReviewSession(ctx, selection.repository, selection.pullRequest)
-    if (sessionId) {
-      saveReviewSession(selection.repository, selection.pullRequest, sessionId)
-      ctx.sessions.open(sessionId)
-      close()
-      return
-    }
-    removeReviewSession(selection.repository, selection.pullRequest)
     setReviewOpen(true)
   }
 
   const linkedSessionId = selection ? findReviewSession(ctx, selection.repository, selection.pullRequest) : null
   const hasLinkedReview = linkedSessionId !== null
   const reviewResult = useReviewResult(ctx, linkedSessionId)
+  const conflictSessionId = conflict?.sessionId as HarnessSessionId | undefined
+  const conflictResult = useReviewResult(ctx, conflictSessionId ?? null)
 
   return (
     <section ref={panelRef} className={css.workbench} aria-label="PR 助手">
@@ -667,7 +846,8 @@ function PrAssistantPanel({ ctx, close }: { ctx: Context; close: () => void }) {
                   <code>{detail.sourceBranch} → {detail.targetBranch}</code>
                 </div>
                 <div className={css.detailActions}>
-                  <button className={css.reviewButton} type="button" onClick={openAiReview}>{reviewResult ? '重新分析' : hasLinkedReview ? '查看 AI 分析' : 'AI 评审'}</button>
+                  {detail.conflictStatus === 'conflicting' ? <button className={css.conflictButton} type="button" disabled={conflictBusy} onClick={() => void startConflictResolution()}>{conflict ? '重新处理冲突' : conflictBusy ? '正在预检…' : '一键处理冲突'}</button> : null}
+                  <button className={css.reviewButton} type="button" onClick={openAiReview}>{hasLinkedReview ? '重新分析' : 'AI 评审'}</button>
                   <button type="button" onClick={() => window.open(detail.url, '_blank', 'noopener,noreferrer')}>打开 PR ↗</button>
                 </div>
               </section>
@@ -676,15 +856,43 @@ function PrAssistantPanel({ ctx, close }: { ctx: Context; close: () => void }) {
                 <div><strong>{detail.changedFiles}</strong><span>变更文件</span></div>
                 <div><strong className={css.addition}>+{detail.additions}</strong><span>新增行</span></div>
                 <div><strong className={css.deletion}>−{detail.deletions}</strong><span>删除行</span></div>
-                <div><strong className={detail.hasConflict ? css.conflict : css.clean}>{detail.hasConflict ? '有风险' : '无冲突'}</strong><span>合并状态</span></div>
+                <div title={detail.mergeStatus ? `平台状态：${detail.mergeStatus}` : undefined}><strong className={detail.conflictStatus === 'conflicting' ? css.conflict : detail.conflictStatus === 'mergeable' ? css.clean : css.unknown}>{conflictLabel(detail)}</strong><span>冲突状态</span></div>
               </section>
               {detail.description ? <section className={css.description}><h3>说明</h3><p>{detail.description}</p></section> : null}
+              {conflict || conflictError ? (
+                <section className={css.conflictResult}>
+                  <header>
+                    <div><span className={css.eyebrow}>CONFLICT RESOLUTION</span><h3>冲突处理</h3></div>
+                    <div className={css.conflictResultActions}>
+                      {conflictSessionId ? <button type="button" onClick={() => { ctx.sessions.open(conflictSessionId); close() }}>打开处理会话 ↗</button> : null}
+                      {conflictStatus?.pushReady && !pushed ? <button className={css.pushButton} type="button" disabled={conflictBusy} onClick={() => void pushConflictResolution()}>{conflictBusy ? '推送中…' : `Push 到 ${conflictStatus.sourceBranch}`}</button> : null}
+                    </div>
+                  </header>
+                  {conflictError ? <div className={css.reviewError} role="alert">{conflictError}</div> : null}
+                  {pushed ? <div className={css.conflictSuccess}>已成功推送到 origin/{conflict?.sourceBranch}</div> : null}
+                  {conflictStatus ? (
+                    <div className={css.conflictFacts}>
+                      <span>当前分支 <code>{conflictStatus.currentBranch || 'detached HEAD'}</code></span>
+                      <span>工作区 {conflictStatus.clean ? '干净' : '有未提交修改'}</span>
+                      <span>未解决冲突 {conflictStatus.unresolved.length}</span>
+                      <span>目标已合并 {conflictStatus.targetMerged ? '是' : '否'}</span>
+                      <span>提交 {conflictStatus.hasCommit ? conflictStatus.headSha.slice(0, 12) : '尚未生成'}</span>
+                    </div>
+                  ) : <div className={css.commitState}>正在读取仓库处理状态…</div>}
+                  {conflictStatus?.changedFiles.length ? <div className={css.conflictChanges}><h4>已提交修改位置</h4><ol>{conflictStatus.changedFiles.map(file => <li key={`${file.status}:${file.path}`}><b>{file.status}</b><code>{file.path}</code></li>)}</ol></div> : null}
+                  {conflictResult ? <div className={css.conflictLogic}><h4>AI 处理逻辑与测试结果</h4><pre>{conflictResult.text}</pre></div> : <div className={css.commitState}>AI 正在处理；完成后将在此回填修改位置、测试结果和处理逻辑。</div>}
+                </section>
+              ) : null}
               {reviewResult ? (
                 <section className={css.reviewResult}>
                   <header>
                     <div><span className={css.eyebrow}>AI REVIEW</span><h3>AI 分析结果</h3></div>
-                    <button type="button" onClick={() => { if (linkedSessionId) { ctx.sessions.open(linkedSessionId); close() } }}>打开评审对话 ↗</button>
+                    <div className={css.reviewResultActions}>
+                      <button type="button" disabled={commentBusy} onClick={() => void publishReviewToPr()}>{commentBusy ? '发布中…' : '评论到 PR'}</button>
+                      <button type="button" onClick={() => { if (linkedSessionId) { ctx.sessions.open(linkedSessionId); close() } }}>打开评审对话 ↗</button>
+                    </div>
                   </header>
+                  {commentStatus ? <div className={commentStatus === '已成功评论到 PR。' ? css.commentSuccess : css.reviewError} role="status">{commentStatus}</div> : null}
                   <pre>{reviewResult.text}</pre>
                 </section>
               ) : hasLinkedReview ? (
@@ -739,6 +947,7 @@ function PrAssistantPanel({ ctx, close }: { ctx: Context; close: () => void }) {
                       <span className={css.prNumber}>#{pr.number}</span>
                       <span className={css.prTitle}>{pr.title}</span>
                       {pr.draft ? <span className={css.draft}>草稿</span> : null}
+                      {pr.conflictStatus === 'conflicting' ? <span className={css.conflictTag}>冲突</span> : pr.conflictStatus === 'unknown' ? <span className={css.unknownTag}>待检测</span> : null}
                       {pr.sourceBranch || pr.targetBranch ? (
                         <span className={css.branches}>
                           <span className={css.sourceBranch} title={`来源分支：${pr.sourceBranch || '未知'}`}><b>来源</b><code>{pr.sourceBranch || '未知'}</code></span>
