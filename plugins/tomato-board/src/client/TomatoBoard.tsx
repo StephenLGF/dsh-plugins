@@ -62,11 +62,12 @@ interface BoardState {
   loaded: boolean
   items: TomatoItem[]
   error: string | null
+  successMessage: string | null
   selectedItem: TomatoItem | null
   truncated: boolean
 }
 
-let state: BoardState = { open: false, loading: false, loaded: false, items: [], error: null, selectedItem: null, truncated: false }
+let state: BoardState = { open: false, loading: false, loaded: false, items: [], error: null, successMessage: null, selectedItem: null, truncated: false }
 let disposeWorkbench: (() => void) | null = null
 const listeners = new Set<() => void>()
 const emit = (patch: Partial<BoardState>) => {
@@ -173,13 +174,14 @@ function readMutedItems(): Set<string> {
 }
 
 async function refresh(assignee = 'currentUser()') {
-  emit({ loading: true, error: null })
+  emit({ loading: true, error: null, successMessage: null })
   try {
     const query = new URLSearchParams({ assignee })
     const response = await fetch(`/api/tomato-board/items?${query}`, { headers: { accept: 'application/json' } })
     const body = await response.json() as { items?: TomatoItem[]; truncated?: boolean; error?: string }
     if (!response.ok) throw new Error(body.error || `请求失败 (${response.status})`)
-    emit({ items: body.items ?? [], truncated: body.truncated === true, loaded: true })
+    emit({ items: body.items ?? [], truncated: body.truncated === true, loaded: true, successMessage: `已刷新 ${body.items?.length ?? 0} 条事项` })
+    setTimeout(() => emit({ successMessage: null }), 2000)
   } catch (error) {
     emit({ error: error instanceof Error ? error.message : '番茄事项读取失败' })
   } finally {
@@ -191,7 +193,7 @@ function closeWorkbench() {
   const dispose = disposeWorkbench
   disposeWorkbench = null
   // 关闭时清掉 loaded 和 error：下次打开工作台会重新拉取一次最新数据。
-  emit({ open: false, selectedItem: null, loaded: false, error: null })
+  emit({ open: false, selectedItem: null, loaded: false, error: null, successMessage: null })
   dispose?.()
 }
 
@@ -550,6 +552,7 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
         </nav>
       </header>
       {page === 'points' ? <StoryPoints toolbarTarget={setStoryToolbar} onOpenItem={openItem} /> : <>
+      {board.successMessage && <div className={css.success} role="status">{board.successMessage}</div>}
       {board.error && <div className={css.error} role="alert">{board.error}</div>}
       {board.truncated && <p className={css.notice} role="status">事项数量已达配置上限，当前仅展示前 {board.items.length} 条。</p>}
       <div className={css.board}>
