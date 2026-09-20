@@ -1019,12 +1019,10 @@ export function apply(ctx: Context): void {
         disposeWorkbench = null
         dispose?.()
       }
-      disposeWorkbench = ctx.slots.register(
-        // `conversation` is not a declared root slot; register under the
-        // layout's declared `main.conversation` child slot instead.
-        { name: 'main.conversation', priority: -100 },
+      disposeWorkbench = ctx.slots.inject('shell.overlay', () => ctx.slots.register(
+        { name: 'shell.overlay', id: 'pr-assistant-panel' },
         () => <PrAssistantPanel ctx={ctx} close={close} />,
-      )
+      ))
     }} />,
   ))
 }
