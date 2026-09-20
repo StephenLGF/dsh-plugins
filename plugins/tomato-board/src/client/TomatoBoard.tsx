@@ -1011,8 +1011,8 @@ export function apply(ctx: Context): void {
   const openWorkbench = () => {
     if (disposeWorkbench) return
     emit({ open: true })
-    disposeWorkbench = ctx.slots.inject('conversation', () => ctx.slots.register(
-      { name: 'conversation', id: 'tomato-board-panel', priority: -100 },
+    disposeWorkbench = ctx.slots.inject('conversation.view', () => ctx.slots.register(
+      { name: 'conversation.view', id: 'tomato-board', label: '番茄工作台', order: -100 },
       () => <TomatoBoardPanel ctx={ctx} />,
     ))
   }
