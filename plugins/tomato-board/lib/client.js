@@ -4,9 +4,9 @@ window.__ModuleLoader__.load({
 		var module = { exports: {} };
 		var exports = module.exports;
 		Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
+		let react_jsx_runtime = require("react/jsx-runtime");
 		let react = require("react");
 		let _deepseek_ai_dsh_client_ui_primitives = require("@deepseek-ai/dsh-client-ui-primitives");
-		let react_jsx_runtime = require("react/jsx-runtime");
 		//#region ../../core/session/lib/types/types.js
 		/**
 		* Brand a string as a {@link SessionId}.
@@ -18,7 +18,7 @@ window.__ModuleLoader__.load({
 		}
 		//#endregion
 		//#region \0dsh-css:/Users/gengfeng/deepseek-harness/packages/client/tomato-board/src/client/tomato-board.module.css.mjs
-		const css$2 = ".Y6kksa_sidebarAction{width:100%;min-height:36px;color:var(--dsw-alias-label-primary);cursor:pointer;font:inherit;white-space:nowrap;transition:background var(--ds-transition-duration-fast) var(--ds-ease-in-out), border-color var(--ds-transition-duration-fast) var(--ds-ease-in-out);background:0 0;border:0;border-radius:10px;align-items:center;gap:9px;margin:0;padding:0 10px;display:flex}.Y6kksa_sidebarAction:hover{background:var(--dsw-alias-interactive-bg-hover)}.Y6kksa_topbarAction{border:1px solid var(--dsw-alias-border-l2);min-height:28px;color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-base);cursor:pointer;font:inherit;white-space:nowrap;border-radius:8px;align-items:center;gap:7px;padding:4px 9px;font-size:12px;font-weight:600;display:inline-flex}.Y6kksa_topbarAction:hover{border-color:color-mix(in srgb, var(--tomato-accent,var(--dsw-alias-state-error-primary)) 45%, var(--dsw-alias-border-l2));background:var(--dsw-alias-interactive-bg-hover)}.Y6kksa_topbarAction:focus-visible{outline:2px solid var(--tomato-accent,var(--dsw-alias-state-error-primary));outline-offset:2px}.Y6kksa_topbarAction .Y6kksa_tomatoIcon{border-radius:5px;width:16px;height:16px;font-size:10px}.Y6kksa_tomatoIcon{width:18px;height:18px;color:var(--dsw-alias-label-primary-inverted);background:var(--tomato-accent,var(--dsw-alias-state-error-primary));border-radius:6px;flex:none;place-items:center;font-size:11px;font-weight:750;display:inline-grid}.Y6kksa_transitionTrigger{align-items:center;gap:6px;display:inline-flex}.Y6kksa_transitionCaption{color:var(--dsw-alias-label-secondary);font-size:12px}.Y6kksa_transitionTrigger strong{color:var(--dsw-alias-label-primary);font-size:12px;font-weight:650}.Y6kksa_transitionDivider{background:var(--dsw-alias-border-l2);width:1px;height:14px;margin:0 2px}.Y6kksa_transitionAction{color:var(--tomato-accent,var(--dsw-alias-state-business-primary));font-size:12px;font-weight:650}.Y6kksa_transitionChevron{color:var(--tomato-accent,var(--dsw-alias-state-business-primary));transition:transform var(--ds-transition-duration-fast) var(--ds-ease-in-out)}.Y6kksa_transitionTrigger[aria-expanded=true] .Y6kksa_transitionChevron{transform:rotate(180deg)}.Y6kksa_workbench{--tomato-accent:var(--dsw-alias-state-business-primary,#3478c8);--tomato-accent-soft:color-mix(in srgb, var(--tomato-accent) 12%, transparent);--tomato-accent-border:color-mix(in srgb, var(--tomato-accent) 48%, var(--dsw-alias-border-l2));min-width:0;height:100%;min-height:0;color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-base);font-family:var(--dsw-font-family);flex-direction:column;flex:1;display:flex;position:relative}.Y6kksa_createDialog{width:min(480px,100%)}.Y6kksa_dialogBody{flex-direction:column;gap:12px;display:flex}.Y6kksa_dialogBody>span{color:var(--tomato-accent,var(--dsw-alias-state-error-primary));font-size:12px;font-weight:700}.Y6kksa_dialogBody code{color:var(--dsw-alias-label-secondary);overflow-wrap:anywhere;font-size:13px}.Y6kksa_workspaceTrigger{justify-content:space-between;width:100%;display:flex}.Y6kksa_header{z-index:20;border-bottom:1px solid #0000;flex:none;padding:12px 28px 0 20px;position:relative}.Y6kksa_header:after{content:\"\";z-index:0;background:var(--dsw-alias-border-l2);pointer-events:none;height:1px;position:absolute;bottom:1px;left:0;right:0}.Y6kksa_titleRow{align-items:center;gap:10px;min-height:32px;display:flex}.Y6kksa_header h1{text-overflow:ellipsis;white-space:nowrap;border-radius:12px;flex:1;min-width:0;margin:0;padding:4px 8px;font-size:14px;font-weight:500;line-height:20px;overflow:hidden}.Y6kksa_pageTabs{z-index:1;gap:36px;margin-top:4px;padding-left:8px;display:flex;position:relative}.Y6kksa_pageTabs button{color:var(--dsw-alias-label-tertiary);cursor:pointer;font:inherit;background:0 0;border:0;padding:0 0 11px;font-size:13px;font-weight:500;line-height:16px;position:relative}.Y6kksa_pageTabs button:after{content:\"\";background:0 0;border-radius:2px;height:2px;position:absolute;bottom:1px;left:0;right:0}.Y6kksa_pageTabs button:hover,.Y6kksa_pageTabs button[aria-current=page]{color:var(--dsw-alias-state-business-primary)}.Y6kksa_pageTabs button[aria-current=page]:after{background:var(--dsw-alias-state-business-primary)}.Y6kksa_pageTabs button:focus-visible{outline:2px solid var(--dsw-alias-state-business-primary);outline-offset:3px}.Y6kksa_actions{z-index:1;align-items:center;gap:8px;min-height:32px;display:flex;position:relative}.Y6kksa_actions .Y6kksa_headerIconButton{width:28px;min-width:28px;height:28px;padding:0}.Y6kksa_searchField{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);border-radius:10px;align-items:center;gap:6px;width:220px;min-height:28px;padding:0 8px;display:flex}.Y6kksa_searchField input{min-width:0;color:inherit;font:inherit;background:0 0;border:0;outline:0;flex:1}.Y6kksa_searchField button{border:0;min-height:24px;padding:0 5px}.Y6kksa_filterMenu{position:relative}.Y6kksa_filterMenu summary{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);cursor:pointer;border-radius:10px;place-items:center;width:28px;height:28px;list-style:none;display:grid;position:relative}.Y6kksa_filterMenu summary::-webkit-details-marker{display:none}.Y6kksa_filterMenu summary i{background:var(--tomato-accent,var(--dsw-alias-state-error-primary));border-radius:50%;width:5px;height:5px;position:absolute;top:5px;right:5px}.Y6kksa_filterPopover{z-index:30;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-2);width:min(500px,100vw - 320px);box-shadow:var(--dsw-shadow-lv3);border-radius:16px;gap:10px;padding:12px;display:grid;position:absolute;top:calc(100% + 8px);right:0}.Y6kksa_assigneeFilter{align-items:flex-start;gap:12px;display:flex}.Y6kksa_assigneeFilter>span{width:48px;color:var(--dsw-alias-label-secondary);white-space:nowrap;flex:0 0 48px;padding-top:8px;font-size:13px}.Y6kksa_assigneePicker{min-width:260px;position:relative}.Y6kksa_assigneeFilter .Y6kksa_assigneeTrigger{border:1px solid color-mix(in srgb, var(--dsw-alias-border-l2) 82%, transparent);width:100%;height:30px;color:var(--dsw-alias-label-secondary);background:color-mix(in srgb, var(--dsw-alias-bg-overlay) 46%, transparent);border-radius:999px;justify-content:space-between;align-items:center;gap:12px;padding:0 8px 0 12px;font-size:12px;display:flex}.Y6kksa_assigneeFilter .Y6kksa_assigneeTrigger:hover{background:var(--dsw-alias-interactive-bg-hover)}.Y6kksa_assigneeTrigger>span{color:var(--dsw-alias-label-primary);text-overflow:ellipsis;white-space:nowrap;overflow:hidden}.Y6kksa_assigneeDropdown{z-index:40;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);width:320px;box-shadow:var(--dsw-shadow-lv3);border-radius:10px;padding:8px;position:absolute;top:calc(100% + 5px);left:0}.Y6kksa_assigneeDropdown>input{border:1px solid var(--dsw-alias-border-l2);width:100%;height:32px;color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-base);font:inherit;border-radius:7px;outline:0;padding:0 9px}.Y6kksa_assigneeDropdown>input:focus{border-color:var(--tomato-accent,var(--dsw-alias-state-business-primary))}.Y6kksa_assigneeDropdown>[role=listbox]{max-height:260px;margin-top:7px;overflow:auto}.Y6kksa_assigneeDropdown [role=option]{width:100%;min-height:38px;color:var(--dsw-alias-label-primary);text-align:left;cursor:pointer;background:0 0;border:0;border-radius:7px;flex-direction:column;justify-content:center;align-items:flex-start;gap:2px;padding:6px 9px;display:flex}.Y6kksa_assigneeDropdown [role=option]:hover,.Y6kksa_assigneeDropdown [role=option][aria-selected=true]{background:var(--dsw-alias-interactive-bg-hover)}.Y6kksa_assigneeDropdown strong{font-size:12px;font-weight:550}.Y6kksa_assigneeDropdown small{color:var(--dsw-alias-label-secondary);font-size:10px}.Y6kksa_assigneeDropdown p{color:var(--dsw-alias-label-secondary);text-align:center;margin:0;padding:18px 8px;font-size:11px}.Y6kksa_filterRow{align-items:flex-start;gap:12px;display:flex}.Y6kksa_filterRow>span{width:48px;color:var(--dsw-alias-label-secondary);white-space:nowrap;flex:0 0 48px;padding-top:7px;font-size:13px}.Y6kksa_filterRow>div{flex-wrap:wrap;flex:1;gap:7px;display:flex}.Y6kksa_workspaceSelect{flex:1;min-width:0;display:block;position:relative}.Y6kksa_workspaceSelect>span{flex:1}.Y6kksa_filterRow .Y6kksa_workspaceTrigger{border:1px solid color-mix(in srgb, var(--dsw-alias-border-l2) 82%, transparent);width:100%;min-height:30px;color:var(--dsw-alias-label-secondary);background:color-mix(in srgb, var(--dsw-alias-bg-overlay) 46%, transparent);font:inherit;text-align:left;cursor:pointer;border-radius:999px;justify-content:space-between;align-items:center;gap:10px;padding:3px 8px 3px 12px;font-size:12px;display:flex}.Y6kksa_filterRow .Y6kksa_workspaceTrigger:hover{background:var(--dsw-alias-interactive-bg-hover)}.Y6kksa_filterRow .Y6kksa_workspaceTrigger>span{min-width:0;color:var(--dsw-alias-label-primary);text-overflow:ellipsis;white-space:nowrap;overflow:hidden}.Y6kksa_workspaceChevron{color:var(--dsw-alias-label-tertiary);flex:none;transition:transform .16s;display:inline-flex}.Y6kksa_workspaceTrigger[aria-expanded=true] .Y6kksa_workspaceChevron{color:var(--tomato-accent,var(--dsw-alias-state-business-primary));transform:rotate(180deg)}.Y6kksa_error{color:var(--tomato-accent,var(--dsw-alias-state-error-primary));background:var(--dsw-alias-state-error-secondary);border-radius:12px;margin:16px 24px 0;padding:12px 14px}.Y6kksa_notice{color:var(--dsw-alias-label-secondary);margin:0;padding:8px 20px;font-size:11px}.Y6kksa_board{z-index:1;flex:1;align-items:flex-start;gap:12px;padding:8px 12px;display:flex;position:relative;overflow:auto}.Y6kksa_lane{border:1px solid var(--dsw-alias-border-l2);background:color-mix(in srgb, var(--dsw-alias-bg-module-platform) 86%, transparent);width:300px;min-width:300px;max-height:100%;transition:transform .16s var(--ds-ease-in-out), opacity .16s var(--ds-ease-in-out), box-shadow .16s var(--ds-ease-in-out);border-radius:16px;flex-direction:column;display:flex}.Y6kksa_laneDragging{opacity:.5;transform:scale(.985)}.Y6kksa_laneDropBefore{box-shadow:-4px 0 0 var(--tomato-accent,var(--dsw-alias-state-business-primary));transform:translate(8px)}.Y6kksa_laneDropAfter{box-shadow:4px 0 0 var(--tomato-accent,var(--dsw-alias-state-business-primary));transform:translate(-8px)}.Y6kksa_laneHeader{cursor:grab;user-select:none;justify-content:space-between;align-items:center;padding:12px 14px 10px;display:flex}.Y6kksa_laneHeader:active{cursor:grabbing}@media (prefers-reduced-motion:reduce){.Y6kksa_lane{transition:none}}.Y6kksa_laneHeader h2{margin:0;font-size:14px}.Y6kksa_laneHeader span{text-align:center;min-width:22px;color:var(--dsw-alias-label-secondary);background:var(--dsw-alias-bg-overlay);border-radius:999px;padding:2px 6px;font-size:12px}.Y6kksa_cards{padding:0 8px 8px;overflow-y:auto}.Y6kksa_card{border:1px solid var(--dsw-alias-border-l2);min-width:0;max-width:100%;color:inherit;background:color-mix(in srgb, var(--dsw-alias-bg-layer-1) 96%, transparent);box-shadow:var(--dsw-shadow-lv1);text-align:left;transition:background var(--ds-transition-duration-fast) var(--ds-ease-in-out), border-color var(--ds-transition-duration-fast) var(--ds-ease-in-out), box-shadow var(--ds-transition-duration-fast) var(--ds-ease-in-out);cursor:pointer;border-radius:14px;flex-direction:column;gap:7px;margin-top:8px;padding:12px;text-decoration:none;display:flex;overflow:hidden}.Y6kksa_card:hover{border-color:var(--dsw-alias-border-l3);background:var(--dsw-alias-button-floating-hover);box-shadow:var(--dsw-shadow-lv2)}.Y6kksa_cardMuted{opacity:.46;filter:saturate(.2);box-shadow:none}.Y6kksa_cardMuted:hover{opacity:.62}.Y6kksa_card:focus-visible{outline:2px solid var(--tomato-accent,var(--dsw-alias-state-business-primary));outline-offset:2px}.Y6kksa_card strong,.Y6kksa_key,.Y6kksa_meta{overflow-wrap:anywhere;word-break:normal;min-width:0}.Y6kksa_cardTopline{justify-content:space-between;align-items:center;gap:8px;min-width:0;display:flex}.Y6kksa_cardButtons{align-items:center;gap:2px;display:inline-flex}.Y6kksa_muteButton,.Y6kksa_tomatoLink{border-radius:8px;flex:none;place-items:center;width:28px;min-width:28px;height:28px;min-height:28px;padding:0;line-height:1;display:inline-grid}.Y6kksa_muteButton{color:var(--dsw-alias-label-tertiary);font-size:9px}.Y6kksa_muteButton[aria-pressed=true]{color:var(--dsw-alias-label-primary)}.Y6kksa_card strong{font-size:14px;font-weight:600;line-height:1.45}.Y6kksa_key{color:var(--dsw-alias-label-secondary);font-size:12px;font-weight:650}.Y6kksa_cardMeta{flex-wrap:wrap;align-items:center;gap:5px;min-width:0;display:flex}.Y6kksa_empty{color:var(--dsw-alias-label-tertiary);margin:auto}@media (width<=820px){.Y6kksa_titleRow{flex-wrap:wrap}.Y6kksa_actions{flex-wrap:wrap;justify-content:flex-end}.Y6kksa_searchField{width:170px}}";
+		const css$2 = ".Y6kksa_sidebarAction{width:100%;min-height:36px;color:var(--dsw-alias-label-primary);cursor:pointer;font:inherit;white-space:nowrap;transition:background var(--ds-transition-duration-fast) var(--ds-ease-in-out), border-color var(--ds-transition-duration-fast) var(--ds-ease-in-out);background:0 0;border:0;border-radius:10px;align-items:center;gap:9px;margin:0;padding:0 10px;display:flex}.Y6kksa_sidebarAction:hover{background:var(--dsw-alias-interactive-bg-hover)}.Y6kksa_topbarAction{border:1px solid var(--dsw-alias-border-l2);min-height:28px;color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-base);cursor:pointer;font:inherit;white-space:nowrap;border-radius:8px;align-items:center;gap:7px;padding:4px 9px;font-size:12px;font-weight:600;display:inline-flex}.Y6kksa_topbarAction:hover{border-color:color-mix(in srgb, var(--tomato-accent,var(--dsw-alias-state-error-primary)) 45%, var(--dsw-alias-border-l2));background:var(--dsw-alias-interactive-bg-hover)}.Y6kksa_topbarAction:focus-visible{outline:2px solid var(--tomato-accent,var(--dsw-alias-state-error-primary));outline-offset:2px}.Y6kksa_topbarAction .Y6kksa_tomatoIcon{border-radius:5px;width:16px;height:16px;font-size:10px}.Y6kksa_tomatoIcon{width:18px;height:18px;color:var(--dsw-alias-label-primary-inverted);background:var(--tomato-accent,var(--dsw-alias-state-error-primary));border-radius:6px;flex:none;place-items:center;font-size:11px;font-weight:750;display:inline-grid}.Y6kksa_transitionTrigger{align-items:center;gap:6px;display:inline-flex}.Y6kksa_transitionCaption{color:var(--dsw-alias-label-secondary);font-size:12px}.Y6kksa_transitionTrigger strong{color:var(--dsw-alias-label-primary);font-size:12px;font-weight:650}.Y6kksa_transitionDivider{background:var(--dsw-alias-border-l2);width:1px;height:14px;margin:0 2px}.Y6kksa_transitionAction{color:var(--tomato-accent,var(--dsw-alias-state-business-primary));font-size:12px;font-weight:650}.Y6kksa_transitionChevron{color:var(--tomato-accent,var(--dsw-alias-state-business-primary));transition:transform var(--ds-transition-duration-fast) var(--ds-ease-in-out)}.Y6kksa_transitionTrigger[aria-expanded=true] .Y6kksa_transitionChevron{transform:rotate(180deg)}.Y6kksa_workbench{--tomato-accent:var(--dsw-alias-state-business-primary,#3478c8);--tomato-accent-soft:color-mix(in srgb, var(--tomato-accent) 12%, transparent);--tomato-accent-border:color-mix(in srgb, var(--tomato-accent) 48%, var(--dsw-alias-border-l2));min-width:0;height:100%;min-height:0;color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-base);font-family:var(--dsw-font-family);flex-direction:column;flex:1;display:flex;position:relative}.Y6kksa_createDialog{width:min(480px,100%)}.Y6kksa_dialogBody{flex-direction:column;gap:12px;display:flex}.Y6kksa_dialogBody>span{color:var(--tomato-accent,var(--dsw-alias-state-error-primary));font-size:12px;font-weight:700}.Y6kksa_dialogBody code{color:var(--dsw-alias-label-secondary);overflow-wrap:anywhere;font-size:13px}.Y6kksa_workspaceTrigger{justify-content:space-between;width:100%;display:flex}.Y6kksa_header{z-index:20;border-bottom:1px solid #0000;flex:none;padding:12px 28px 0 20px;position:relative}.Y6kksa_header:after{content:\"\";z-index:0;background:var(--dsw-alias-border-l2);pointer-events:none;height:1px;position:absolute;bottom:1px;left:0;right:0}.Y6kksa_titleRow{align-items:center;gap:10px;min-height:32px;display:flex}.Y6kksa_header h1{text-overflow:ellipsis;white-space:nowrap;border-radius:12px;flex:1;min-width:0;margin:0;padding:4px 8px;font-size:14px;font-weight:500;line-height:20px;overflow:hidden}.Y6kksa_pageTabs{z-index:1;gap:36px;margin-top:4px;padding-left:8px;display:flex;position:relative}.Y6kksa_pageTabs button{color:var(--dsw-alias-label-tertiary);cursor:pointer;font:inherit;background:0 0;border:0;padding:0 0 11px;font-size:13px;font-weight:500;line-height:16px;position:relative}.Y6kksa_pageTabs button:after{content:\"\";background:0 0;border-radius:2px;height:2px;position:absolute;bottom:1px;left:0;right:0}.Y6kksa_pageTabs button:hover,.Y6kksa_pageTabs button[aria-current=page]{color:var(--dsw-alias-state-business-primary)}.Y6kksa_pageTabs button[aria-current=page]:after{background:var(--dsw-alias-state-business-primary)}.Y6kksa_pageTabs button:focus-visible{outline:2px solid var(--dsw-alias-state-business-primary);outline-offset:3px}.Y6kksa_actions{z-index:1;align-items:center;gap:8px;min-height:32px;display:flex;position:relative}.Y6kksa_actions .Y6kksa_headerIconButton{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);width:28px;min-width:28px;height:28px;color:var(--dsw-alias-label-secondary);transition:all var(--ds-transition-duration-fast) var(--ds-ease-in-out);border-radius:8px;padding:0}.Y6kksa_actions .Y6kksa_headerIconButton:hover{border-color:var(--dsw-alias-border-l3);background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-primary)}.Y6kksa_actions .Y6kksa_headerIconButton:disabled{opacity:.5;cursor:not-allowed}.Y6kksa_searchField{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);border-radius:10px;align-items:center;gap:6px;width:220px;min-height:28px;padding:0 8px;display:flex}.Y6kksa_searchField input{min-width:0;color:inherit;font:inherit;background:0 0;border:0;outline:0;flex:1}.Y6kksa_searchField button{border:0;min-height:24px;padding:0 5px}.Y6kksa_filterMenu{position:relative}.Y6kksa_filterMenu summary{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);cursor:pointer;border-radius:10px;place-items:center;width:28px;height:28px;list-style:none;display:grid;position:relative}.Y6kksa_filterMenu summary::-webkit-details-marker{display:none}.Y6kksa_filterMenu summary i{background:var(--tomato-accent,var(--dsw-alias-state-error-primary));border-radius:50%;width:5px;height:5px;position:absolute;top:5px;right:5px}.Y6kksa_filterPopover{z-index:30;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-2);width:min(500px,100vw - 320px);box-shadow:var(--dsw-shadow-lv3);border-radius:16px;gap:10px;padding:12px;display:grid;position:absolute;top:calc(100% + 8px);right:0}.Y6kksa_assigneeFilter{align-items:flex-start;gap:12px;display:flex}.Y6kksa_assigneeFilter>span{width:48px;color:var(--dsw-alias-label-secondary);white-space:nowrap;flex:0 0 48px;padding-top:8px;font-size:13px}.Y6kksa_assigneePicker{min-width:260px;position:relative}.Y6kksa_assigneeFilter .Y6kksa_assigneeTrigger{border:1px solid color-mix(in srgb, var(--dsw-alias-border-l2) 82%, transparent);width:100%;height:30px;color:var(--dsw-alias-label-secondary);background:color-mix(in srgb, var(--dsw-alias-bg-overlay) 46%, transparent);border-radius:999px;justify-content:space-between;align-items:center;gap:12px;padding:0 8px 0 12px;font-size:12px;display:flex}.Y6kksa_assigneeFilter .Y6kksa_assigneeTrigger:hover{background:var(--dsw-alias-interactive-bg-hover)}.Y6kksa_assigneeTrigger>span{color:var(--dsw-alias-label-primary);text-overflow:ellipsis;white-space:nowrap;overflow:hidden}.Y6kksa_assigneeDropdown{z-index:40;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);width:320px;box-shadow:var(--dsw-shadow-lv3);border-radius:10px;padding:8px;position:absolute;top:calc(100% + 5px);left:0}.Y6kksa_assigneeDropdown>input{border:1px solid var(--dsw-alias-border-l2);width:100%;height:32px;color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-base);font:inherit;border-radius:7px;outline:0;padding:0 9px}.Y6kksa_assigneeDropdown>input:focus{border-color:var(--tomato-accent,var(--dsw-alias-state-business-primary))}.Y6kksa_assigneeDropdown>[role=listbox]{max-height:260px;margin-top:7px;overflow:auto}.Y6kksa_assigneeDropdown [role=option]{width:100%;min-height:38px;color:var(--dsw-alias-label-primary);text-align:left;cursor:pointer;background:0 0;border:0;border-radius:7px;flex-direction:column;justify-content:center;align-items:flex-start;gap:2px;padding:6px 9px;display:flex}.Y6kksa_assigneeDropdown [role=option]:hover,.Y6kksa_assigneeDropdown [role=option][aria-selected=true]{background:var(--dsw-alias-interactive-bg-hover)}.Y6kksa_assigneeDropdown strong{font-size:12px;font-weight:550}.Y6kksa_assigneeDropdown small{color:var(--dsw-alias-label-secondary);font-size:10px}.Y6kksa_assigneeDropdown p{color:var(--dsw-alias-label-secondary);text-align:center;margin:0;padding:18px 8px;font-size:11px}.Y6kksa_filterRow{align-items:flex-start;gap:12px;display:flex}.Y6kksa_filterRow>span{width:48px;color:var(--dsw-alias-label-secondary);white-space:nowrap;flex:0 0 48px;padding-top:7px;font-size:13px}.Y6kksa_filterRow>div{flex-wrap:wrap;flex:1;gap:7px;display:flex}.Y6kksa_workspaceSelect{flex:1;min-width:0;display:block;position:relative}.Y6kksa_workspaceSelect>span{flex:1}.Y6kksa_filterRow .Y6kksa_workspaceTrigger{border:1px solid color-mix(in srgb, var(--dsw-alias-border-l2) 82%, transparent);width:100%;min-height:30px;color:var(--dsw-alias-label-secondary);background:color-mix(in srgb, var(--dsw-alias-bg-overlay) 46%, transparent);font:inherit;text-align:left;cursor:pointer;border-radius:999px;justify-content:space-between;align-items:center;gap:10px;padding:3px 8px 3px 12px;font-size:12px;display:flex}.Y6kksa_filterRow .Y6kksa_workspaceTrigger:hover{background:var(--dsw-alias-interactive-bg-hover)}.Y6kksa_filterRow .Y6kksa_workspaceTrigger>span{min-width:0;color:var(--dsw-alias-label-primary);text-overflow:ellipsis;white-space:nowrap;overflow:hidden}.Y6kksa_workspaceChevron{color:var(--dsw-alias-label-tertiary);flex:none;transition:transform .16s;display:inline-flex}.Y6kksa_workspaceTrigger[aria-expanded=true] .Y6kksa_workspaceChevron{color:var(--tomato-accent,var(--dsw-alias-state-business-primary));transform:rotate(180deg)}.Y6kksa_error{color:var(--tomato-accent,var(--dsw-alias-state-error-primary));background:var(--dsw-alias-state-error-secondary);border-radius:12px;margin:16px 24px 0;padding:12px 14px}.Y6kksa_success{z-index:1000;color:var(--dsw-alias-state-success-primary);background:var(--dsw-alias-state-success-secondary);border-radius:8px;padding:12px 24px;animation:2.5s ease-in-out forwards Y6kksa_fadeInOut;position:fixed;top:20px;left:50%;transform:translate(-50%);box-shadow:0 4px 12px #00000026}@keyframes Y6kksa_fadeInOut{0%{opacity:0;transform:translate(-50%)translateY(-20px)}20%{opacity:1;transform:translate(-50%)translateY(0)}80%{opacity:1;transform:translate(-50%)translateY(0)}to{opacity:0;transform:translate(-50%)translateY(-20px)}}.Y6kksa_notice{color:var(--dsw-alias-label-secondary);margin:0;padding:8px 20px;font-size:11px}.Y6kksa_board{z-index:1;flex:1;align-items:flex-start;gap:12px;padding:8px 12px;display:flex;position:relative;overflow:auto}.Y6kksa_lane{border:1px solid var(--dsw-alias-border-l2);background:color-mix(in srgb, var(--dsw-alias-bg-module-platform) 86%, transparent);width:300px;min-width:300px;max-height:100%;transition:transform .16s var(--ds-ease-in-out), opacity .16s var(--ds-ease-in-out), box-shadow .16s var(--ds-ease-in-out);border-radius:16px;flex-direction:column;display:flex}.Y6kksa_laneDragging{opacity:.5;transform:scale(.985)}.Y6kksa_laneDropBefore{box-shadow:-4px 0 0 var(--tomato-accent,var(--dsw-alias-state-business-primary));transform:translate(8px)}.Y6kksa_laneDropAfter{box-shadow:4px 0 0 var(--tomato-accent,var(--dsw-alias-state-business-primary));transform:translate(-8px)}.Y6kksa_laneHeader{cursor:grab;user-select:none;justify-content:space-between;align-items:center;padding:12px 14px 10px;display:flex}.Y6kksa_laneHeader:active{cursor:grabbing}@media (prefers-reduced-motion:reduce){.Y6kksa_lane{transition:none}}.Y6kksa_laneHeader h2{margin:0;font-size:14px}.Y6kksa_laneHeader span{text-align:center;min-width:22px;color:var(--dsw-alias-label-secondary);background:var(--dsw-alias-bg-overlay);border-radius:999px;padding:2px 6px;font-size:12px}.Y6kksa_cards{padding:0 8px 8px;overflow-y:auto}.Y6kksa_card{border:1px solid var(--dsw-alias-border-l2);min-width:0;max-width:100%;color:inherit;background:color-mix(in srgb, var(--dsw-alias-bg-layer-1) 96%, transparent);box-shadow:var(--dsw-shadow-lv1);text-align:left;transition:background var(--ds-transition-duration-fast) var(--ds-ease-in-out), border-color var(--ds-transition-duration-fast) var(--ds-ease-in-out), box-shadow var(--ds-transition-duration-fast) var(--ds-ease-in-out);cursor:pointer;border-radius:14px;flex-direction:column;gap:7px;margin-top:8px;padding:12px;text-decoration:none;display:flex;overflow:hidden}.Y6kksa_card:hover{border-color:var(--dsw-alias-border-l3);background:var(--dsw-alias-button-floating-hover);box-shadow:var(--dsw-shadow-lv2)}.Y6kksa_cardMuted{opacity:.46;filter:saturate(.2);box-shadow:none}.Y6kksa_cardMuted:hover{opacity:.62}.Y6kksa_card:focus-visible{outline:2px solid var(--tomato-accent,var(--dsw-alias-state-business-primary));outline-offset:2px}.Y6kksa_card strong,.Y6kksa_key,.Y6kksa_meta{overflow-wrap:anywhere;word-break:normal;min-width:0}.Y6kksa_cardTopline{justify-content:space-between;align-items:center;gap:8px;min-width:0;display:flex}.Y6kksa_cardButtons{align-items:center;gap:2px;display:inline-flex}.Y6kksa_muteButton,.Y6kksa_tomatoLink{border-radius:8px;flex:none;place-items:center;width:28px;min-width:28px;height:28px;min-height:28px;padding:0;line-height:1;display:inline-grid}.Y6kksa_muteButton{color:var(--dsw-alias-label-tertiary);font-size:9px}.Y6kksa_muteButton[aria-pressed=true]{color:var(--dsw-alias-label-primary)}.Y6kksa_card strong{font-size:14px;font-weight:600;line-height:1.45}.Y6kksa_key{color:var(--dsw-alias-label-secondary);font-size:12px;font-weight:650}.Y6kksa_cardMeta{flex-wrap:wrap;align-items:center;gap:5px;min-width:0;display:flex}.Y6kksa_empty{color:var(--dsw-alias-label-tertiary);margin:auto}@media (width<=820px){.Y6kksa_titleRow{flex-wrap:wrap}.Y6kksa_actions{flex-wrap:wrap;justify-content:flex-end}.Y6kksa_searchField{width:170px}}";
 		const tagId$2 = "@stephen1620/dsh-tomato-board/tomato-board.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId$2) + "]") === null) {
 			const tag = document.createElement("style");
@@ -44,6 +44,7 @@ window.__ModuleLoader__.load({
 			"dialogBody": "Y6kksa_dialogBody",
 			"empty": "Y6kksa_empty",
 			"error": "Y6kksa_error",
+			"fadeInOut": "Y6kksa_fadeInOut",
 			"filterMenu": "Y6kksa_filterMenu",
 			"filterPopover": "Y6kksa_filterPopover",
 			"filterRow": "Y6kksa_filterRow",
@@ -61,6 +62,7 @@ window.__ModuleLoader__.load({
 			"pageTabs": "Y6kksa_pageTabs",
 			"searchField": "Y6kksa_searchField",
 			"sidebarAction": "Y6kksa_sidebarAction",
+			"success": "Y6kksa_success",
 			"titleRow": "Y6kksa_titleRow",
 			"tomatoIcon": "Y6kksa_tomatoIcon",
 			"tomatoLink": "Y6kksa_tomatoLink",
@@ -160,7 +162,7 @@ window.__ModuleLoader__.load({
 			"toned": "vN3RbG_toned"
 		};
 		//#endregion
-		//#region src/client/Tag.tsx
+		//#region lib/types/client/Tag.js
 		/**
 		* The one tag chip used across the workbench — card metadata, filter chips and
 		* status labels. Static usage renders a span; interactive usage renders a
@@ -176,7 +178,7 @@ window.__ModuleLoader__.load({
 				interactive && pressed === false ? tag_module_css_default.off : "",
 				className
 			].filter(Boolean).join(" ");
-			if (interactive) return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+			if (interactive) return (0, react_jsx_runtime.jsx)("button", {
 				type: "button",
 				className: classes,
 				style,
@@ -185,7 +187,7 @@ window.__ModuleLoader__.load({
 				onClick,
 				children
 			});
-			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+			return (0, react_jsx_runtime.jsx)("span", {
 				className: classes,
 				style,
 				title,
@@ -193,7 +195,7 @@ window.__ModuleLoader__.load({
 			});
 		}
 		//#endregion
-		//#region src/client/StoryPoints.tsx
+		//#region lib/types/client/StoryPoints.js
 		const LEGACY_TEAM_KEY = "taskboard.tomatoStoryTeam.v1";
 		const TEAMS_KEY = "taskboard.tomatoStoryTeams.v2";
 		const SPRINT_KEY = "taskboard.tomatoStorySprint.v1";
@@ -416,9 +418,9 @@ window.__ModuleLoader__.load({
 				return () => document.removeEventListener("pointerdown", close, true);
 			}, [addingTeamId]);
 			(0, react.useEffect)(() => {
-				toolbarTarget(/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+				toolbarTarget((0, react_jsx_runtime.jsxs)("div", {
 					className: story_points_module_css_default.headerControls,
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "迭代" }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
+					children: [(0, react_jsx_runtime.jsxs)("label", { children: [(0, react_jsx_runtime.jsx)("span", { children: "迭代" }), (0, react_jsx_runtime.jsxs)("select", {
 						"aria-label": "选择迭代",
 						value: sprint,
 						disabled: directoryLoading,
@@ -428,10 +430,10 @@ window.__ModuleLoader__.load({
 							setErrors({});
 							setLoadedTeams(/* @__PURE__ */ new Set());
 						},
-						children: [!sprints.length && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+						children: [!sprints.length && (0, react_jsx_runtime.jsx)("option", {
 							value: "",
 							children: directoryLoading ? "正在读取迭代…" : "暂无迭代"
-						}), sprints.map((value) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("option", {
+						}), sprints.map((value) => (0, react_jsx_runtime.jsxs)("option", {
 							value: value.sprintId,
 							children: [
 								value.name,
@@ -440,11 +442,11 @@ window.__ModuleLoader__.load({
 								value.status === "completed" ? "（已结束）" : ""
 							]
 						}, value.sprintId))]
-					})] }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+					})] }), (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
 						variant: "toolbar",
 						size: "sm",
 						className: story_points_module_css_default.headerIconButton,
-						icon: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconRefreshOutline16, {}),
+						icon: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconRefreshOutline16, {}),
 						title: "刷新",
 						"aria-label": "刷新迭代故事点",
 						onClick: () => {
@@ -463,26 +465,26 @@ window.__ModuleLoader__.load({
 				sprints,
 				toolbarTarget
 			]);
-			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+			return (0, react_jsx_runtime.jsxs)("div", {
 				className: story_points_module_css_default.page,
-				children: [directoryError && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("p", {
+				children: [directoryError && (0, react_jsx_runtime.jsxs)("p", {
 					className: story_points_module_css_default.error,
 					children: [directoryError, "，请点击刷新重试。"]
-				}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+				}), (0, react_jsx_runtime.jsxs)("div", {
 					className: story_points_module_css_default.columns,
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
+					children: [(0, react_jsx_runtime.jsxs)("section", {
 						className: story_points_module_css_default.panel,
 						"aria-label": "个人故事点",
-						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						children: [(0, react_jsx_runtime.jsxs)("div", {
 							className: story_points_module_css_default.panelHeader,
-							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h3", { children: "个人分布" }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
+							children: [(0, react_jsx_runtime.jsx)("h3", { children: "个人分布" }), (0, react_jsx_runtime.jsxs)("select", {
 								"aria-label": "选择个人负责人",
 								value: owner,
 								onChange: (event) => setOwner(event.target.value),
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+								children: [(0, react_jsx_runtime.jsx)("option", {
 									value: "currentUser()",
 									children: "我负责的"
-								}), users.map((user) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("option", {
+								}), users.map((user) => (0, react_jsx_runtime.jsxs)("option", {
 									value: user.username,
 									children: [
 										user.name,
@@ -491,36 +493,36 @@ window.__ModuleLoader__.load({
 									]
 								}, user.username))]
 							})]
-						}), errors[owner] ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+						}), errors[owner] ? (0, react_jsx_runtime.jsx)("p", {
 							className: story_points_module_css_default.error,
 							children: errors[owner]
-						}) : !personal ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+						}) : !personal ? (0, react_jsx_runtime.jsx)("p", {
 							className: story_points_module_css_default.empty,
 							children: sprint ? "正在读取个人故事点…" : "请选择迭代"
-						}) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						}) : (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+							(0, react_jsx_runtime.jsxs)("div", {
 								className: story_points_module_css_default.summary,
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+								children: [(0, react_jsx_runtime.jsxs)("div", { children: [(0, react_jsx_runtime.jsx)("span", {
 									className: story_points_module_css_default.eyebrow,
 									children: "故事点总数"
-								}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								}), (0, react_jsx_runtime.jsxs)("div", {
 									className: story_points_module_css_default.total,
-									children: [number(sum), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("small", { children: " SP" })]
-								})] }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+									children: [number(sum), (0, react_jsx_runtime.jsx)("small", { children: " SP" })]
+								})] }), (0, react_jsx_runtime.jsx)("div", {
 									className: story_points_module_css_default.pie,
 									style: { background: gradient ? `conic-gradient(${gradient})` : void 0 },
-									children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("strong", { children: slices.length }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "项占比" })] })
+									children: (0, react_jsx_runtime.jsxs)("div", { children: [(0, react_jsx_runtime.jsx)("strong", { children: slices.length }), (0, react_jsx_runtime.jsx)("span", { children: "项占比" })] })
 								})]
 							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							(0, react_jsx_runtime.jsxs)("div", {
 								className: story_points_module_css_default.listHeading,
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h4", { children: "需求列表" }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: [items.length, " 项"] })]
+								children: [(0, react_jsx_runtime.jsx)("h4", { children: "需求列表" }), (0, react_jsx_runtime.jsxs)("span", { children: [items.length, " 项"] })]
 							}),
-							!items.length && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+							!items.length && (0, react_jsx_runtime.jsx)("p", {
 								className: story_points_module_css_default.empty,
 								children: "该负责人在本迭代暂无事项。"
 							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", { children: items.map((item) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							(0, react_jsx_runtime.jsx)("div", { children: items.map((item) => (0, react_jsx_runtime.jsxs)("div", {
 								className: story_points_module_css_default.item,
 								role: "button",
 								tabIndex: 0,
@@ -533,26 +535,26 @@ window.__ModuleLoader__.load({
 									}
 								},
 								children: [
-									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+									(0, react_jsx_runtime.jsx)("span", {
 										className: story_points_module_css_default.dot,
 										style: { background: item.storyPoints && item.storyPoints > 0 ? colors[slices.indexOf(item) % colors.length] : "var(--dsw-alias-border-l2, #ddd)" }
 									}),
-									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									(0, react_jsx_runtime.jsxs)("div", {
 										className: story_points_module_css_default.itemText,
 										children: [
-											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+											(0, react_jsx_runtime.jsx)("span", {
 												className: story_points_module_css_default.itemTitle,
 												children: item.title
 											}),
-											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("small", { children: item.itemKey }),
-											/* @__PURE__ */ (0, react_jsx_runtime.jsx)(Tag, { children: item.status })
+											(0, react_jsx_runtime.jsx)("small", { children: item.itemKey }),
+											(0, react_jsx_runtime.jsx)(Tag, { children: item.status })
 										]
 									}),
-									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("strong", {
+									(0, react_jsx_runtime.jsx)("strong", {
 										className: story_points_module_css_default.itemPoints,
 										children: item.storyPoints === null ? "未估点" : `${number(item.storyPoints)} SP`
 									}),
-									/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+									(0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
 										className: story_points_module_css_default.tomatoLink,
 										variant: "ghost",
 										size: "sm",
@@ -568,13 +570,13 @@ window.__ModuleLoader__.load({
 								]
 							}, item.itemKey)) })
 						] })]
-					}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
+					}), (0, react_jsx_runtime.jsxs)("section", {
 						className: story_points_module_css_default.panel,
 						"aria-label": "团队故事点",
 						children: [
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							(0, react_jsx_runtime.jsxs)("div", {
 								className: story_points_module_css_default.teamsHeader,
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h3", { children: "团队分布" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+								children: [(0, react_jsx_runtime.jsx)("h3", { children: "团队分布" }), (0, react_jsx_runtime.jsx)("button", {
 									className: story_points_module_css_default.addTeamButton,
 									"aria-label": "创建团队",
 									title: "创建团队",
@@ -585,55 +587,55 @@ window.__ModuleLoader__.load({
 									children: "＋ 创建团队"
 								})]
 							}),
-							teamEditor?.mode === "create" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("form", {
+							teamEditor?.mode === "create" && (0, react_jsx_runtime.jsxs)("form", {
 								className: story_points_module_css_default.teamEditor,
 								onSubmit: (event) => {
 									event.preventDefault();
 									submitTeam();
 								},
 								children: [
-									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+									(0, react_jsx_runtime.jsx)("input", {
 										autoFocus: true,
 										placeholder: "团队名称",
 										value: teamDraft,
 										onChange: (event) => setTeamDraft(event.target.value)
 									}),
-									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									(0, react_jsx_runtime.jsx)("button", {
 										type: "button",
 										onClick: () => setTeamEditor(null),
 										children: "取消"
 									}),
-									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									(0, react_jsx_runtime.jsx)("button", {
 										type: "submit",
 										children: "创建"
 									})
 								]
 							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							(0, react_jsx_runtime.jsx)("div", {
 								className: story_points_module_css_default.teamAccordions,
 								children: teams.map((team) => {
 									const open = openTeamId === team.id;
 									const rows = open ? ranking : [];
-									return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("article", {
+									return (0, react_jsx_runtime.jsxs)("article", {
 										className: story_points_module_css_default.teamAccordion,
 										children: [
-											/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+											(0, react_jsx_runtime.jsxs)("div", {
 												className: story_points_module_css_default.teamAccordionHeader,
 												children: [
-													/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+													(0, react_jsx_runtime.jsxs)("button", {
 														className: story_points_module_css_default.teamToggle,
 														"aria-expanded": open,
 														onClick: () => toggleTeam(team.id),
 														children: [
-															/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+															(0, react_jsx_runtime.jsx)("span", {
 																className: story_points_module_css_default.chevron,
 																children: "›"
 															}),
-															/* @__PURE__ */ (0, react_jsx_runtime.jsx)("strong", { children: team.name }),
-															/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("small", { children: [team.members.length, " 人"] })
+															(0, react_jsx_runtime.jsx)("strong", { children: team.name }),
+															(0, react_jsx_runtime.jsxs)("small", { children: [team.members.length, " 人"] })
 														]
 													}),
-													/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+													(0, react_jsx_runtime.jsx)("button", {
 														className: story_points_module_css_default.renameTeam,
 														"aria-label": `改名 ${team.name}`,
 														title: "改名",
@@ -647,9 +649,9 @@ window.__ModuleLoader__.load({
 														},
 														children: "✎"
 													}),
-													/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+													(0, react_jsx_runtime.jsx)("div", {
 														className: story_points_module_css_default.teamRowActions,
-														children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+														children: (0, react_jsx_runtime.jsx)("button", {
 															"aria-label": `删除 ${team.name}`,
 															title: "删除",
 															onClick: () => deleteTeam(team.id),
@@ -658,59 +660,59 @@ window.__ModuleLoader__.load({
 													})
 												]
 											}),
-											teamEditor?.mode === "rename" && teamEditor.id === team.id && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("form", {
+											teamEditor?.mode === "rename" && teamEditor.id === team.id && (0, react_jsx_runtime.jsxs)("form", {
 												className: story_points_module_css_default.teamEditor,
 												onSubmit: (event) => {
 													event.preventDefault();
 													submitTeam();
 												},
 												children: [
-													/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+													(0, react_jsx_runtime.jsx)("input", {
 														autoFocus: true,
 														value: teamDraft,
 														onChange: (event) => setTeamDraft(event.target.value)
 													}),
-													/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+													(0, react_jsx_runtime.jsx)("button", {
 														type: "button",
 														onClick: () => setTeamEditor(null),
 														children: "取消"
 													}),
-													/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+													(0, react_jsx_runtime.jsx)("button", {
 														type: "submit",
 														children: "保存"
 													})
 												]
 											}),
-											open && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+											open && (0, react_jsx_runtime.jsxs)("div", {
 												className: story_points_module_css_default.teamBody,
 												children: [
-													/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+													(0, react_jsx_runtime.jsxs)("div", {
 														className: story_points_module_css_default.teamBodyToolbar,
-														children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: team.members.length ? "成员故事点" : "暂无成员" }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+														children: [(0, react_jsx_runtime.jsx)("span", { children: team.members.length ? "成员故事点" : "暂无成员" }), (0, react_jsx_runtime.jsxs)("div", {
 															ref: addingTeamId === team.id ? addPeopleRef : void 0,
 															className: story_points_module_css_default.addPeopleRoot,
-															children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+															children: [(0, react_jsx_runtime.jsx)("button", {
 																className: story_points_module_css_default.smallAddButton,
 																onClick: () => setAddingTeamId((current) => current === team.id ? "" : team.id),
 																children: "＋ 添加成员"
-															}), addingTeamId === team.id && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+															}), addingTeamId === team.id && (0, react_jsx_runtime.jsxs)("div", {
 																className: story_points_module_css_default.addPeople,
 																role: "dialog",
 																children: [
-																	/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+																	(0, react_jsx_runtime.jsxs)("div", {
 																		className: story_points_module_css_default.addPeopleTitle,
-																		children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("strong", { children: "添加成员" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+																		children: [(0, react_jsx_runtime.jsx)("strong", { children: "添加成员" }), (0, react_jsx_runtime.jsx)("button", {
 																			onClick: () => setAddingTeamId(""),
 																			children: "×"
 																		})]
 																	}),
-																	/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+																	(0, react_jsx_runtime.jsx)("input", {
 																		ref: addPeopleInputRef,
 																		value: search,
 																		onChange: (event) => setSearch(event.target.value),
 																		placeholder: "搜索姓名或用户名…"
 																	}),
-																	/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [available.map((user) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+																	(0, react_jsx_runtime.jsxs)("div", { children: [available.map((user) => (0, react_jsx_runtime.jsxs)("button", {
 																		onClick: () => {
 																			updateMembers(team.id, (current) => [...current, user.username]);
 																			setAddingTeamId("");
@@ -718,44 +720,44 @@ window.__ModuleLoader__.load({
 																		},
 																		children: [
 																			user.name,
-																			/* @__PURE__ */ (0, react_jsx_runtime.jsx)("small", { children: user.username }),
-																			/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "＋" })
+																			(0, react_jsx_runtime.jsx)("small", { children: user.username }),
+																			(0, react_jsx_runtime.jsx)("span", { children: "＋" })
 																		]
-																	}, user.username)), !available.length && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", { children: "没有可添加的成员" })] })
+																	}, user.username)), !available.length && (0, react_jsx_runtime.jsx)("p", { children: "没有可添加的成员" })] })
 																]
 															})]
 														})]
 													}),
-													/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+													(0, react_jsx_runtime.jsx)("div", {
 														className: story_points_module_css_default.ranking,
-														children: rows.map((row, index) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+														children: rows.map((row, index) => (0, react_jsx_runtime.jsx)("div", {
 															className: story_points_module_css_default.rankRow,
-															children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+															children: (0, react_jsx_runtime.jsxs)("div", {
 																className: story_points_module_css_default.memberRow,
-																children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+																children: [(0, react_jsx_runtime.jsxs)("button", {
 																	className: story_points_module_css_default.rankLabel,
 																	"aria-pressed": owner === row.username,
 																	onClick: () => setOwner(row.username),
 																	children: [
-																		/* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
+																		(0, react_jsx_runtime.jsx)("i", {
 																			className: story_points_module_css_default.rankFill,
 																			style: { width: `${row.points / max * 100}%` }
 																		}),
-																		/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+																		(0, react_jsx_runtime.jsx)("span", {
 																			className: story_points_module_css_default.rankIndex,
 																			children: String(index + 1).padStart(2, "0")
 																		}),
-																		/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+																		(0, react_jsx_runtime.jsx)("span", {
 																			className: story_points_module_css_default.memberAvatar,
 																			children: userName(row.username).slice(0, 1)
 																		}),
-																		/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+																		(0, react_jsx_runtime.jsxs)("span", {
 																			className: story_points_module_css_default.memberIdentity,
-																			children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("strong", { children: userName(row.username) }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("small", { children: row.result ? `${row.result.items.length} 个事项` : errors[row.username] ? "读取失败" : "读取中…" })]
+																			children: [(0, react_jsx_runtime.jsx)("strong", { children: userName(row.username) }), (0, react_jsx_runtime.jsx)("small", { children: row.result ? `${row.result.items.length} 个事项` : errors[row.username] ? "读取失败" : "读取中…" })]
 																		}),
-																		/* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: row.result ? `${number(row.points)} SP` : "—" })
+																		(0, react_jsx_runtime.jsx)("b", { children: row.result ? `${number(row.points)} SP` : "—" })
 																	]
-																}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+																}), (0, react_jsx_runtime.jsx)("button", {
 																	className: story_points_module_css_default.removeMember,
 																	"aria-label": `移除 ${userName(row.username)}`,
 																	title: "移除成员",
@@ -765,7 +767,7 @@ window.__ModuleLoader__.load({
 															})
 														}, row.username))
 													}),
-													!team.members.length && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+													!team.members.length && (0, react_jsx_runtime.jsx)("div", {
 														className: story_points_module_css_default.teamBodyEmpty,
 														children: "添加成员后查看故事点分布"
 													})
@@ -775,7 +777,7 @@ window.__ModuleLoader__.load({
 									}, team.id);
 								})
 							}),
-							!teams.length && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							!teams.length && (0, react_jsx_runtime.jsx)("div", {
 								className: story_points_module_css_default.empty,
 								children: "点击右上角加号创建团队。"
 							})
@@ -785,7 +787,7 @@ window.__ModuleLoader__.load({
 			});
 		}
 		//#endregion
-		//#region src/client/TomatoBoard.tsx
+		//#region lib/types/client/TomatoBoard.js
 		let state = {
 			open: false,
 			loading: false,
@@ -945,29 +947,29 @@ window.__ModuleLoader__.load({
 			dispose?.();
 		}
 		function TomatoBoardAction({ wide, openWorkbench }) {
-			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+			return (0, react_jsx_runtime.jsxs)("button", {
 				className: tomato_board_module_css_default.sidebarAction,
 				type: "button",
 				title: "番茄工作台",
 				onClick: openWorkbench,
-				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+				children: [(0, react_jsx_runtime.jsx)("span", {
 					className: tomato_board_module_css_default.tomatoIcon,
 					"aria-hidden": "true",
 					children: "T"
-				}), wide && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "番茄工作台" })]
+				}), wide && (0, react_jsx_runtime.jsx)("span", { children: "番茄工作台" })]
 			});
 		}
 		function TomatoBoardTopbarAction({ openWorkbench }) {
-			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+			return (0, react_jsx_runtime.jsxs)("button", {
 				className: tomato_board_module_css_default.topbarAction,
 				type: "button",
 				title: "打开番茄工作台",
 				onClick: openWorkbench,
-				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+				children: [(0, react_jsx_runtime.jsx)("span", {
 					className: tomato_board_module_css_default.tomatoIcon,
 					"aria-hidden": "true",
 					children: "T"
-				}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "番茄工作台" })]
+				}), (0, react_jsx_runtime.jsx)("span", { children: "番茄工作台" })]
 			});
 		}
 		function CreateConversationDialog({ ctx, item }) {
@@ -1009,33 +1011,33 @@ window.__ModuleLoader__.load({
 					setCreating(false);
 				}
 			}
-			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Modal, {
+			return (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Modal, {
 				open: true,
 				onClose: () => emit({ selectedItem: null }),
 				title: "选择处理该事项的仓库",
 				closeLabel: "关闭",
 				description: item.title,
 				className: tomato_board_module_css_default.createDialog,
-				footer: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+				footer: (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [(0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
 					variant: "ghost",
 					onClick: () => emit({ selectedItem: null }),
 					children: "取消"
-				}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+				}), (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
 					variant: "primary",
 					disabled: !selectedWorkspace || creating,
 					onClick: () => void createConversation(),
 					children: creating ? "正在创建…" : "创建并进入对话"
 				})] }),
-				children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+				children: (0, react_jsx_runtime.jsxs)("div", {
 					className: tomato_board_module_css_default.dialogBody,
 					children: [
-						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: item.itemKey }),
-						error ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+						(0, react_jsx_runtime.jsx)("span", { children: item.itemKey }),
+						error ? (0, react_jsx_runtime.jsx)("div", {
 							className: tomato_board_module_css_default.error,
 							role: "alert",
 							children: error
 						}) : null,
-						/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Menu, {
+						(0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Menu, {
 							open: workspaceMenuOpen,
 							portal: true,
 							items: workspaces.items.map((workspace) => ({
@@ -1048,19 +1050,19 @@ window.__ModuleLoader__.load({
 								setWorkspaceMenuOpen(false);
 							},
 							onClose: () => setWorkspaceMenuOpen(false),
-							anchor: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+							anchor: (0, react_jsx_runtime.jsxs)(_deepseek_ai_dsh_client_ui_primitives.Button, {
 								className: tomato_board_module_css_default.workspaceTrigger,
 								variant: "outline",
 								"aria-haspopup": "menu",
 								"aria-expanded": workspaceMenuOpen,
 								onClick: () => setWorkspaceMenuOpen((open) => !open),
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: selectedWorkspace?.title ?? "选择 Harness 项目…" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+								children: [(0, react_jsx_runtime.jsx)("span", { children: selectedWorkspace?.title ?? "选择 Harness 项目…" }), (0, react_jsx_runtime.jsx)("span", {
 									"aria-hidden": "true",
 									children: "⌄"
 								})]
 							})
 						}),
-						selectedWorkspace ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("code", { children: selectedWorkspace.path }) : null
+						selectedWorkspace ? (0, react_jsx_runtime.jsx)("code", { children: selectedWorkspace.path }) : null
 					]
 				})
 			});
@@ -1148,13 +1150,11 @@ window.__ModuleLoader__.load({
 			function openItem(item) {
 				const stored = linkedSessionId(item.itemKey);
 				const titlePrefix = `[${item.itemKey}]`;
-				const hasConversation = (id) => sessions.byId[id]?.blank === false;
 				const discovered = sessions.ids.find((id) => {
 					const summary = sessions.byId[id];
-					const matched = summary?.title?.startsWith(titlePrefix) === true || summary?.displayTitle?.startsWith(titlePrefix) === true;
-					return matched && hasConversation(id);
+					return summary?.title?.startsWith(titlePrefix) || summary?.displayTitle.startsWith(titlePrefix);
 				});
-				const associated = stored && hasConversation(stored) ? stored : discovered;
+				const associated = stored && sessions.byId[stored] ? stored : discovered;
 				if (associated) {
 					saveSessionLink(item.itemKey, associated);
 					ctx.sessions.open(associated);
@@ -1239,35 +1239,35 @@ window.__ModuleLoader__.load({
 					return next;
 				});
 			};
-			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
+			return (0, react_jsx_runtime.jsxs)("section", {
 				ref: workbenchRef,
 				className: tomato_board_module_css_default.workbench,
 				"aria-label": "番茄工作台",
 				children: [
-					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("header", {
+					(0, react_jsx_runtime.jsxs)("header", {
 						className: tomato_board_module_css_default.header,
-						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						children: [(0, react_jsx_runtime.jsxs)("div", {
 							className: tomato_board_module_css_default.titleRow,
-							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h1", { children: "番茄工作台" }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							children: [(0, react_jsx_runtime.jsx)("h1", { children: "番茄工作台" }), (0, react_jsx_runtime.jsxs)("div", {
 								className: tomato_board_module_css_default.actions,
 								children: [
 									page === "points" && storyToolbar,
-									page === "board" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
-										/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", {
+									page === "board" && (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+										(0, react_jsx_runtime.jsxs)("label", {
 											className: tomato_board_module_css_default.searchField,
 											children: [
-												/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+												(0, react_jsx_runtime.jsx)("span", {
 													"aria-hidden": "true",
 													children: "⌕"
 												}),
-												/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+												(0, react_jsx_runtime.jsx)("input", {
 													type: "search",
 													value: search,
 													onChange: (event) => setSearch(event.target.value),
 													placeholder: "搜索标题或 tag…",
 													"aria-label": "搜索标题或 tag"
 												}),
-												search && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+												search && (0, react_jsx_runtime.jsx)("button", {
 													type: "button",
 													"aria-label": "清空搜索词",
 													onClick: () => setSearch(""),
@@ -1275,26 +1275,26 @@ window.__ModuleLoader__.load({
 												})
 											]
 										}),
-										/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("details", {
+										(0, react_jsx_runtime.jsxs)("details", {
 											ref: filterMenuRef,
 											className: tomato_board_module_css_default.filterMenu,
-											children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("summary", {
+											children: [(0, react_jsx_runtime.jsxs)("summary", {
 												"aria-label": "空间、负责人、类型和状态筛选",
 												title: "空间、负责人、类型和状态筛选",
-												children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+												children: [(0, react_jsx_runtime.jsx)("span", {
 													"aria-hidden": "true",
 													children: "▽"
-												}), (blacklist.types.size > 0 || blacklist.statuses.size > 0 || blacklist.workspaces.size > 0 || selectedAssignee !== "currentUser()") && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {})]
-											}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+												}), (blacklist.types.size > 0 || blacklist.statuses.size > 0 || blacklist.workspaces.size > 0 || selectedAssignee !== "currentUser()") && (0, react_jsx_runtime.jsx)("i", {})]
+											}), (0, react_jsx_runtime.jsxs)("div", {
 												className: tomato_board_module_css_default.filterPopover,
 												children: [
-													/* @__PURE__ */ (0, react_jsx_runtime.jsx)(WorkspaceFilterRow, {
+													(0, react_jsx_runtime.jsx)(WorkspaceFilterRow, {
 														options: workspaceOptions,
 														hidden: blacklist.workspaces,
 														onToggle: (value) => toggleBlacklist("workspaces", value),
 														onSetAll: setWorkspaceFilterAll
 													}),
-													/* @__PURE__ */ (0, react_jsx_runtime.jsx)(AssigneePicker, {
+													(0, react_jsx_runtime.jsx)(AssigneePicker, {
 														users: filterDirectory.users,
 														value: selectedAssignee,
 														onChange: (value) => {
@@ -1302,13 +1302,13 @@ window.__ModuleLoader__.load({
 															refresh(value);
 														}
 													}),
-													/* @__PURE__ */ (0, react_jsx_runtime.jsx)(FilterRow, {
+													(0, react_jsx_runtime.jsx)(FilterRow, {
 														label: "类型",
 														options: typeOptions,
 														hidden: blacklist.types,
 														onToggle: (value) => toggleBlacklist("types", value)
 													}),
-													/* @__PURE__ */ (0, react_jsx_runtime.jsx)(FilterRow, {
+													(0, react_jsx_runtime.jsx)(FilterRow, {
 														label: "状态",
 														options: statusOptions,
 														hidden: blacklist.statuses,
@@ -1317,11 +1317,11 @@ window.__ModuleLoader__.load({
 												]
 											})]
 										}),
-										/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+										(0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
 											variant: "toolbar",
 											size: "sm",
 											className: tomato_board_module_css_default.headerIconButton,
-											icon: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconRefreshOutline16, {}),
+											icon: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconRefreshOutline16, {}),
 											title: "刷新番茄事项",
 											"aria-label": "刷新番茄事项",
 											disabled: board.loading,
@@ -1331,26 +1331,26 @@ window.__ModuleLoader__.load({
 											}
 										})
 									] }),
-									/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+									(0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
 										variant: "toolbar",
 										size: "sm",
 										className: tomato_board_module_css_default.headerIconButton,
-										icon: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconCloseOutline16, {}),
+										icon: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconCloseOutline16, {}),
 										title: "关闭番茄工作台",
 										"aria-label": "关闭番茄工作台",
 										onClick: closeWorkbench
 									})
 								]
 							})]
-						}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("nav", {
+						}), (0, react_jsx_runtime.jsxs)("nav", {
 							className: tomato_board_module_css_default.pageTabs,
 							"aria-label": "番茄工作台页面",
-							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+							children: [(0, react_jsx_runtime.jsx)("button", {
 								type: "button",
 								"aria-current": page === "board" ? "page" : void 0,
 								onClick: () => setPage("board"),
 								children: "事项看板"
-							}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+							}), (0, react_jsx_runtime.jsx)("button", {
 								type: "button",
 								"aria-current": page === "points" ? "page" : void 0,
 								onClick: () => setPage("points"),
@@ -1358,16 +1358,16 @@ window.__ModuleLoader__.load({
 							})]
 						})]
 					}),
-					page === "points" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)(StoryPoints, {
+					page === "points" ? (0, react_jsx_runtime.jsx)(StoryPoints, {
 						toolbarTarget: setStoryToolbar,
 						onOpenItem: openItem
-					}) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
-						board.error && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					}) : (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+						board.error && (0, react_jsx_runtime.jsx)("div", {
 							className: tomato_board_module_css_default.error,
 							role: "alert",
 							children: board.error
 						}),
-						board.truncated && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("p", {
+						board.truncated && (0, react_jsx_runtime.jsxs)("p", {
 							className: tomato_board_module_css_default.notice,
 							role: "status",
 							children: [
@@ -1376,11 +1376,11 @@ window.__ModuleLoader__.load({
 								" 条。"
 							]
 						}),
-						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						(0, react_jsx_runtime.jsxs)("div", {
 							className: tomato_board_module_css_default.board,
 							children: [statuses.map((status) => {
 								const items = filteredItems.filter((item) => item.status === status);
-								return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
+								return (0, react_jsx_runtime.jsxs)("section", {
 									ref: (element) => {
 										if (element) laneElements.current.set(status, element);
 										else laneElements.current.delete(status);
@@ -1402,7 +1402,7 @@ window.__ModuleLoader__.load({
 										setDraggedLane(null);
 										setDropLane(null);
 									},
-									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("header", {
+									children: [(0, react_jsx_runtime.jsxs)("header", {
 										className: tomato_board_module_css_default.laneHeader,
 										draggable: true,
 										title: "拖拽调整泳道顺序",
@@ -1420,13 +1420,13 @@ window.__ModuleLoader__.load({
 											setDraggedLane(null);
 											setDropLane(null);
 										},
-										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h2", {
+										children: [(0, react_jsx_runtime.jsx)("h2", {
 											id: `tomato-lane-${status}`,
 											children: status
-										}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: items.length })]
-									}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+										}), (0, react_jsx_runtime.jsx)("span", { children: items.length })]
+									}), (0, react_jsx_runtime.jsx)("div", {
 										className: tomato_board_module_css_default.cards,
-										children: items.map((item) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("article", {
+										children: items.map((item) => (0, react_jsx_runtime.jsxs)("article", {
 											className: `${tomato_board_module_css_default.card} ${mutedItems.has(item.itemKey) ? tomato_board_module_css_default.cardMuted : ""}`,
 											tabIndex: 0,
 											role: "button",
@@ -1438,14 +1438,14 @@ window.__ModuleLoader__.load({
 												}
 											},
 											children: [
-												/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+												(0, react_jsx_runtime.jsxs)("div", {
 													className: tomato_board_module_css_default.cardTopline,
-													children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+													children: [(0, react_jsx_runtime.jsx)("span", {
 														className: tomato_board_module_css_default.key,
 														children: item.itemKey
-													}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+													}), (0, react_jsx_runtime.jsxs)("div", {
 														className: tomato_board_module_css_default.cardButtons,
-														children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+														children: [(0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
 															className: tomato_board_module_css_default.muteButton,
 															variant: "ghost",
 															size: "sm",
@@ -1458,7 +1458,7 @@ window.__ModuleLoader__.load({
 															},
 															onKeyDown: (event) => event.stopPropagation(),
 															children: "●"
-														}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+														}), (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
 															className: tomato_board_module_css_default.tomatoLink,
 															variant: "ghost",
 															size: "sm",
@@ -1473,23 +1473,23 @@ window.__ModuleLoader__.load({
 														})]
 													})]
 												}),
-												/* @__PURE__ */ (0, react_jsx_runtime.jsx)("strong", { children: item.title }),
-												/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+												(0, react_jsx_runtime.jsx)("strong", { children: item.title }),
+												(0, react_jsx_runtime.jsxs)("div", {
 													className: tomato_board_module_css_default.cardMeta,
 													children: [
-														/* @__PURE__ */ (0, react_jsx_runtime.jsx)(Tag, {
+														(0, react_jsx_runtime.jsx)(Tag, {
 															tone: typeTone(item.itemType),
 															children: item.itemType
 														}),
-														(item.workspaceName || item.workspaceKey) && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(Tag, {
+														(item.workspaceName || item.workspaceKey) && (0, react_jsx_runtime.jsx)(Tag, {
 															title: "空间",
 															children: item.workspaceName && item.workspaceKey && item.workspaceName !== item.workspaceKey ? `${item.workspaceName} (${item.workspaceKey})` : item.workspaceKey || item.workspaceName
 														}),
-														item.priority && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(Tag, {
+														item.priority && (0, react_jsx_runtime.jsx)(Tag, {
 															title: "优先级",
 															children: priorityLabel(item.priority)
 														}),
-														item.creator && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(Tag, {
+														item.creator && (0, react_jsx_runtime.jsxs)(Tag, {
 															title: "创建人",
 															children: ["创建 ", item.creator]
 														})
@@ -1499,13 +1499,13 @@ window.__ModuleLoader__.load({
 										}, item.itemKey))
 									})]
 								}, status);
-							}), !board.loading && !board.error && statuses.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							}), !board.loading && !board.error && statuses.length === 0 && (0, react_jsx_runtime.jsx)("div", {
 								className: tomato_board_module_css_default.empty,
 								children: "当前没有可显示的番茄事项"
 							})]
 						})
 					] }),
-					board.selectedItem ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)(CreateConversationDialog, {
+					board.selectedItem ? (0, react_jsx_runtime.jsx)(CreateConversationDialog, {
 						ctx,
 						item: board.selectedItem
 					}) : null
@@ -1545,9 +1545,9 @@ window.__ModuleLoader__.load({
 			return palette[[...type].reduce((hash, char) => hash + char.charCodeAt(0), 0) % palette.length];
 		}
 		function FilterRow({ label, options, hidden, onToggle }) {
-			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+			return (0, react_jsx_runtime.jsxs)("div", {
 				className: tomato_board_module_css_default.filterRow,
-				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: label }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", { children: options.map((option) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)(Tag, {
+				children: [(0, react_jsx_runtime.jsx)("span", { children: label }), (0, react_jsx_runtime.jsx)("div", { children: options.map((option) => (0, react_jsx_runtime.jsx)(Tag, {
 					interactive: true,
 					pressed: !hidden.has(option),
 					tone: label === "类型" ? typeTone(option) : void 0,
@@ -1587,12 +1587,12 @@ window.__ModuleLoader__.load({
 				id: WORKSPACE_SELECT_NONE,
 				label: "全部隐藏"
 			}];
-			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+			return (0, react_jsx_runtime.jsxs)("div", {
 				className: tomato_board_module_css_default.filterRow,
 				ref: rootRef,
-				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "空间" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+				children: [(0, react_jsx_runtime.jsx)("span", { children: "空间" }), (0, react_jsx_runtime.jsx)("div", {
 					className: tomato_board_module_css_default.workspaceSelect,
-					children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Menu, {
+					children: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Menu, {
 						open,
 						items,
 						footer,
@@ -1605,7 +1605,7 @@ window.__ModuleLoader__.load({
 						onClose: () => {
 							setOpen(false);
 						},
-						anchor: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+						anchor: (0, react_jsx_runtime.jsxs)("button", {
 							type: "button",
 							className: tomato_board_module_css_default.workspaceTrigger,
 							"aria-expanded": open,
@@ -1613,10 +1613,10 @@ window.__ModuleLoader__.load({
 							onClick: () => {
 								setOpen(!open);
 							},
-							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: summary }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
+							children: [(0, react_jsx_runtime.jsx)("span", { children: summary }), (0, react_jsx_runtime.jsx)("i", {
 								className: tomato_board_module_css_default.workspaceChevron,
 								"aria-hidden": true,
-								children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconChevronDownOutline14, {})
+								children: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconChevronDownOutline14, {})
 							})]
 						})
 					})
@@ -1642,12 +1642,12 @@ window.__ModuleLoader__.load({
 				document.addEventListener("pointerdown", close, true);
 				return () => document.removeEventListener("pointerdown", close, true);
 			}, [open]);
-			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+			return (0, react_jsx_runtime.jsxs)("div", {
 				className: tomato_board_module_css_default.assigneeFilter,
-				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "负责人" }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+				children: [(0, react_jsx_runtime.jsx)("span", { children: "负责人" }), (0, react_jsx_runtime.jsxs)("div", {
 					ref: rootRef,
 					className: tomato_board_module_css_default.assigneePicker,
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+					children: [(0, react_jsx_runtime.jsxs)(_deepseek_ai_dsh_client_ui_primitives.Button, {
 						variant: "outline",
 						size: "sm",
 						className: tomato_board_module_css_default.assigneeTrigger,
@@ -1657,20 +1657,20 @@ window.__ModuleLoader__.load({
 							setOpen((current) => !current);
 							setQuery("");
 						},
-						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: selected?.name ?? value }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconChevronDownOutline14, {})]
-					}), open ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						children: [(0, react_jsx_runtime.jsx)("span", { children: selected?.name ?? value }), (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconChevronDownOutline14, {})]
+					}), open ? (0, react_jsx_runtime.jsxs)("div", {
 						className: tomato_board_module_css_default.assigneeDropdown,
-						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+						children: [(0, react_jsx_runtime.jsx)("input", {
 							autoFocus: true,
 							type: "search",
 							value: query,
 							onChange: (event) => setQuery(event.target.value),
 							placeholder: "搜索昵称或用户名…",
 							"aria-label": "搜索负责人"
-						}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						}), (0, react_jsx_runtime.jsxs)("div", {
 							role: "listbox",
 							"aria-label": "负责人",
-							children: [filtered.map((option) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+							children: [filtered.map((option) => (0, react_jsx_runtime.jsxs)("button", {
 								type: "button",
 								role: "option",
 								"aria-selected": option.username === value,
@@ -1679,8 +1679,8 @@ window.__ModuleLoader__.load({
 									setOpen(false);
 									setQuery("");
 								},
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("strong", { children: option.name }), option.name !== option.username && option.username !== "currentUser()" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("small", { children: option.username }) : null]
-							}, option.username)), filtered.length === 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", { children: "没有匹配的负责人" }) : null]
+								children: [(0, react_jsx_runtime.jsx)("strong", { children: option.name }), option.name !== option.username && option.username !== "currentUser()" ? (0, react_jsx_runtime.jsx)("small", { children: option.username }) : null]
+							}, option.username)), filtered.length === 0 ? (0, react_jsx_runtime.jsx)("p", { children: "没有匹配的负责人" }) : null]
 						})]
 					}) : null]
 				})]
@@ -1791,7 +1791,7 @@ window.__ModuleLoader__.load({
 			const availableTransitions = transitionState.transitions.filter((transition) => !transition.disabled);
 			const delegatedToAgent = transitionError?.startsWith("必填字段缺失") === true;
 			const transitionTitle = transitionError ? delegatedToAgent ? transitionError : `番茄流转失败：${transitionError}` : loading ? "正在查询番茄事项状态" : availableTransitions.length === 0 ? `当前状态「${transitionState.currentStatus || "未知"}」没有可用流转` : `当前状态：${transitionState.currentStatus || "未知"}`;
-			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Menu, {
+			return (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [(0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Menu, {
 				open: menuOpen,
 				portal: true,
 				align: "end",
@@ -1802,7 +1802,7 @@ window.__ModuleLoader__.load({
 				})),
 				onSelect: (transitionName) => void transitionTo(transitionName),
 				onClose: () => setMenuOpen(false),
-				anchor: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+				anchor: (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
 					variant: "toolbar",
 					size: "sm",
 					className: tomato_board_module_css_default.transitionTrigger,
@@ -1812,26 +1812,26 @@ window.__ModuleLoader__.load({
 					"aria-expanded": menuOpen,
 					disabled: loading || transitioning || availableTransitions.length === 0,
 					onClick: () => setMenuOpen((open) => !open),
-					children: transitioning || delegatedToAgent || transitionError ? transitioning ? "正在流转…" : delegatedToAgent ? "AI 已接手" : "流转失败" : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
-						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+					children: transitioning || delegatedToAgent || transitionError ? transitioning ? "正在流转…" : delegatedToAgent ? "AI 已接手" : "流转失败" : (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+						(0, react_jsx_runtime.jsx)("span", {
 							className: tomato_board_module_css_default.transitionCaption,
 							children: "状态"
 						}),
-						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("strong", { children: transitionState.currentStatus || "查询中…" }),
-						availableTransitions.length > 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+						(0, react_jsx_runtime.jsx)("strong", { children: transitionState.currentStatus || "查询中…" }),
+						availableTransitions.length > 0 ? (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+							(0, react_jsx_runtime.jsx)("span", {
 								className: tomato_board_module_css_default.transitionDivider,
 								"aria-hidden": "true"
 							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+							(0, react_jsx_runtime.jsx)("span", {
 								className: tomato_board_module_css_default.transitionAction,
 								children: "流转"
 							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconChevronDownOutline14, { className: tomato_board_module_css_default.transitionChevron })
+							(0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconChevronDownOutline14, { className: tomato_board_module_css_default.transitionChevron })
 						] }) : null
 					] })
 				})
-			}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+			}), (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
 				variant: "toolbar",
 				size: "sm",
 				title: "在番茄中打开事项",
@@ -1851,23 +1851,22 @@ window.__ModuleLoader__.load({
 				if (disposeWorkbench) return;
 				emit({ open: true });
 				disposeWorkbench = ctx.slots.register({
-					// `conversation` is not a declared root slot; use the layout child.
-					name: "main.conversation",
+					name: "conversation",
 					priority: -100
-				}, () => /* @__PURE__ */ (0, react_jsx_runtime.jsx)(TomatoBoardPanel, { ctx }));
+				}, () => (0, react_jsx_runtime.jsx)(TomatoBoardPanel, { ctx }));
 			};
 			ctx.slots.inject("conversation.session.header.actions", () => ctx.slots.register({
 				name: "conversation.session.header.actions",
 				id: "tomato-shortcut",
 				order: 12
-			}, (props) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)(TomatoConversationShortcut, {
+			}, (props) => (0, react_jsx_runtime.jsx)(TomatoConversationShortcut, {
 				...props,
 				ctx
 			})));
 			ctx.slots.inject("sidebar.footer.action", () => ctx.slots.register({
 				name: "sidebar.footer.action",
 				id: "tomato-board"
-			}, (props) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)(TomatoBoardAction, {
+			}, (props) => (0, react_jsx_runtime.jsx)(TomatoBoardAction, {
 				...props,
 				openWorkbench
 			})));
@@ -1875,7 +1874,7 @@ window.__ModuleLoader__.load({
 				name: "conversation.session.header.actions",
 				id: "tomato-board-topbar",
 				order: 11
-			}, () => /* @__PURE__ */ (0, react_jsx_runtime.jsx)(TomatoBoardTopbarAction, { openWorkbench })));
+			}, () => (0, react_jsx_runtime.jsx)(TomatoBoardTopbarAction, { openWorkbench })));
 		}
 		//#endregion
 		exports.apply = apply;

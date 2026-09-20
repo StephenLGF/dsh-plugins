@@ -1011,12 +1011,10 @@ export function apply(ctx: Context): void {
   const openWorkbench = () => {
     if (disposeWorkbench) return
     emit({ open: true })
-    disposeWorkbench = ctx.slots.register(
-      // `conversation` is not a declared root slot.  The conversation panel is
-      // mounted through the layout's declared `main.conversation` child slot.
-      { name: 'main.conversation', priority: -100 },
+    disposeWorkbench = ctx.slots.inject('conversation', () => ctx.slots.register(
+      { name: 'conversation', id: 'tomato-board-panel', priority: -100 },
       () => <TomatoBoardPanel ctx={ctx} />,
-    )
+    ))
   }
   ctx.slots.inject('conversation.session.header.actions', () => ctx.slots.register(
     { name: 'conversation.session.header.actions', id: 'tomato-shortcut', order: 12 },
