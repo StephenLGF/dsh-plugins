@@ -794,6 +794,7 @@ window.__ModuleLoader__.load({
 			loaded: false,
 			items: [],
 			error: null,
+			successMessage: null,
 			selectedItem: null,
 			truncated: false
 		};
@@ -917,7 +918,8 @@ window.__ModuleLoader__.load({
 		async function refresh(assignee = "currentUser()") {
 			emit({
 				loading: true,
-				error: null
+				error: null,
+				successMessage: null
 			});
 			try {
 				const query = new URLSearchParams({ assignee });
@@ -927,8 +929,10 @@ window.__ModuleLoader__.load({
 				emit({
 					items: body.items ?? [],
 					truncated: body.truncated === true,
-					loaded: true
+					loaded: true,
+					successMessage: `已刷新 ${body.items?.length ?? 0} 条事项`
 				});
+				setTimeout(() => emit({ successMessage: null }), 2e3);
 			} catch (error) {
 				emit({ error: error instanceof Error ? error.message : "番茄事项读取失败" });
 			} finally {
@@ -942,7 +946,8 @@ window.__ModuleLoader__.load({
 				open: false,
 				selectedItem: null,
 				loaded: false,
-				error: null
+				error: null,
+				successMessage: null
 			});
 			dispose?.();
 		}
@@ -1150,11 +1155,12 @@ window.__ModuleLoader__.load({
 			function openItem(item) {
 				const stored = linkedSessionId(item.itemKey);
 				const titlePrefix = `[${item.itemKey}]`;
+				const hasConversation = (id) => sessions.byId[id]?.blank === false;
 				const discovered = sessions.ids.find((id) => {
 					const summary = sessions.byId[id];
-					return summary?.title?.startsWith(titlePrefix) || summary?.displayTitle.startsWith(titlePrefix);
+					return (summary?.title?.startsWith(titlePrefix) === true || summary?.displayTitle?.startsWith(titlePrefix) === true) && hasConversation(id);
 				});
-				const associated = stored && sessions.byId[stored] ? stored : discovered;
+				const associated = stored && hasConversation(stored) ? stored : discovered;
 				if (associated) {
 					saveSessionLink(item.itemKey, associated);
 					ctx.sessions.open(associated);
@@ -1362,6 +1368,11 @@ window.__ModuleLoader__.load({
 						toolbarTarget: setStoryToolbar,
 						onOpenItem: openItem
 					}) : (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+						board.successMessage && (0, react_jsx_runtime.jsx)("div", {
+							className: tomato_board_module_css_default.success,
+							role: "status",
+							children: board.successMessage
+						}),
 						board.error && (0, react_jsx_runtime.jsx)("div", {
 							className: tomato_board_module_css_default.error,
 							role: "alert",
@@ -1850,10 +1861,12 @@ window.__ModuleLoader__.load({
 			const openWorkbench = () => {
 				if (disposeWorkbench) return;
 				emit({ open: true });
-				disposeWorkbench = ctx.slots.register({
-					name: "conversation",
-					priority: -100
-				}, () => (0, react_jsx_runtime.jsx)(TomatoBoardPanel, { ctx }));
+				disposeWorkbench = ctx.slots.inject("conversation.view", () => ctx.slots.register({
+					name: "conversation.view",
+					id: "tomato-board",
+					label: "番茄工作台",
+					order: -100
+				}, () => (0, react_jsx_runtime.jsx)(TomatoBoardPanel, { ctx })));
 			};
 			ctx.slots.inject("conversation.session.header.actions", () => ctx.slots.register({
 				name: "conversation.session.header.actions",
