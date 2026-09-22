@@ -262,10 +262,6 @@ window.__ModuleLoader__.load({
 			const [owner, setOwner] = (0, react.useState)(() => savedValue(OWNER_KEY, "currentUser()"));
 			const [teams, setTeams] = (0, react.useState)(readTeams);
 			const [openTeamId, setOpenTeamId] = (0, react.useState)(() => readTeams()[0]?.id ?? "");
-			const [loadedTeams, setLoadedTeams] = (0, react.useState)(() => {
-				const first = readTeams()[0]?.id;
-				return new Set(first ? [first] : []);
-			});
 			const [teamDraft, setTeamDraft] = (0, react.useState)("");
 			const [teamEditor, setTeamEditor] = (0, react.useState)(null);
 			const [addingTeamId, setAddingTeamId] = (0, react.useState)("");
@@ -310,11 +306,19 @@ window.__ModuleLoader__.load({
 				} catch {}
 			}, [owner]);
 			const openMembers = teams.find((team) => team.id === openTeamId)?.members ?? [];
-			const ownersKey = JSON.stringify([...new Set([owner, ...loadedTeams.has(openTeamId) ? openMembers : []])].sort());
+			const ownersKey = JSON.stringify([...new Set([owner, ...openMembers])].sort());
+			const resultScope = (0, react.useRef)("");
 			(0, react.useEffect)(() => {
-				if (!sprint) return;
+				if (directoryLoading || !sprint) return;
+				const scope = JSON.stringify([sprint, version]);
+				const sameScope = resultScope.current === scope;
+				if (!sameScope) {
+					resultScope.current = scope;
+					setResults({});
+					setErrors({});
+				}
 				const controller = new AbortController();
-				const owners = JSON.parse(ownersKey).filter((username) => !results[username] && !errors[username]);
+				const owners = JSON.parse(ownersKey).filter((username) => !sameScope || !results[username] && !errors[username]);
 				const worker = async () => {
 					while (owners.length && !controller.signal.aborted) {
 						const username = owners.shift();
@@ -343,6 +347,7 @@ window.__ModuleLoader__.load({
 				]);
 				return () => controller.abort();
 			}, [
+				directoryLoading,
 				sprint,
 				ownersKey,
 				version
@@ -360,7 +365,6 @@ window.__ModuleLoader__.load({
 			const userName = (username) => username === "currentUser()" ? "我" : users.find((user) => user.username === username)?.name ?? username;
 			const toggleTeam = (id) => {
 				setOpenTeamId((current) => current === id ? "" : id);
-				setLoadedTeams((current) => new Set(current).add(id));
 				setAddingTeamId("");
 				setTeamEditor(null);
 			};
@@ -382,7 +386,6 @@ window.__ModuleLoader__.load({
 					};
 					setTeams((current) => [...current, team]);
 					setOpenTeamId(team.id);
-					setLoadedTeams((current) => new Set(current).add(team.id));
 				} else setTeams((current) => current.map((team) => team.id === teamEditor.id ? {
 					...team,
 					name
@@ -393,11 +396,6 @@ window.__ModuleLoader__.load({
 			const deleteTeam = (id) => {
 				setTeams((current) => current.filter((team) => team.id !== id));
 				if (openTeamId === id) setOpenTeamId("");
-				setLoadedTeams((current) => {
-					const next = new Set(current);
-					next.delete(id);
-					return next;
-				});
 			};
 			const updateMembers = (id, updater) => setTeams((current) => current.map((team) => team.id === id ? {
 				...team,
@@ -426,7 +424,6 @@ window.__ModuleLoader__.load({
 							setSprint(event.target.value);
 							setResults({});
 							setErrors({});
-							setLoadedTeams(/* @__PURE__ */ new Set());
 						},
 						children: [!sprints.length && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
 							value: "",

@@ -26,6 +26,11 @@ npx @deepseek-ai/dsh plugin --profile desktop add .
 
 安装前请先确认必备的 Gitee CLI 已配置完成，具体要求见下方“必备环境”。
 
+## 0.3.3 更新
+
+- 迭代投入中，展开团队的成员始终参与加载，切换迭代后不再停留在“读取中”。
+- 首次进入先确认有效迭代，切换迭代或刷新时重新读取成员数据，避免复用上一迭代的结果。
+
 ## 0.3.2 更新
 
 - 使用 Harness `main` 主内容区展示工作台，保留左侧栏，关闭后返回原对话。
@@ -96,11 +101,11 @@ command -v gitee
 
 ## 安装
 
-当前版本：`0.3.2`。已安装用户在对应 profile 目录升级：
+当前版本：`0.3.3`。已安装用户在对应 profile 目录升级：
 
 ```bash
 cd ~/.dsh/profiles/desktop # Web 用户改为 web
-pnpm add @stephen1620/dsh-tomato-board@0.3.2
+pnpm add @stephen1620/dsh-tomato-board@0.3.3
 ```
 
 保留已有 `dsh.profile.bundles` 注册项，升级后完全退出并重新打开 Harness。
