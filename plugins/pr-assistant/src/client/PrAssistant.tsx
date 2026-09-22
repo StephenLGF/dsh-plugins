@@ -111,7 +111,6 @@ interface ConflictGitStatus {
 
 const EMPTY_REVIEW_EVENTS = { entries: [], hasMore: false, revision: 0, change: { kind: 'replace' as const, entries: [] } }
 
-let disposeWorkbench: (() => void) | null = null
 const HIDDEN_REPOSITORIES_KEY = 'prAssistant.hiddenRepositories.v1'
 const REVIEW_SESSION_LINKS_KEY = 'prAssistant.reviewSessionLinks.v1'
 const CONFLICT_LINKS_KEY = 'prAssistant.conflictLinks.v1'
@@ -1007,22 +1006,16 @@ function PrAssistantPanel({ ctx, close }: { ctx: Context; close: () => void }) {
   )
 }
 
-export const inject = ['slots', 'sessions', 'workspaces', 'remote', 'remote.session']
+export const inject = ['slots', 'layout', 'sessions', 'workspaces', 'remote', 'remote.session']
 
 export function apply(ctx: Context): void {
+  const close = () => ctx.layout.selectPanel(null)
+  ctx.slots.inject('main', () => ctx.slots.register(
+    { name: 'main', key: 'pr-assistant', id: 'pr-assistant-panel' },
+    () => <PrAssistantPanel ctx={ctx} close={close} />,
+  ))
   ctx.slots.inject('sidebar.footer.action', () => ctx.slots.register(
     { name: 'sidebar.footer.action', id: 'pr-assistant' },
-    props => <SidebarAction {...props} openWorkbench={() => {
-      if (disposeWorkbench) return
-      const close = () => {
-        const dispose = disposeWorkbench
-        disposeWorkbench = null
-        dispose?.()
-      }
-      disposeWorkbench = ctx.slots.inject('shell.overlay', () => ctx.slots.register(
-        { name: 'shell.overlay', id: 'pr-assistant-panel' },
-        () => <PrAssistantPanel ctx={ctx} close={close} />,
-      ))
-    }} />,
+    props => <SidebarAction {...props} openWorkbench={() => ctx.layout.selectPanel('pr-assistant')} />,
   ))
 }

@@ -4,10 +4,10 @@ window.__ModuleLoader__.load({
 		var module = { exports: {} };
 		var exports = module.exports;
 		Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
-		let react_jsx_runtime = require("react/jsx-runtime");
 		let react = require("react");
-		//#region \0dsh-css:/Users/gengfeng/deepseek-harness/packages/client/pr-assistant/src/client/pr-assistant.module.css.mjs
-		const css = ".fhCqya_sidebarAction{width:100%;min-height:36px;color:var(--dsw-alias-label-primary);cursor:pointer;font:inherit;background:0 0;border:0;border-radius:10px;align-items:center;gap:9px;padding:0 10px;display:flex}.fhCqya_sidebarAction:hover{background:var(--dsw-alias-interactive-bg-hover)}.fhCqya_branchIcon{flex:0 0 18px;width:18px;height:18px;position:relative}.fhCqya_branchIcon:before{content:\"\";border-bottom:1.5px solid;border-left:1.5px solid;border-radius:0 0 0 5px;width:8px;height:8px;position:absolute;top:4px;left:4px}.fhCqya_branchIcon i{background:var(--dsw-alias-bg-base);border:1.5px solid;border-radius:50%;width:5px;height:5px;position:absolute}.fhCqya_branchIcon i:first-child{top:0;left:1px}.fhCqya_branchIcon i:nth-child(2){bottom:0;left:1px}.fhCqya_branchIcon i:last-child{top:7px;right:0}.fhCqya_workbench{z-index:100;color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-base);font-family:var(--dsw-font-family);flex-direction:column;display:flex;position:fixed;inset:0;overflow:hidden}.fhCqya_scrollArea{flex:1;min-height:0;overflow:hidden}.fhCqya_header{z-index:5;box-sizing:border-box;border-bottom:1px solid var(--dsw-alias-border-l2);background:color-mix(in srgb,var(--dsw-alias-bg-base) 90%,transparent);backdrop-filter:blur(18px);justify-content:space-between;align-items:center;gap:16px;min-height:60px;padding:11px 20px;display:flex;position:sticky;top:0}.fhCqya_eyebrow{color:var(--dsw-alias-state-business-primary);letter-spacing:.2em;font:700 9px/1.2 ui-monospace,SFMono-Regular,monospace;display:none}.fhCqya_titleRow{align-items:center;gap:8px;margin-top:0;display:flex}.fhCqya_header h1{letter-spacing:-.015em;margin:0;font-size:16px;line-height:22px}.fhCqya_titleBack{border:1px solid var(--dsw-alias-border-l2);width:28px;height:28px;color:var(--dsw-alias-label-secondary);background:var(--dsw-alias-bg-layer-1);cursor:pointer;border-radius:8px;padding:0;font-size:16px}.fhCqya_titleBack:hover{color:var(--dsw-alias-state-business-primary)}.fhCqya_header p{color:var(--dsw-alias-label-secondary);margin:1px 0 0;font-size:11px;line-height:14px}.fhCqya_actions{align-items:center;gap:8px;display:flex}.fhCqya_actions button{border:1px solid var(--dsw-alias-border-l2);min-height:34px;color:inherit;background:var(--dsw-alias-bg-layer-1);cursor:pointer;border-radius:9px;padding:0 13px}.fhCqya_actions button:last-child{width:34px;padding:0;font-size:20px}.fhCqya_actions button:disabled{opacity:.5;cursor:wait}.fhCqya_search{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);border-radius:9px;align-items:center;gap:7px;width:210px;min-height:34px;padding:0 10px;display:flex}.fhCqya_search input{width:100%;color:inherit;font:inherit;background:0 0;border:0;outline:0}.fhCqya_grid{box-sizing:border-box;overscroll-behavior-inline:contain;scrollbar-gutter:stable;grid-auto-columns:minmax(360px,1fr);grid-auto-flow:column;gap:14px;height:100%;min-height:0;padding:18px 22px;display:grid;overflow:auto hidden}.fhCqya_repo{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);min-width:0;height:100%;min-height:0;box-shadow:0 1px 0 color-mix(in srgb,var(--dsw-alias-label-primary) 5%,transparent);border-radius:14px;flex-direction:column;display:flex;overflow:hidden}.fhCqya_repoIdentity{align-items:center;gap:9px;min-width:0;display:flex}.fhCqya_repoTools{flex:none;align-items:center;gap:10px;display:flex}.fhCqya_hideRepo{color:var(--dsw-alias-label-secondary);cursor:pointer;font:500 11px/16px var(--dsw-font-family);background:0 0;border:0;padding:0}.fhCqya_hideRepo:hover{color:var(--dsw-alias-state-error-primary)}.fhCqya_repoHeader{z-index:1;border-bottom:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);flex:none;justify-content:space-between;align-items:center;gap:14px;min-height:54px;padding:10px 14px;display:flex;position:relative}.fhCqya_provider{color:var(--dsw-alias-state-business-primary);letter-spacing:.12em;text-transform:uppercase;flex:none;font:700 9px/1 ui-monospace,SFMono-Regular,monospace}.fhCqya_repo h2{letter-spacing:-.015em;text-overflow:ellipsis;white-space:nowrap;min-width:0;margin:0;font-size:14px;overflow:hidden}.fhCqya_count,.fhCqya_countActive{border:1px solid var(--dsw-alias-border-l2);background:0 0;border-radius:7px;place-items:center;min-width:max-content;height:24px;padding:0 7px;font:700 13px/1 ui-monospace,SFMono-Regular,monospace;display:grid}.fhCqya_count{color:var(--dsw-alias-label-tertiary)}.fhCqya_countActive{color:var(--dsw-alias-state-business-primary);border-color:color-mix(in srgb,var(--dsw-alias-state-business-primary) 34%,var(--dsw-alias-border-l2));background:color-mix(in srgb,var(--dsw-alias-state-business-primary) 6%,transparent)}.fhCqya_prList{overscroll-behavior:contain;scrollbar-gutter:stable;flex:1;min-height:0;margin:0;padding:0;list-style:none;overflow-y:auto}.fhCqya_prList li+li{border-top:1px solid color-mix(in srgb,var(--dsw-alias-border-l2) 70%,transparent)}.fhCqya_prRow{align-items:stretch;display:flex}.fhCqya_prMain{min-width:0;color:inherit;text-align:left;cursor:pointer;background:0 0;border:0;flex:1;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 9px;padding:11px 10px 11px 16px;display:grid}.fhCqya_prRow:hover{background:var(--dsw-alias-interactive-bg-hover)}.fhCqya_prNumber{color:var(--dsw-alias-state-business-primary);font:650 11px/18px ui-monospace,SFMono-Regular,monospace}.fhCqya_prTitle{text-overflow:ellipsis;white-space:nowrap;font-size:13px;line-height:18px;overflow:hidden}.fhCqya_branches,.fhCqya_meta{min-width:0;color:var(--dsw-alias-label-secondary);grid-column:2/-1;font-size:10px}.fhCqya_branches{flex-wrap:wrap;align-items:center;gap:5px;display:flex}.fhCqya_sourceBranch,.fhCqya_targetBranch{border:1px solid;border-radius:5px;align-items:center;gap:5px;min-width:0;max-width:100%;padding:2px 7px;display:inline-flex}.fhCqya_sourceBranch{color:#c993ff;background:#9b59d01a;border-color:#9b59d061}.fhCqya_targetBranch{color:#55c889;background:#3fbf721a;border-color:#3fbf7261}.fhCqya_branches b{flex:none;font-size:9px;font-weight:650}.fhCqya_branches code{min-width:0;color:inherit;text-overflow:ellipsis;white-space:nowrap;font:10px/14px ui-monospace,SFMono-Regular,monospace;overflow:hidden}.fhCqya_draft,.fhCqya_conflictTag,.fhCqya_unknownTag{border:1px solid var(--dsw-alias-border-l2);color:var(--dsw-alias-label-secondary);border-radius:4px;align-self:center;padding:2px 5px;font-size:9px}.fhCqya_conflictTag{border-color:color-mix(in srgb,var(--dsw-alias-state-error-primary) 45%,transparent);color:var(--dsw-alias-state-error-primary);background:color-mix(in srgb,var(--dsw-alias-state-error-primary) 8%,transparent)}.fhCqya_unknownTag{color:var(--dsw-alias-label-tertiary)}.fhCqya_externalLink{width:58px;color:var(--dsw-alias-label-secondary);cursor:pointer;font:500 10px/1 var(--dsw-font-family);background:0 0;border:1px solid #0000;border-radius:7px;margin:8px 8px 8px 0}.fhCqya_externalLink:hover{border-color:var(--dsw-alias-border-l2);color:var(--dsw-alias-state-business-primary);background:var(--dsw-alias-bg-layer-2)}.fhCqya_empty{min-height:132px;color:var(--dsw-alias-label-secondary);flex-direction:column;flex:1;justify-content:center;align-items:center;display:flex}.fhCqya_empty>span{color:#60d98a;border:1px solid #60d98a;border-radius:50%;place-items:center;width:28px;height:28px;display:grid}.fhCqya_empty p{color:var(--dsw-alias-label-primary);margin:8px 0 2px;font-size:13px}.fhCqya_empty small{font-size:10px}.fhCqya_detail{gap:14px;width:min(1080px,100% - 44px);height:100%;margin:0 auto;padding:22px 0 40px;display:grid;overflow-y:auto}.fhCqya_backToList{border:1px solid var(--dsw-alias-border-l2);width:max-content;min-height:32px;color:var(--dsw-alias-label-secondary);background:var(--dsw-alias-bg-layer-1);cursor:pointer;border-radius:8px;padding:0 10px}.fhCqya_backToList:hover{color:var(--dsw-alias-state-business-primary)}.fhCqya_detailState{min-height:240px;color:var(--dsw-alias-label-secondary);place-items:center;display:grid}.fhCqya_detailHero,.fhCqya_detailStats,.fhCqya_description,.fhCqya_files{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);border-radius:14px}.fhCqya_detailHero{justify-content:space-between;align-items:flex-start;gap:24px;padding:22px;display:flex}.fhCqya_detailHero>div>span{color:var(--dsw-alias-label-secondary);font-size:11px}.fhCqya_detailHero h2{letter-spacing:-.025em;max-width:760px;margin:7px 0 14px;font-size:22px;line-height:1.35}.fhCqya_detailHero code{color:var(--dsw-alias-label-secondary);background:var(--dsw-alias-bg-layer-2);border-radius:6px;padding:5px 8px;font-size:11px}.fhCqya_detailHero button{border:1px solid var(--dsw-alias-border-l2);min-width:max-content;min-height:34px;color:var(--dsw-alias-state-business-primary);cursor:pointer;background:0 0;border-radius:8px;padding:0 12px}.fhCqya_detailStats{grid-template-columns:repeat(5,1fr);display:grid;overflow:hidden}.fhCqya_detailStats div{border-right:1px solid var(--dsw-alias-border-l2);flex-direction:column;justify-content:center;min-height:86px;padding:16px;display:flex}.fhCqya_detailStats div:last-child{border:0}.fhCqya_detailStats strong{font:700 18px/1.2 ui-monospace,SFMono-Regular,monospace}.fhCqya_detailStats span{color:var(--dsw-alias-label-secondary);margin-top:7px;font-size:10px}.fhCqya_addition,.fhCqya_clean{color:#3fbf72}.fhCqya_deletion,.fhCqya_conflict{color:var(--dsw-alias-state-error-primary)}.fhCqya_unknown{color:var(--dsw-alias-label-secondary)}.fhCqya_description{padding:18px 20px}.fhCqya_description h3,.fhCqya_files h3{margin:0 0 12px;font-size:13px}.fhCqya_description p{color:var(--dsw-alias-label-secondary);white-space:pre-wrap;margin:0;font-size:12px;line-height:1.7}.fhCqya_files{min-width:0;padding:18px 20px}.fhCqya_files h3 span{color:var(--dsw-alias-label-secondary);font-weight:400}.fhCqya_files ol{margin:0;padding:0;list-style:none}.fhCqya_files li{border-top:1px solid color-mix(in srgb,var(--dsw-alias-border-l2) 65%,transparent)}.fhCqya_files details{min-width:0}.fhCqya_files summary{cursor:pointer;grid-template-columns:22px minmax(0,1fr) auto;align-items:center;gap:8px;min-height:42px;list-style:none;display:grid}.fhCqya_files summary::-webkit-details-marker{display:none}.fhCqya_files summary:before{content:\"›\";color:var(--dsw-alias-label-tertiary);margin-left:-13px;transition:transform .15s;position:absolute}.fhCqya_files details[open] summary:before{transform:rotate(90deg)}.fhCqya_fileStatus{color:var(--dsw-alias-label-secondary);font:700 10px/1 ui-monospace,SFMono-Regular,monospace}.fhCqya_files code{text-overflow:ellipsis;white-space:nowrap;font-size:11px;overflow:hidden}.fhCqya_fileCounts{gap:8px;font:600 10px/1 ui-monospace,SFMono-Regular,monospace;display:flex}.fhCqya_fileCounts i{color:#3fbf72;font-style:normal}.fhCqya_fileCounts b{color:var(--dsw-alias-state-error-primary)}.fhCqya_diffBlock{border:1px solid var(--dsw-alias-border-l2);max-height:520px;color:var(--dsw-alias-label-secondary);background:var(--dsw-alias-bg-base);tab-size:2;border-radius:9px;margin:0 0 12px;padding:12px 0;font:10px/1.55 ui-monospace,SFMono-Regular,monospace;overflow:auto}.fhCqya_diffBlock span{min-width:max-content;padding:0 12px;display:block}.fhCqya_diffAdd{color:#62c986;background:#3fbf7217}.fhCqya_diffDelete{color:#e47b82;background:color-mix(in srgb,var(--dsw-alias-state-error-primary) 9%,transparent)}.fhCqya_diffHunk{color:var(--dsw-alias-state-business-primary)}.fhCqya_diffUnavailable{border:1px dashed var(--dsw-alias-border-l2);color:var(--dsw-alias-label-tertiary);border-radius:9px;margin:0 0 12px;padding:12px;font-size:11px}.fhCqya_detailActions{align-items:center;gap:8px;min-width:max-content;display:flex}.fhCqya_detailHero .fhCqya_reviewButton{border-color:var(--dsw-alias-state-business-primary);color:var(--dsw-alias-label-primary-inverted);background:var(--dsw-alias-state-business-primary);font-weight:650}.fhCqya_detailHero .fhCqya_reviewButton:hover{filter:brightness(1.08)}.fhCqya_modalBackdrop{z-index:1000;backdrop-filter:blur(5px);background:#00000085;place-items:center;padding:20px;display:grid;position:fixed;inset:0}.fhCqya_reviewDialog{border:1px solid var(--dsw-alias-border-l2);width:min(480px,100%);color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-layer-2);box-shadow:var(--dsw-shadow-lv3);border-radius:16px;padding:24px}.fhCqya_reviewDialog h2{letter-spacing:-.025em;margin:5px 0 6px;font-size:20px}.fhCqya_reviewDialog>p{color:var(--dsw-alias-label-secondary);margin:0 0 20px;font-size:12px;line-height:1.6}.fhCqya_modelField{gap:7px;display:grid}.fhCqya_modelField>span{color:var(--dsw-alias-label-secondary);font-size:11px}.fhCqya_modelField select{border:1px solid var(--dsw-alias-border-l2);width:100%;height:40px;color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-layer-1);font:inherit;border-radius:9px;outline:0;padding:0 10px}.fhCqya_modelField select:focus{border-color:var(--dsw-alias-state-business-primary)}.fhCqya_modelHint{min-height:18px;color:var(--dsw-alias-label-tertiary);margin-top:7px;font-size:10px}.fhCqya_reviewError{border:1px solid color-mix(in srgb,var(--dsw-alias-state-error-primary) 35%,transparent);color:var(--dsw-alias-state-error-primary);border-radius:8px;margin:0 0 14px;padding:9px 11px;font-size:11px}.fhCqya_reviewDialog footer{justify-content:flex-end;gap:8px;margin-top:22px;display:flex}.fhCqya_reviewDialog footer button{border:1px solid var(--dsw-alias-border-l2);min-height:36px;color:var(--dsw-alias-label-primary);cursor:pointer;background:0 0;border-radius:8px;padding:0 14px}.fhCqya_reviewDialog footer button:last-child{border-color:var(--dsw-alias-state-business-primary);color:var(--dsw-alias-label-primary-inverted);background:var(--dsw-alias-state-business-primary)}.fhCqya_reviewDialog footer button:disabled{cursor:not-allowed;opacity:.48}.fhCqya_error{min-height:100px;color:var(--dsw-alias-state-error-primary);flex-direction:column;justify-content:center;gap:5px;padding:18px;display:flex}.fhCqya_error span{color:var(--dsw-alias-label-secondary);overflow-wrap:anywhere;font-size:11px}.fhCqya_notice{color:var(--dsw-alias-label-secondary);margin:0;padding:8px 16px;font-size:10px}.fhCqya_noResults{color:var(--dsw-alias-label-secondary);text-align:center;grid-column:1/-1;padding:80px}@media (width<=760px){.fhCqya_header{flex-direction:column;align-items:flex-start}.fhCqya_actions{width:100%}.fhCqya_search{flex:1;min-width:0}.fhCqya_grid{grid-auto-columns:calc(100vw - 24px);padding:12px}.fhCqya_detail{width:calc(100% - 24px)}.fhCqya_detailHero{flex-direction:column}.fhCqya_detailActions{flex-wrap:wrap;width:100%}.fhCqya_detailStats{grid-template-columns:repeat(2,1fr)}.fhCqya_detailStats div{border-bottom:1px solid var(--dsw-alias-border-l2)}}@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}.fhCqya_files .fhCqya_diffBlock,.fhCqya_files .fhCqya_diffUnavailable{margin-left:30px}.fhCqya_externalLink svg{fill:none;stroke:currentColor;stroke-width:1.4px;stroke-linecap:round;stroke-linejoin:round;width:15px;height:15px}.fhCqya_reviewResult,.fhCqya_reviewPending{border:1px solid color-mix(in srgb,var(--dsw-alias-state-business-primary) 26%,var(--dsw-alias-border-l2));background:var(--dsw-alias-bg-layer-1);border-radius:14px}.fhCqya_reviewResult{min-width:0;padding:18px 20px 20px}.fhCqya_reviewResult>header{justify-content:space-between;align-items:center;gap:16px;display:flex}.fhCqya_reviewResultActions{align-items:center;gap:8px;display:flex}.fhCqya_reviewResultActions button:disabled{opacity:.5;cursor:wait}.fhCqya_commentSuccess{color:#3fbf72;border:1px solid #3fbf7266;border-radius:8px;margin-top:12px;padding:9px 11px;font-size:11px}.fhCqya_reviewResult h3{margin:4px 0 0;font-size:15px}.fhCqya_reviewResult button,.fhCqya_reviewPending button{border:1px solid var(--dsw-alias-border-l2);min-height:32px;color:var(--dsw-alias-state-business-primary);cursor:pointer;background:0 0;border-radius:8px;padding:0 10px}.fhCqya_reviewResult>pre{border:1px solid var(--dsw-alias-border-l2);max-height:640px;color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-base);font:12px/1.7 var(--dsw-font-family);white-space:pre-wrap;overflow-wrap:anywhere;border-radius:10px;margin:16px 0 0;padding:16px;overflow:auto}.fhCqya_reviewPending{align-items:center;gap:12px;padding:16px 20px;display:flex}.fhCqya_reviewPending strong{flex:1;font-size:13px}.fhCqya_restoreDialog{border:1px solid var(--dsw-alias-border-l2);width:min(500px,100%);max-height:min(620px,100vh - 40px);color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-layer-2);box-shadow:var(--dsw-shadow-lv3);border-radius:16px;flex-direction:column;padding:24px;display:flex}.fhCqya_restoreDialog h2{margin:5px 0 4px;font-size:20px}.fhCqya_restoreDialog>p{color:var(--dsw-alias-label-secondary);margin:0 0 16px;font-size:12px}.fhCqya_restoreDialog ol{border:1px solid var(--dsw-alias-border-l2);border-radius:10px;min-height:0;margin:0;padding:0;list-style:none;overflow:auto}.fhCqya_restoreDialog li+li{border-top:1px solid var(--dsw-alias-border-l2)}.fhCqya_restoreDialog label{cursor:pointer;align-items:center;gap:11px;min-height:54px;padding:8px 12px;display:flex}.fhCqya_restoreDialog label:hover{background:var(--dsw-alias-interactive-bg-hover)}.fhCqya_restoreDialog label>span{flex-direction:column;gap:3px;min-width:0;display:flex}.fhCqya_restoreDialog strong{text-overflow:ellipsis;white-space:nowrap;font-size:12px;overflow:hidden}.fhCqya_restoreDialog small{color:var(--dsw-alias-label-secondary);font-size:10px}.fhCqya_restoreDialog footer{justify-content:flex-end;gap:8px;margin-top:18px;display:flex}.fhCqya_restoreDialog footer button{border:1px solid var(--dsw-alias-border-l2);min-height:36px;color:var(--dsw-alias-label-primary);cursor:pointer;background:0 0;border-radius:8px;padding:0 14px}.fhCqya_restoreDialog footer button:last-child{border-color:var(--dsw-alias-state-business-primary);color:var(--dsw-alias-label-primary-inverted);background:var(--dsw-alias-state-business-primary)}.fhCqya_restoreDialog footer button:disabled{opacity:.45;cursor:not-allowed}.fhCqya_files summary{grid-template-columns:14px 22px minmax(0,1fr) auto}.fhCqya_files summary:before{content:none}.fhCqya_disclosureIcon{width:14px;height:14px;color:var(--dsw-alias-label-tertiary);place-items:center;transition:transform .15s;display:grid}.fhCqya_disclosureIcon svg{fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:round;stroke-linejoin:round;width:12px;height:12px}.fhCqya_files details[open] .fhCqya_disclosureIcon{transform:rotate(90deg)}.fhCqya_commits{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);border-radius:14px;min-width:0;padding:18px 20px}.fhCqya_commitsHeading{align-items:center;gap:6px;margin:0 0 10px;font-size:13px;display:flex}.fhCqya_commitsCount{border:1px solid color-mix(in srgb,var(--dsw-alias-state-business-primary) 34%,var(--dsw-alias-border-l2));min-width:22px;height:20px;color:var(--dsw-alias-state-business-primary);background:color-mix(in srgb,var(--dsw-alias-state-business-primary) 6%,transparent);cursor:pointer;border-radius:6px;justify-content:center;align-items:center;padding:0 6px;font:700 11px/1 ui-monospace,SFMono-Regular,monospace;display:inline-flex}.fhCqya_commitsCount:hover{background:color-mix(in srgb,var(--dsw-alias-state-business-primary) 14%,transparent)}.fhCqya_commits ol{margin:0;padding:0;list-style:none}.fhCqya_commits li{border-top:1px solid color-mix(in srgb,var(--dsw-alias-border-l2) 65%,transparent);grid-template-columns:64px minmax(0,1fr) 28px;align-items:center;gap:10px;min-height:48px;display:grid}.fhCqya_commits li>code{color:var(--dsw-alias-state-business-primary);font:10px/1 ui-monospace,SFMono-Regular,monospace}.fhCqya_commits li>div{flex-direction:column;gap:3px;min-width:0;display:flex}.fhCqya_commits strong{text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:550;overflow:hidden}.fhCqya_commits li span{color:var(--dsw-alias-label-secondary);font-size:10px}.fhCqya_commits button{width:28px;height:28px;color:var(--dsw-alias-label-secondary);cursor:pointer;background:0 0;border:1px solid #0000;border-radius:7px;padding:0;font-size:13px}.fhCqya_commits button:hover{border-color:var(--dsw-alias-border-l2);color:var(--dsw-alias-state-business-primary)}.fhCqya_commitView{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);border-radius:14px;min-width:0;padding:18px 20px}.fhCqya_commitView h3{margin:0 0 10px;font-size:13px}.fhCqya_commitView h3 span{color:var(--dsw-alias-label-secondary);font-weight:400}.fhCqya_commitList{margin:0;padding:0;list-style:none}.fhCqya_commitList li+li{border-top:1px solid color-mix(in srgb,var(--dsw-alias-border-l2) 65%,transparent)}.fhCqya_commitRow{align-items:center;gap:8px;display:flex}.fhCqya_commitMain{min-width:0;color:inherit;text-align:left;cursor:pointer;background:0 0;border:0;flex:1;grid-template-columns:14px minmax(0,1fr);align-items:center;gap:9px;padding:11px 6px;display:grid}.fhCqya_commitMain:hover{background:var(--dsw-alias-interactive-bg-hover)}.fhCqya_commitMeta{flex-direction:column;gap:3px;min-width:0;display:flex}.fhCqya_commitMain strong{text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:550;overflow:hidden}.fhCqya_commitMain span{color:var(--dsw-alias-label-secondary);font-size:10px}.fhCqya_commitShaButton{min-height:26px;color:var(--dsw-alias-state-business-primary);cursor:pointer;font:inherit;background:0 0;border:1px solid #0000;border-radius:7px;align-items:center;gap:5px;padding:0 8px;display:inline-flex}.fhCqya_commitShaButton:hover{border-color:var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-2)}.fhCqya_commitShaButton code{color:inherit;font:600 11px/1 ui-monospace,SFMono-Regular,monospace}.fhCqya_commitShaCopyHint{color:var(--dsw-alias-label-tertiary);font-size:11px}.fhCqya_commitShaButton[aria-pressed=true] .fhCqya_commitShaCopyHint{color:#3fbf72}.fhCqya_commitExternal{width:28px;height:28px;color:var(--dsw-alias-label-secondary);cursor:pointer;background:0 0;border:1px solid #0000;border-radius:7px;padding:0;font-size:13px}.fhCqya_commitExternal:hover{border-color:var(--dsw-alias-border-l2);color:var(--dsw-alias-state-business-primary)}.fhCqya_commitBody{padding:10px 12px 16px 34px}.fhCqya_commitState{min-height:72px;color:var(--dsw-alias-label-secondary);place-items:center;font-size:11px;display:grid}.fhCqya_commitFiles{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-base);border-radius:10px;margin:6px 0 0;padding:0;list-style:none;overflow:hidden}.fhCqya_commitFiles li+li{border-top:1px solid color-mix(in srgb,var(--dsw-alias-border-l2) 65%,transparent)}.fhCqya_commitFiles summary{cursor:pointer;grid-template-columns:14px 22px minmax(0,1fr) auto;align-items:center;gap:8px;min-height:42px;padding:0 14px;list-style:none;display:grid}.fhCqya_commitFiles summary::-webkit-details-marker{display:none}.fhCqya_commitFiles summary:before{content:none}.fhCqya_commitFiles details[open] .fhCqya_disclosureIcon{transform:rotate(90deg)}.fhCqya_commitFiles .fhCqya_diffBlock,.fhCqya_commitFiles .fhCqya_diffUnavailable{margin-left:14px;margin-right:14px}.fhCqya_detailStats .fhCqya_commitStat{border:0;border-right:1px solid var(--dsw-alias-border-l2);min-height:86px;color:inherit;text-align:left;cursor:pointer;background:0 0;flex-direction:column;justify-content:center;padding:16px;display:flex}.fhCqya_detailStats .fhCqya_commitStat:hover{background:var(--dsw-alias-interactive-bg-hover)}.fhCqya_detailStats .fhCqya_commitStat:disabled{cursor:default;opacity:.65}.fhCqya_detailStats .fhCqya_commitStat strong{font:700 18px/1.2 ui-monospace,SFMono-Regular,monospace}.fhCqya_detailStats .fhCqya_commitStat span{color:var(--dsw-alias-state-business-primary);margin-top:7px;font-size:10px}.fhCqya_detailHero .fhCqya_conflictButton{border-color:var(--dsw-alias-state-error-primary);color:#fff;background:var(--dsw-alias-state-error-primary);font-weight:650}.fhCqya_conflictResult{border:1px solid color-mix(in srgb,var(--dsw-alias-state-error-primary) 28%,var(--dsw-alias-border-l2));background:var(--dsw-alias-bg-layer-1);border-radius:14px;min-width:0;padding:18px 20px 20px}.fhCqya_conflictResult>header{justify-content:space-between;align-items:center;gap:16px;display:flex}.fhCqya_conflictResult h3{margin:4px 0 0;font-size:15px}.fhCqya_conflictResultActions{gap:8px;display:flex}.fhCqya_conflictResult button{border:1px solid var(--dsw-alias-border-l2);min-height:32px;color:var(--dsw-alias-state-business-primary);cursor:pointer;background:0 0;border-radius:8px;padding:0 10px}.fhCqya_conflictResult .fhCqya_pushButton{color:#fff;background:#2f9f5d;border-color:#3fbf72;font-weight:650}.fhCqya_conflictFacts{flex-wrap:wrap;gap:8px;margin-top:14px;display:flex}.fhCqya_conflictFacts>span{border:1px solid var(--dsw-alias-border-l2);color:var(--dsw-alias-label-secondary);border-radius:7px;padding:6px 8px;font-size:10px}.fhCqya_conflictFacts code{color:var(--dsw-alias-label-primary)}.fhCqya_conflictChanges,.fhCqya_conflictLogic{margin-top:16px}.fhCqya_conflictChanges h4,.fhCqya_conflictLogic h4{margin:0 0 8px;font-size:12px}.fhCqya_conflictChanges ol{margin:0;padding:0;list-style:none}.fhCqya_conflictChanges li{border-top:1px solid var(--dsw-alias-border-l2);align-items:center;gap:9px;min-height:30px;display:flex}.fhCqya_conflictChanges b{width:22px;color:var(--dsw-alias-state-business-primary);font:700 10px/1 ui-monospace,SFMono-Regular,monospace}.fhCqya_conflictChanges code{overflow-wrap:anywhere;font-size:11px}.fhCqya_conflictLogic pre{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-base);max-height:520px;font:12px/1.65 var(--dsw-font-family);white-space:pre-wrap;overflow-wrap:anywhere;border-radius:9px;margin:0;padding:14px;overflow:auto}.fhCqya_conflictSuccess{color:#3fbf72;border:1px solid #3fbf7266;border-radius:8px;margin-top:12px;padding:9px 11px;font-size:11px}";
+		let react_jsx_runtime = require("react/jsx-runtime");
+		//#region \0dsh-css:/Users/gengfeng/dsh-tomato-board/plugins/pr-assistant/src/client/pr-assistant.module.css.mjs
+		const css = ".-pwDiG_sidebarAction{width:100%;min-height:36px;color:var(--dsw-alias-label-primary);cursor:pointer;font:inherit;background:0 0;border:0;border-radius:10px;align-items:center;gap:9px;padding:0 10px;display:flex}.-pwDiG_sidebarAction:hover{background:var(--dsw-alias-interactive-bg-hover)}.-pwDiG_branchIcon{flex:0 0 18px;width:18px;height:18px;position:relative}.-pwDiG_branchIcon:before{content:\"\";border-bottom:1.5px solid;border-left:1.5px solid;border-radius:0 0 0 5px;width:8px;height:8px;position:absolute;top:4px;left:4px}.-pwDiG_branchIcon i{background:var(--dsw-alias-bg-base);border:1.5px solid;border-radius:50%;width:5px;height:5px;position:absolute}.-pwDiG_branchIcon i:first-child{top:0;left:1px}.-pwDiG_branchIcon i:nth-child(2){bottom:0;left:1px}.-pwDiG_branchIcon i:last-child{top:7px;right:0}.-pwDiG_workbench{width:100%;height:100%;min-height:0;color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-base);font-family:var(--dsw-font-family);border-left:1px solid var(--dsw-alias-border-l2);flex-direction:column;display:flex;position:relative;overflow:hidden}.-pwDiG_scrollArea{flex:1;min-height:0;overflow:hidden}.-pwDiG_header{z-index:5;box-sizing:border-box;border-bottom:1px solid var(--dsw-alias-border-l2);background:color-mix(in srgb,var(--dsw-alias-bg-base) 90%,transparent);backdrop-filter:blur(18px);justify-content:space-between;align-items:center;gap:16px;min-height:60px;padding:11px 20px;display:flex;position:sticky;top:0}.-pwDiG_eyebrow{color:var(--dsw-alias-state-business-primary);letter-spacing:.2em;font:700 9px/1.2 ui-monospace,SFMono-Regular,monospace;display:none}.-pwDiG_titleRow{align-items:center;gap:8px;margin-top:0;display:flex}.-pwDiG_header h1{letter-spacing:-.015em;margin:0;font-size:16px;line-height:22px}.-pwDiG_titleBack{border:1px solid var(--dsw-alias-border-l2);width:28px;height:28px;color:var(--dsw-alias-label-secondary);background:var(--dsw-alias-bg-layer-1);cursor:pointer;border-radius:8px;padding:0;font-size:16px}.-pwDiG_titleBack:hover{color:var(--dsw-alias-state-business-primary)}.-pwDiG_header p{color:var(--dsw-alias-label-secondary);margin:1px 0 0;font-size:11px;line-height:14px}.-pwDiG_actions{align-items:center;gap:8px;display:flex}.-pwDiG_actions button{border:1px solid var(--dsw-alias-border-l2);min-height:34px;color:inherit;background:var(--dsw-alias-bg-layer-1);cursor:pointer;border-radius:9px;padding:0 13px}.-pwDiG_actions button:last-child{width:34px;padding:0;font-size:20px}.-pwDiG_actions button:disabled{opacity:.5;cursor:wait}.-pwDiG_search{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);border-radius:9px;align-items:center;gap:7px;width:210px;min-height:34px;padding:0 10px;display:flex}.-pwDiG_search input{width:100%;color:inherit;font:inherit;background:0 0;border:0;outline:0}.-pwDiG_grid{box-sizing:border-box;overscroll-behavior-inline:contain;scrollbar-gutter:stable;grid-auto-columns:minmax(360px,1fr);grid-auto-flow:column;gap:14px;height:100%;min-height:0;padding:18px 22px;display:grid;overflow:auto hidden}.-pwDiG_repo{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);min-width:0;height:100%;min-height:0;box-shadow:0 1px 0 color-mix(in srgb,var(--dsw-alias-label-primary) 5%,transparent);border-radius:14px;flex-direction:column;display:flex;overflow:hidden}.-pwDiG_repoIdentity{align-items:center;gap:9px;min-width:0;display:flex}.-pwDiG_repoTools{flex:none;align-items:center;gap:10px;display:flex}.-pwDiG_hideRepo{color:var(--dsw-alias-label-secondary);cursor:pointer;font:500 11px/16px var(--dsw-font-family);background:0 0;border:0;padding:0}.-pwDiG_hideRepo:hover{color:var(--dsw-alias-state-error-primary)}.-pwDiG_repoHeader{z-index:1;border-bottom:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);flex:none;justify-content:space-between;align-items:center;gap:14px;min-height:54px;padding:10px 14px;display:flex;position:relative}.-pwDiG_provider{color:var(--dsw-alias-state-business-primary);letter-spacing:.12em;text-transform:uppercase;flex:none;font:700 9px/1 ui-monospace,SFMono-Regular,monospace}.-pwDiG_repo h2{letter-spacing:-.015em;text-overflow:ellipsis;white-space:nowrap;min-width:0;margin:0;font-size:14px;overflow:hidden}.-pwDiG_count,.-pwDiG_countActive{border:1px solid var(--dsw-alias-border-l2);background:0 0;border-radius:7px;place-items:center;min-width:max-content;height:24px;padding:0 7px;font:700 13px/1 ui-monospace,SFMono-Regular,monospace;display:grid}.-pwDiG_count{color:var(--dsw-alias-label-tertiary)}.-pwDiG_countActive{color:var(--dsw-alias-state-business-primary);border-color:color-mix(in srgb,var(--dsw-alias-state-business-primary) 34%,var(--dsw-alias-border-l2));background:color-mix(in srgb,var(--dsw-alias-state-business-primary) 6%,transparent)}.-pwDiG_prList{overscroll-behavior:contain;scrollbar-gutter:stable;flex:1;min-height:0;margin:0;padding:0;list-style:none;overflow-y:auto}.-pwDiG_prList li+li{border-top:1px solid color-mix(in srgb,var(--dsw-alias-border-l2) 70%,transparent)}.-pwDiG_prRow{align-items:stretch;display:flex}.-pwDiG_prMain{min-width:0;color:inherit;text-align:left;cursor:pointer;background:0 0;border:0;flex:1;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 9px;padding:11px 10px 11px 16px;display:grid}.-pwDiG_prRow:hover{background:var(--dsw-alias-interactive-bg-hover)}.-pwDiG_prNumber{color:var(--dsw-alias-state-business-primary);font:650 11px/18px ui-monospace,SFMono-Regular,monospace}.-pwDiG_prTitle{text-overflow:ellipsis;white-space:nowrap;font-size:13px;line-height:18px;overflow:hidden}.-pwDiG_branches,.-pwDiG_meta{min-width:0;color:var(--dsw-alias-label-secondary);grid-column:2/-1;font-size:10px}.-pwDiG_branches{flex-wrap:wrap;align-items:center;gap:5px;display:flex}.-pwDiG_sourceBranch,.-pwDiG_targetBranch{border:1px solid;border-radius:5px;align-items:center;gap:5px;min-width:0;max-width:100%;padding:2px 7px;display:inline-flex}.-pwDiG_sourceBranch{color:#c993ff;background:#9b59d01a;border-color:#9b59d061}.-pwDiG_targetBranch{color:#55c889;background:#3fbf721a;border-color:#3fbf7261}.-pwDiG_branches b{flex:none;font-size:9px;font-weight:650}.-pwDiG_branches code{min-width:0;color:inherit;text-overflow:ellipsis;white-space:nowrap;font:10px/14px ui-monospace,SFMono-Regular,monospace;overflow:hidden}.-pwDiG_draft,.-pwDiG_conflictTag,.-pwDiG_unknownTag{border:1px solid var(--dsw-alias-border-l2);color:var(--dsw-alias-label-secondary);border-radius:4px;align-self:center;padding:2px 5px;font-size:9px}.-pwDiG_conflictTag{border-color:color-mix(in srgb,var(--dsw-alias-state-error-primary) 45%,transparent);color:var(--dsw-alias-state-error-primary);background:color-mix(in srgb,var(--dsw-alias-state-error-primary) 8%,transparent)}.-pwDiG_unknownTag{color:var(--dsw-alias-label-tertiary)}.-pwDiG_externalLink{width:58px;color:var(--dsw-alias-label-secondary);cursor:pointer;font:500 10px/1 var(--dsw-font-family);background:0 0;border:1px solid #0000;border-radius:7px;margin:8px 8px 8px 0}.-pwDiG_externalLink:hover{border-color:var(--dsw-alias-border-l2);color:var(--dsw-alias-state-business-primary);background:var(--dsw-alias-bg-layer-2)}.-pwDiG_empty{min-height:132px;color:var(--dsw-alias-label-secondary);flex-direction:column;flex:1;justify-content:center;align-items:center;display:flex}.-pwDiG_empty>span{color:#60d98a;border:1px solid #60d98a;border-radius:50%;place-items:center;width:28px;height:28px;display:grid}.-pwDiG_empty p{color:var(--dsw-alias-label-primary);margin:8px 0 2px;font-size:13px}.-pwDiG_empty small{font-size:10px}.-pwDiG_detail{gap:14px;width:min(1080px,100% - 44px);height:100%;margin:0 auto;padding:22px 0 40px;display:grid;overflow-y:auto}.-pwDiG_backToList{border:1px solid var(--dsw-alias-border-l2);width:max-content;min-height:32px;color:var(--dsw-alias-label-secondary);background:var(--dsw-alias-bg-layer-1);cursor:pointer;border-radius:8px;padding:0 10px}.-pwDiG_backToList:hover{color:var(--dsw-alias-state-business-primary)}.-pwDiG_detailState{min-height:240px;color:var(--dsw-alias-label-secondary);place-items:center;display:grid}.-pwDiG_detailHero,.-pwDiG_detailStats,.-pwDiG_description,.-pwDiG_files{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);border-radius:14px}.-pwDiG_detailHero{justify-content:space-between;align-items:flex-start;gap:24px;padding:22px;display:flex}.-pwDiG_detailHero>div>span{color:var(--dsw-alias-label-secondary);font-size:11px}.-pwDiG_detailHero h2{letter-spacing:-.025em;max-width:760px;margin:7px 0 14px;font-size:22px;line-height:1.35}.-pwDiG_detailHero code{color:var(--dsw-alias-label-secondary);background:var(--dsw-alias-bg-layer-2);border-radius:6px;padding:5px 8px;font-size:11px}.-pwDiG_detailHero button{border:1px solid var(--dsw-alias-border-l2);min-width:max-content;min-height:34px;color:var(--dsw-alias-state-business-primary);cursor:pointer;background:0 0;border-radius:8px;padding:0 12px}.-pwDiG_detailStats{grid-template-columns:repeat(5,1fr);display:grid;overflow:hidden}.-pwDiG_detailStats div{border-right:1px solid var(--dsw-alias-border-l2);flex-direction:column;justify-content:center;min-height:86px;padding:16px;display:flex}.-pwDiG_detailStats div:last-child{border:0}.-pwDiG_detailStats strong{font:700 18px/1.2 ui-monospace,SFMono-Regular,monospace}.-pwDiG_detailStats span{color:var(--dsw-alias-label-secondary);margin-top:7px;font-size:10px}.-pwDiG_addition,.-pwDiG_clean{color:#3fbf72}.-pwDiG_deletion,.-pwDiG_conflict{color:var(--dsw-alias-state-error-primary)}.-pwDiG_unknown{color:var(--dsw-alias-label-secondary)}.-pwDiG_description{padding:18px 20px}.-pwDiG_description h3,.-pwDiG_files h3{margin:0 0 12px;font-size:13px}.-pwDiG_description p{color:var(--dsw-alias-label-secondary);white-space:pre-wrap;margin:0;font-size:12px;line-height:1.7}.-pwDiG_files{min-width:0;padding:18px 20px}.-pwDiG_files h3 span{color:var(--dsw-alias-label-secondary);font-weight:400}.-pwDiG_files ol{margin:0;padding:0;list-style:none}.-pwDiG_files li{border-top:1px solid color-mix(in srgb,var(--dsw-alias-border-l2) 65%,transparent)}.-pwDiG_files details{min-width:0}.-pwDiG_files summary{cursor:pointer;grid-template-columns:22px minmax(0,1fr) auto;align-items:center;gap:8px;min-height:42px;list-style:none;display:grid}.-pwDiG_files summary::-webkit-details-marker{display:none}.-pwDiG_files summary:before{content:\"›\";color:var(--dsw-alias-label-tertiary);margin-left:-13px;transition:transform .15s;position:absolute}.-pwDiG_files details[open] summary:before{transform:rotate(90deg)}.-pwDiG_fileStatus{color:var(--dsw-alias-label-secondary);font:700 10px/1 ui-monospace,SFMono-Regular,monospace}.-pwDiG_files code{text-overflow:ellipsis;white-space:nowrap;font-size:11px;overflow:hidden}.-pwDiG_fileCounts{gap:8px;font:600 10px/1 ui-monospace,SFMono-Regular,monospace;display:flex}.-pwDiG_fileCounts i{color:#3fbf72;font-style:normal}.-pwDiG_fileCounts b{color:var(--dsw-alias-state-error-primary)}.-pwDiG_diffBlock{border:1px solid var(--dsw-alias-border-l2);max-height:520px;color:var(--dsw-alias-label-secondary);background:var(--dsw-alias-bg-base);tab-size:2;border-radius:9px;margin:0 0 12px;padding:12px 0;font:10px/1.55 ui-monospace,SFMono-Regular,monospace;overflow:auto}.-pwDiG_diffBlock span{min-width:max-content;padding:0 12px;display:block}.-pwDiG_diffAdd{color:#62c986;background:#3fbf7217}.-pwDiG_diffDelete{color:#e47b82;background:color-mix(in srgb,var(--dsw-alias-state-error-primary) 9%,transparent)}.-pwDiG_diffHunk{color:var(--dsw-alias-state-business-primary)}.-pwDiG_diffUnavailable{border:1px dashed var(--dsw-alias-border-l2);color:var(--dsw-alias-label-tertiary);border-radius:9px;margin:0 0 12px;padding:12px;font-size:11px}.-pwDiG_detailActions{align-items:center;gap:8px;min-width:max-content;display:flex}.-pwDiG_detailHero .-pwDiG_reviewButton{border-color:var(--dsw-alias-state-business-primary);color:var(--dsw-alias-label-primary-inverted);background:var(--dsw-alias-state-business-primary);font-weight:650}.-pwDiG_detailHero .-pwDiG_reviewButton:hover{filter:brightness(1.08)}.-pwDiG_modalBackdrop{z-index:1000;backdrop-filter:blur(5px);background:#00000085;place-items:center;padding:20px;display:grid;position:fixed;inset:0}.-pwDiG_reviewDialog{border:1px solid var(--dsw-alias-border-l2);width:min(480px,100%);color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-layer-2);box-shadow:var(--dsw-shadow-lv3);border-radius:16px;padding:24px}.-pwDiG_reviewDialog h2{letter-spacing:-.025em;margin:5px 0 6px;font-size:20px}.-pwDiG_reviewDialog>p{color:var(--dsw-alias-label-secondary);margin:0 0 20px;font-size:12px;line-height:1.6}.-pwDiG_modelField{gap:7px;display:grid}.-pwDiG_modelField>span{color:var(--dsw-alias-label-secondary);font-size:11px}.-pwDiG_modelField select{border:1px solid var(--dsw-alias-border-l2);width:100%;height:40px;color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-layer-1);font:inherit;border-radius:9px;outline:0;padding:0 10px}.-pwDiG_modelField select:focus{border-color:var(--dsw-alias-state-business-primary)}.-pwDiG_modelHint{min-height:18px;color:var(--dsw-alias-label-tertiary);margin-top:7px;font-size:10px}.-pwDiG_reviewError{border:1px solid color-mix(in srgb,var(--dsw-alias-state-error-primary) 35%,transparent);color:var(--dsw-alias-state-error-primary);border-radius:8px;margin:0 0 14px;padding:9px 11px;font-size:11px}.-pwDiG_reviewDialog footer{justify-content:flex-end;gap:8px;margin-top:22px;display:flex}.-pwDiG_reviewDialog footer button{border:1px solid var(--dsw-alias-border-l2);min-height:36px;color:var(--dsw-alias-label-primary);cursor:pointer;background:0 0;border-radius:8px;padding:0 14px}.-pwDiG_reviewDialog footer button:last-child{border-color:var(--dsw-alias-state-business-primary);color:var(--dsw-alias-label-primary-inverted);background:var(--dsw-alias-state-business-primary)}.-pwDiG_reviewDialog footer button:disabled{cursor:not-allowed;opacity:.48}.-pwDiG_error{min-height:100px;color:var(--dsw-alias-state-error-primary);flex-direction:column;justify-content:center;gap:5px;padding:18px;display:flex}.-pwDiG_error span{color:var(--dsw-alias-label-secondary);overflow-wrap:anywhere;font-size:11px}.-pwDiG_notice{color:var(--dsw-alias-label-secondary);margin:0;padding:8px 16px;font-size:10px}.-pwDiG_noResults{color:var(--dsw-alias-label-secondary);text-align:center;grid-column:1/-1;padding:80px}@media (width<=760px){.-pwDiG_header{flex-direction:column;align-items:flex-start}.-pwDiG_actions{width:100%}.-pwDiG_search{flex:1;min-width:0}.-pwDiG_grid{grid-auto-columns:calc(100vw - 24px);padding:12px}.-pwDiG_detail{width:calc(100% - 24px)}.-pwDiG_detailHero{flex-direction:column}.-pwDiG_detailActions{flex-wrap:wrap;width:100%}.-pwDiG_detailStats{grid-template-columns:repeat(2,1fr)}.-pwDiG_detailStats div{border-bottom:1px solid var(--dsw-alias-border-l2)}}@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}.-pwDiG_files .-pwDiG_diffBlock,.-pwDiG_files .-pwDiG_diffUnavailable{margin-left:30px}.-pwDiG_externalLink svg{fill:none;stroke:currentColor;stroke-width:1.4px;stroke-linecap:round;stroke-linejoin:round;width:15px;height:15px}.-pwDiG_reviewResult,.-pwDiG_reviewPending{border:1px solid color-mix(in srgb,var(--dsw-alias-state-business-primary) 26%,var(--dsw-alias-border-l2));background:var(--dsw-alias-bg-layer-1);border-radius:14px}.-pwDiG_reviewResult{min-width:0;padding:18px 20px 20px}.-pwDiG_reviewResult>header{justify-content:space-between;align-items:center;gap:16px;display:flex}.-pwDiG_reviewResultActions{align-items:center;gap:8px;display:flex}.-pwDiG_reviewResultActions button:disabled{opacity:.5;cursor:wait}.-pwDiG_commentSuccess{color:#3fbf72;border:1px solid #3fbf7266;border-radius:8px;margin-top:12px;padding:9px 11px;font-size:11px}.-pwDiG_reviewResult h3{margin:4px 0 0;font-size:15px}.-pwDiG_reviewResult button,.-pwDiG_reviewPending button{border:1px solid var(--dsw-alias-border-l2);min-height:32px;color:var(--dsw-alias-state-business-primary);cursor:pointer;background:0 0;border-radius:8px;padding:0 10px}.-pwDiG_reviewResult>pre{border:1px solid var(--dsw-alias-border-l2);max-height:640px;color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-base);font:12px/1.7 var(--dsw-font-family);white-space:pre-wrap;overflow-wrap:anywhere;border-radius:10px;margin:16px 0 0;padding:16px;overflow:auto}.-pwDiG_reviewPending{align-items:center;gap:12px;padding:16px 20px;display:flex}.-pwDiG_reviewPending strong{flex:1;font-size:13px}.-pwDiG_restoreDialog{border:1px solid var(--dsw-alias-border-l2);width:min(500px,100%);max-height:min(620px,100vh - 40px);color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-layer-2);box-shadow:var(--dsw-shadow-lv3);border-radius:16px;flex-direction:column;padding:24px;display:flex}.-pwDiG_restoreDialog h2{margin:5px 0 4px;font-size:20px}.-pwDiG_restoreDialog>p{color:var(--dsw-alias-label-secondary);margin:0 0 16px;font-size:12px}.-pwDiG_restoreDialog ol{border:1px solid var(--dsw-alias-border-l2);border-radius:10px;min-height:0;margin:0;padding:0;list-style:none;overflow:auto}.-pwDiG_restoreDialog li+li{border-top:1px solid var(--dsw-alias-border-l2)}.-pwDiG_restoreDialog label{cursor:pointer;align-items:center;gap:11px;min-height:54px;padding:8px 12px;display:flex}.-pwDiG_restoreDialog label:hover{background:var(--dsw-alias-interactive-bg-hover)}.-pwDiG_restoreDialog label>span{flex-direction:column;gap:3px;min-width:0;display:flex}.-pwDiG_restoreDialog strong{text-overflow:ellipsis;white-space:nowrap;font-size:12px;overflow:hidden}.-pwDiG_restoreDialog small{color:var(--dsw-alias-label-secondary);font-size:10px}.-pwDiG_restoreDialog footer{justify-content:flex-end;gap:8px;margin-top:18px;display:flex}.-pwDiG_restoreDialog footer button{border:1px solid var(--dsw-alias-border-l2);min-height:36px;color:var(--dsw-alias-label-primary);cursor:pointer;background:0 0;border-radius:8px;padding:0 14px}.-pwDiG_restoreDialog footer button:last-child{border-color:var(--dsw-alias-state-business-primary);color:var(--dsw-alias-label-primary-inverted);background:var(--dsw-alias-state-business-primary)}.-pwDiG_restoreDialog footer button:disabled{opacity:.45;cursor:not-allowed}.-pwDiG_files summary{grid-template-columns:14px 22px minmax(0,1fr) auto}.-pwDiG_files summary:before{content:none}.-pwDiG_disclosureIcon{width:14px;height:14px;color:var(--dsw-alias-label-tertiary);place-items:center;transition:transform .15s;display:grid}.-pwDiG_disclosureIcon svg{fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:round;stroke-linejoin:round;width:12px;height:12px}.-pwDiG_files details[open] .-pwDiG_disclosureIcon{transform:rotate(90deg)}.-pwDiG_commits{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);border-radius:14px;min-width:0;padding:18px 20px}.-pwDiG_commitsHeading{align-items:center;gap:6px;margin:0 0 10px;font-size:13px;display:flex}.-pwDiG_commitsCount{border:1px solid color-mix(in srgb,var(--dsw-alias-state-business-primary) 34%,var(--dsw-alias-border-l2));min-width:22px;height:20px;color:var(--dsw-alias-state-business-primary);background:color-mix(in srgb,var(--dsw-alias-state-business-primary) 6%,transparent);cursor:pointer;border-radius:6px;justify-content:center;align-items:center;padding:0 6px;font:700 11px/1 ui-monospace,SFMono-Regular,monospace;display:inline-flex}.-pwDiG_commitsCount:hover{background:color-mix(in srgb,var(--dsw-alias-state-business-primary) 14%,transparent)}.-pwDiG_commits ol{margin:0;padding:0;list-style:none}.-pwDiG_commits li{border-top:1px solid color-mix(in srgb,var(--dsw-alias-border-l2) 65%,transparent);grid-template-columns:64px minmax(0,1fr) 28px;align-items:center;gap:10px;min-height:48px;display:grid}.-pwDiG_commits li>code{color:var(--dsw-alias-state-business-primary);font:10px/1 ui-monospace,SFMono-Regular,monospace}.-pwDiG_commits li>div{flex-direction:column;gap:3px;min-width:0;display:flex}.-pwDiG_commits strong{text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:550;overflow:hidden}.-pwDiG_commits li span{color:var(--dsw-alias-label-secondary);font-size:10px}.-pwDiG_commits button{width:28px;height:28px;color:var(--dsw-alias-label-secondary);cursor:pointer;background:0 0;border:1px solid #0000;border-radius:7px;padding:0;font-size:13px}.-pwDiG_commits button:hover{border-color:var(--dsw-alias-border-l2);color:var(--dsw-alias-state-business-primary)}.-pwDiG_commitView{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);border-radius:14px;min-width:0;padding:18px 20px}.-pwDiG_commitView h3{margin:0 0 10px;font-size:13px}.-pwDiG_commitView h3 span{color:var(--dsw-alias-label-secondary);font-weight:400}.-pwDiG_commitList{margin:0;padding:0;list-style:none}.-pwDiG_commitList li+li{border-top:1px solid color-mix(in srgb,var(--dsw-alias-border-l2) 65%,transparent)}.-pwDiG_commitRow{align-items:center;gap:8px;display:flex}.-pwDiG_commitMain{min-width:0;color:inherit;text-align:left;cursor:pointer;background:0 0;border:0;flex:1;grid-template-columns:14px minmax(0,1fr);align-items:center;gap:9px;padding:11px 6px;display:grid}.-pwDiG_commitMain:hover{background:var(--dsw-alias-interactive-bg-hover)}.-pwDiG_commitMeta{flex-direction:column;gap:3px;min-width:0;display:flex}.-pwDiG_commitMain strong{text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:550;overflow:hidden}.-pwDiG_commitMain span{color:var(--dsw-alias-label-secondary);font-size:10px}.-pwDiG_commitShaButton{min-height:26px;color:var(--dsw-alias-state-business-primary);cursor:pointer;font:inherit;background:0 0;border:1px solid #0000;border-radius:7px;align-items:center;gap:5px;padding:0 8px;display:inline-flex}.-pwDiG_commitShaButton:hover{border-color:var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-2)}.-pwDiG_commitShaButton code{color:inherit;font:600 11px/1 ui-monospace,SFMono-Regular,monospace}.-pwDiG_commitShaCopyHint{color:var(--dsw-alias-label-tertiary);font-size:11px}.-pwDiG_commitShaButton[aria-pressed=true] .-pwDiG_commitShaCopyHint{color:#3fbf72}.-pwDiG_commitExternal{width:28px;height:28px;color:var(--dsw-alias-label-secondary);cursor:pointer;background:0 0;border:1px solid #0000;border-radius:7px;padding:0;font-size:13px}.-pwDiG_commitExternal:hover{border-color:var(--dsw-alias-border-l2);color:var(--dsw-alias-state-business-primary)}.-pwDiG_commitBody{padding:10px 12px 16px 34px}.-pwDiG_commitState{min-height:72px;color:var(--dsw-alias-label-secondary);place-items:center;font-size:11px;display:grid}.-pwDiG_commitFiles{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-base);border-radius:10px;margin:6px 0 0;padding:0;list-style:none;overflow:hidden}.-pwDiG_commitFiles li+li{border-top:1px solid color-mix(in srgb,var(--dsw-alias-border-l2) 65%,transparent)}.-pwDiG_commitFiles summary{cursor:pointer;grid-template-columns:14px 22px minmax(0,1fr) auto;align-items:center;gap:8px;min-height:42px;padding:0 14px;list-style:none;display:grid}.-pwDiG_commitFiles summary::-webkit-details-marker{display:none}.-pwDiG_commitFiles summary:before{content:none}.-pwDiG_commitFiles details[open] .-pwDiG_disclosureIcon{transform:rotate(90deg)}.-pwDiG_commitFiles .-pwDiG_diffBlock,.-pwDiG_commitFiles .-pwDiG_diffUnavailable{margin-left:14px;margin-right:14px}.-pwDiG_detailStats .-pwDiG_commitStat{border:0;border-right:1px solid var(--dsw-alias-border-l2);min-height:86px;color:inherit;text-align:left;cursor:pointer;background:0 0;flex-direction:column;justify-content:center;padding:16px;display:flex}.-pwDiG_detailStats .-pwDiG_commitStat:hover{background:var(--dsw-alias-interactive-bg-hover)}.-pwDiG_detailStats .-pwDiG_commitStat:disabled{cursor:default;opacity:.65}.-pwDiG_detailStats .-pwDiG_commitStat strong{font:700 18px/1.2 ui-monospace,SFMono-Regular,monospace}.-pwDiG_detailStats .-pwDiG_commitStat span{color:var(--dsw-alias-state-business-primary);margin-top:7px;font-size:10px}.-pwDiG_detailHero .-pwDiG_conflictButton{border-color:var(--dsw-alias-state-error-primary);color:#fff;background:var(--dsw-alias-state-error-primary);font-weight:650}.-pwDiG_conflictResult{border:1px solid color-mix(in srgb,var(--dsw-alias-state-error-primary) 28%,var(--dsw-alias-border-l2));background:var(--dsw-alias-bg-layer-1);border-radius:14px;min-width:0;padding:18px 20px 20px}.-pwDiG_conflictResult>header{justify-content:space-between;align-items:center;gap:16px;display:flex}.-pwDiG_conflictResult h3{margin:4px 0 0;font-size:15px}.-pwDiG_conflictResultActions{gap:8px;display:flex}.-pwDiG_conflictResult button{border:1px solid var(--dsw-alias-border-l2);min-height:32px;color:var(--dsw-alias-state-business-primary);cursor:pointer;background:0 0;border-radius:8px;padding:0 10px}.-pwDiG_conflictResult .-pwDiG_pushButton{color:#fff;background:#2f9f5d;border-color:#3fbf72;font-weight:650}.-pwDiG_conflictFacts{flex-wrap:wrap;gap:8px;margin-top:14px;display:flex}.-pwDiG_conflictFacts>span{border:1px solid var(--dsw-alias-border-l2);color:var(--dsw-alias-label-secondary);border-radius:7px;padding:6px 8px;font-size:10px}.-pwDiG_conflictFacts code{color:var(--dsw-alias-label-primary)}.-pwDiG_conflictChanges,.-pwDiG_conflictLogic{margin-top:16px}.-pwDiG_conflictChanges h4,.-pwDiG_conflictLogic h4{margin:0 0 8px;font-size:12px}.-pwDiG_conflictChanges ol{margin:0;padding:0;list-style:none}.-pwDiG_conflictChanges li{border-top:1px solid var(--dsw-alias-border-l2);align-items:center;gap:9px;min-height:30px;display:flex}.-pwDiG_conflictChanges b{width:22px;color:var(--dsw-alias-state-business-primary);font:700 10px/1 ui-monospace,SFMono-Regular,monospace}.-pwDiG_conflictChanges code{overflow-wrap:anywhere;font-size:11px}.-pwDiG_conflictLogic pre{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-base);max-height:520px;font:12px/1.65 var(--dsw-font-family);white-space:pre-wrap;overflow-wrap:anywhere;border-radius:9px;margin:0;padding:14px;overflow:auto}.-pwDiG_conflictSuccess{color:#3fbf72;border:1px solid #3fbf7266;border-radius:8px;margin-top:12px;padding:9px 11px;font-size:11px}";
 		const tagId = "@stephen1620/dsh-pr-assistant/pr-assistant.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
@@ -17,100 +17,100 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var pr_assistant_module_css_default = {
-			"actions": "fhCqya_actions",
-			"addition": "fhCqya_addition",
-			"backToList": "fhCqya_backToList",
-			"branchIcon": "fhCqya_branchIcon",
-			"branches": "fhCqya_branches",
-			"clean": "fhCqya_clean",
-			"commentSuccess": "fhCqya_commentSuccess",
-			"commitBody": "fhCqya_commitBody",
-			"commitExternal": "fhCqya_commitExternal",
-			"commitFiles": "fhCqya_commitFiles",
-			"commitList": "fhCqya_commitList",
-			"commitMain": "fhCqya_commitMain",
-			"commitMeta": "fhCqya_commitMeta",
-			"commitRow": "fhCqya_commitRow",
-			"commitShaButton": "fhCqya_commitShaButton",
-			"commitShaCopyHint": "fhCqya_commitShaCopyHint",
-			"commitStat": "fhCqya_commitStat",
-			"commitState": "fhCqya_commitState",
-			"commitView": "fhCqya_commitView",
-			"commits": "fhCqya_commits",
-			"commitsCount": "fhCqya_commitsCount",
-			"commitsHeading": "fhCqya_commitsHeading",
-			"conflict": "fhCqya_conflict",
-			"conflictButton": "fhCqya_conflictButton",
-			"conflictChanges": "fhCqya_conflictChanges",
-			"conflictFacts": "fhCqya_conflictFacts",
-			"conflictLogic": "fhCqya_conflictLogic",
-			"conflictResult": "fhCqya_conflictResult",
-			"conflictResultActions": "fhCqya_conflictResultActions",
-			"conflictSuccess": "fhCqya_conflictSuccess",
-			"conflictTag": "fhCqya_conflictTag",
-			"count": "fhCqya_count",
-			"countActive": "fhCqya_countActive",
-			"deletion": "fhCqya_deletion",
-			"description": "fhCqya_description",
-			"detail": "fhCqya_detail",
-			"detailActions": "fhCqya_detailActions",
-			"detailHero": "fhCqya_detailHero",
-			"detailState": "fhCqya_detailState",
-			"detailStats": "fhCqya_detailStats",
-			"diffAdd": "fhCqya_diffAdd",
-			"diffBlock": "fhCqya_diffBlock",
-			"diffDelete": "fhCqya_diffDelete",
-			"diffHunk": "fhCqya_diffHunk",
-			"diffUnavailable": "fhCqya_diffUnavailable",
-			"disclosureIcon": "fhCqya_disclosureIcon",
-			"draft": "fhCqya_draft",
-			"empty": "fhCqya_empty",
-			"error": "fhCqya_error",
-			"externalLink": "fhCqya_externalLink",
-			"eyebrow": "fhCqya_eyebrow",
-			"fileCounts": "fhCqya_fileCounts",
-			"fileStatus": "fhCqya_fileStatus",
-			"files": "fhCqya_files",
-			"grid": "fhCqya_grid",
-			"header": "fhCqya_header",
-			"hideRepo": "fhCqya_hideRepo",
-			"meta": "fhCqya_meta",
-			"modalBackdrop": "fhCqya_modalBackdrop",
-			"modelField": "fhCqya_modelField",
-			"modelHint": "fhCqya_modelHint",
-			"noResults": "fhCqya_noResults",
-			"notice": "fhCqya_notice",
-			"prList": "fhCqya_prList",
-			"prMain": "fhCqya_prMain",
-			"prNumber": "fhCqya_prNumber",
-			"prRow": "fhCqya_prRow",
-			"prTitle": "fhCqya_prTitle",
-			"provider": "fhCqya_provider",
-			"pushButton": "fhCqya_pushButton",
-			"repo": "fhCqya_repo",
-			"repoHeader": "fhCqya_repoHeader",
-			"repoIdentity": "fhCqya_repoIdentity",
-			"repoTools": "fhCqya_repoTools",
-			"restoreDialog": "fhCqya_restoreDialog",
-			"reviewButton": "fhCqya_reviewButton",
-			"reviewDialog": "fhCqya_reviewDialog",
-			"reviewError": "fhCqya_reviewError",
-			"reviewPending": "fhCqya_reviewPending",
-			"reviewResult": "fhCqya_reviewResult",
-			"reviewResultActions": "fhCqya_reviewResultActions",
-			"scrollArea": "fhCqya_scrollArea",
-			"search": "fhCqya_search",
-			"sidebarAction": "fhCqya_sidebarAction",
-			"sourceBranch": "fhCqya_sourceBranch",
-			"targetBranch": "fhCqya_targetBranch",
-			"titleBack": "fhCqya_titleBack",
-			"titleRow": "fhCqya_titleRow",
-			"unknown": "fhCqya_unknown",
-			"unknownTag": "fhCqya_unknownTag",
-			"workbench": "fhCqya_workbench"
+			"actions": "-pwDiG_actions",
+			"addition": "-pwDiG_addition",
+			"backToList": "-pwDiG_backToList",
+			"branchIcon": "-pwDiG_branchIcon",
+			"branches": "-pwDiG_branches",
+			"clean": "-pwDiG_clean",
+			"commentSuccess": "-pwDiG_commentSuccess",
+			"commitBody": "-pwDiG_commitBody",
+			"commitExternal": "-pwDiG_commitExternal",
+			"commitFiles": "-pwDiG_commitFiles",
+			"commitList": "-pwDiG_commitList",
+			"commitMain": "-pwDiG_commitMain",
+			"commitMeta": "-pwDiG_commitMeta",
+			"commitRow": "-pwDiG_commitRow",
+			"commitShaButton": "-pwDiG_commitShaButton",
+			"commitShaCopyHint": "-pwDiG_commitShaCopyHint",
+			"commitStat": "-pwDiG_commitStat",
+			"commitState": "-pwDiG_commitState",
+			"commitView": "-pwDiG_commitView",
+			"commits": "-pwDiG_commits",
+			"commitsCount": "-pwDiG_commitsCount",
+			"commitsHeading": "-pwDiG_commitsHeading",
+			"conflict": "-pwDiG_conflict",
+			"conflictButton": "-pwDiG_conflictButton",
+			"conflictChanges": "-pwDiG_conflictChanges",
+			"conflictFacts": "-pwDiG_conflictFacts",
+			"conflictLogic": "-pwDiG_conflictLogic",
+			"conflictResult": "-pwDiG_conflictResult",
+			"conflictResultActions": "-pwDiG_conflictResultActions",
+			"conflictSuccess": "-pwDiG_conflictSuccess",
+			"conflictTag": "-pwDiG_conflictTag",
+			"count": "-pwDiG_count",
+			"countActive": "-pwDiG_countActive",
+			"deletion": "-pwDiG_deletion",
+			"description": "-pwDiG_description",
+			"detail": "-pwDiG_detail",
+			"detailActions": "-pwDiG_detailActions",
+			"detailHero": "-pwDiG_detailHero",
+			"detailState": "-pwDiG_detailState",
+			"detailStats": "-pwDiG_detailStats",
+			"diffAdd": "-pwDiG_diffAdd",
+			"diffBlock": "-pwDiG_diffBlock",
+			"diffDelete": "-pwDiG_diffDelete",
+			"diffHunk": "-pwDiG_diffHunk",
+			"diffUnavailable": "-pwDiG_diffUnavailable",
+			"disclosureIcon": "-pwDiG_disclosureIcon",
+			"draft": "-pwDiG_draft",
+			"empty": "-pwDiG_empty",
+			"error": "-pwDiG_error",
+			"externalLink": "-pwDiG_externalLink",
+			"eyebrow": "-pwDiG_eyebrow",
+			"fileCounts": "-pwDiG_fileCounts",
+			"fileStatus": "-pwDiG_fileStatus",
+			"files": "-pwDiG_files",
+			"grid": "-pwDiG_grid",
+			"header": "-pwDiG_header",
+			"hideRepo": "-pwDiG_hideRepo",
+			"meta": "-pwDiG_meta",
+			"modalBackdrop": "-pwDiG_modalBackdrop",
+			"modelField": "-pwDiG_modelField",
+			"modelHint": "-pwDiG_modelHint",
+			"noResults": "-pwDiG_noResults",
+			"notice": "-pwDiG_notice",
+			"prList": "-pwDiG_prList",
+			"prMain": "-pwDiG_prMain",
+			"prNumber": "-pwDiG_prNumber",
+			"prRow": "-pwDiG_prRow",
+			"prTitle": "-pwDiG_prTitle",
+			"provider": "-pwDiG_provider",
+			"pushButton": "-pwDiG_pushButton",
+			"repo": "-pwDiG_repo",
+			"repoHeader": "-pwDiG_repoHeader",
+			"repoIdentity": "-pwDiG_repoIdentity",
+			"repoTools": "-pwDiG_repoTools",
+			"restoreDialog": "-pwDiG_restoreDialog",
+			"reviewButton": "-pwDiG_reviewButton",
+			"reviewDialog": "-pwDiG_reviewDialog",
+			"reviewError": "-pwDiG_reviewError",
+			"reviewPending": "-pwDiG_reviewPending",
+			"reviewResult": "-pwDiG_reviewResult",
+			"reviewResultActions": "-pwDiG_reviewResultActions",
+			"scrollArea": "-pwDiG_scrollArea",
+			"search": "-pwDiG_search",
+			"sidebarAction": "-pwDiG_sidebarAction",
+			"sourceBranch": "-pwDiG_sourceBranch",
+			"targetBranch": "-pwDiG_targetBranch",
+			"titleBack": "-pwDiG_titleBack",
+			"titleRow": "-pwDiG_titleRow",
+			"unknown": "-pwDiG_unknown",
+			"unknownTag": "-pwDiG_unknownTag",
+			"workbench": "-pwDiG_workbench"
 		};
 		//#endregion
-		//#region lib/types/client/PrAssistant.js
+		//#region ../../../../../../Users/gengfeng/dsh-tomato-board/plugins/pr-assistant/src/client/PrAssistant.tsx
 		const EMPTY_REVIEW_EVENTS = {
 			entries: [],
 			hasMore: false,
@@ -120,7 +120,6 @@ window.__ModuleLoader__.load({
 				entries: []
 			}
 		};
-		let disposeWorkbench = null;
 		const HIDDEN_REPOSITORIES_KEY = "prAssistant.hiddenRepositories.v1";
 		const REVIEW_SESSION_LINKS_KEY = "prAssistant.reviewSessionLinks.v1";
 		const CONFLICT_LINKS_KEY = "prAssistant.conflictLinks.v1";
@@ -263,30 +262,30 @@ window.__ModuleLoader__.load({
 			return results;
 		}
 		function SidebarAction({ wide, openWorkbench }) {
-			return (0, react_jsx_runtime.jsxs)("button", {
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 				className: pr_assistant_module_css_default.sidebarAction,
 				type: "button",
 				title: "PR 助手",
 				onClick: openWorkbench,
-				children: [(0, react_jsx_runtime.jsxs)("span", {
+				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
 					className: pr_assistant_module_css_default.branchIcon,
 					"aria-hidden": "true",
 					children: [
-						(0, react_jsx_runtime.jsx)("i", {}),
-						(0, react_jsx_runtime.jsx)("i", {}),
-						(0, react_jsx_runtime.jsx)("i", {})
+						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {})
 					]
-				}), wide ? (0, react_jsx_runtime.jsx)("span", { children: "PR 助手" }) : null]
+				}), wide ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "PR 助手" }) : null]
 			});
 		}
 		function FileDiff({ diff }) {
-			if (!diff) return (0, react_jsx_runtime.jsx)("div", {
+			if (!diff) return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 				className: pr_assistant_module_css_default.diffUnavailable,
 				children: "该文件没有可展示的文本差异，可能是二进制文件或平台省略了补丁。"
 			});
-			return (0, react_jsx_runtime.jsx)("pre", {
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("pre", {
 				className: pr_assistant_module_css_default.diffBlock,
-				children: diff.split("\n").map((line, index) => (0, react_jsx_runtime.jsxs)("span", {
+				children: diff.split("\n").map((line, index) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
 					className: line.startsWith("+") ? pr_assistant_module_css_default.diffAdd : line.startsWith("-") ? pr_assistant_module_css_default.diffDelete : line.startsWith("@@") ? pr_assistant_module_css_default.diffHunk : void 0,
 					children: [line || " ", "\\n"]
 				}, index))
@@ -340,45 +339,45 @@ window.__ModuleLoader__.load({
 			async function copySha() {
 				if (await copyToClipboard(commit.sha)) setCopied(true);
 			}
-			return (0, react_jsx_runtime.jsxs)("li", { children: [(0, react_jsx_runtime.jsxs)("div", {
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("li", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 				className: pr_assistant_module_css_default.commitRow,
 				children: [
-					(0, react_jsx_runtime.jsxs)("button", {
+					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 						className: pr_assistant_module_css_default.commitMain,
 						type: "button",
 						"aria-expanded": open,
 						title: open ? "收起提交详情" : "展开提交详情",
 						onClick: () => setOpen((value) => !value),
-						children: [(0, react_jsx_runtime.jsx)("span", {
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 							className: pr_assistant_module_css_default.disclosureIcon,
 							"aria-hidden": "true",
-							children: (0, react_jsx_runtime.jsx)("svg", {
+							children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("svg", {
 								viewBox: "0 0 12 12",
-								children: (0, react_jsx_runtime.jsx)("path", { d: "m4.5 2.5 3.5 3.5-3.5 3.5" })
+								children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "m4.5 2.5 3.5 3.5-3.5 3.5" })
 							})
-						}), (0, react_jsx_runtime.jsxs)("div", {
+						}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 							className: pr_assistant_module_css_default.commitMeta,
-							children: [(0, react_jsx_runtime.jsx)("strong", { children: commit.title || "无提交说明" }), (0, react_jsx_runtime.jsxs)("span", { children: [
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("strong", { children: commit.title || "无提交说明" }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: [
 								commit.author || "未知作者",
 								" · ",
 								relativeTime(commit.committedAt)
 							] })]
 						})]
 					}),
-					(0, react_jsx_runtime.jsxs)("button", {
+					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 						className: pr_assistant_module_css_default.commitShaButton,
 						type: "button",
 						title: copied ? "已复制" : "复制完整 commit hash",
 						"aria-label": copied ? `已复制 ${commit.sha}` : `复制 ${commit.sha}`,
 						"aria-pressed": copied,
 						onClick: () => void copySha(),
-						children: [(0, react_jsx_runtime.jsx)("code", { children: commit.sha.slice(0, 7) }), (0, react_jsx_runtime.jsx)("span", {
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("code", { children: commit.sha.slice(0, 7) }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 							className: pr_assistant_module_css_default.commitShaCopyHint,
 							"aria-hidden": "true",
 							children: copied ? "✓" : "⧉"
 						})]
 					}),
-					commit.url ? (0, react_jsx_runtime.jsx)("button", {
+					commit.url ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 						className: pr_assistant_module_css_default.commitExternal,
 						type: "button",
 						"aria-label": "打开提交",
@@ -387,40 +386,40 @@ window.__ModuleLoader__.load({
 						children: "↗"
 					}) : null
 				]
-			}), open ? (0, react_jsx_runtime.jsxs)("div", {
+			}), open ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 				className: pr_assistant_module_css_default.commitBody,
 				children: [
-					loading ? (0, react_jsx_runtime.jsx)("div", {
+					loading ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 						className: pr_assistant_module_css_default.commitState,
 						children: "正在读取提交变更…"
 					}) : null,
-					error ? (0, react_jsx_runtime.jsx)("div", {
+					error ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 						className: pr_assistant_module_css_default.commitState,
 						role: "alert",
 						children: error
 					}) : null,
-					files ? files.length ? (0, react_jsx_runtime.jsx)("ol", {
+					files ? files.length ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("ol", {
 						className: pr_assistant_module_css_default.commitFiles,
-						children: files.map((file) => (0, react_jsx_runtime.jsx)("li", { children: (0, react_jsx_runtime.jsxs)("details", { children: [(0, react_jsx_runtime.jsxs)("summary", { children: [
-							(0, react_jsx_runtime.jsx)("span", {
+						children: files.map((file) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("li", { children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("details", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("summary", { children: [
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 								className: pr_assistant_module_css_default.disclosureIcon,
 								"aria-hidden": "true",
-								children: (0, react_jsx_runtime.jsx)("svg", {
+								children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("svg", {
 									viewBox: "0 0 12 12",
-									children: (0, react_jsx_runtime.jsx)("path", { d: "m4.5 2.5 3.5 3.5-3.5 3.5" })
+									children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "m4.5 2.5 3.5 3.5-3.5 3.5" })
 								})
 							}),
-							(0, react_jsx_runtime.jsx)("span", {
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 								className: pr_assistant_module_css_default.fileStatus,
 								children: file.status === "added" ? "A" : file.status === "deleted" ? "D" : file.status === "renamed" ? "R" : "M"
 							}),
-							(0, react_jsx_runtime.jsx)("code", { children: file.path }),
-							(0, react_jsx_runtime.jsxs)("span", {
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("code", { children: file.path }),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
 								className: pr_assistant_module_css_default.fileCounts,
-								children: [(0, react_jsx_runtime.jsxs)("i", { children: ["+", file.additions] }), (0, react_jsx_runtime.jsxs)("b", { children: ["−", file.deletions] })]
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("i", { children: ["+", file.additions] }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("b", { children: ["−", file.deletions] })]
 							})
-						] }), (0, react_jsx_runtime.jsx)(FileDiff, { diff: file.diff })] }) }, `${file.previousPath}:${file.path}`))
-					}) : (0, react_jsx_runtime.jsx)("div", {
+						] }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(FileDiff, { diff: file.diff })] }) }, `${file.previousPath}:${file.path}`))
+					}) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 						className: pr_assistant_module_css_default.commitState,
 						children: "该提交没有可展示的文件变更。"
 					}) : null
@@ -428,11 +427,11 @@ window.__ModuleLoader__.load({
 			}) : null] });
 		}
 		function CommitView({ commits, repositoryPath }) {
-			return (0, react_jsx_runtime.jsxs)("section", {
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
 				className: pr_assistant_module_css_default.commitView,
-				children: [(0, react_jsx_runtime.jsxs)("h3", { children: ["按提交查看 ", (0, react_jsx_runtime.jsx)("span", { children: commits.length })] }), (0, react_jsx_runtime.jsx)("ol", {
+				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("h3", { children: ["按提交查看 ", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: commits.length })] }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("ol", {
 					className: pr_assistant_module_css_default.commitList,
-					children: commits.map((commit) => (0, react_jsx_runtime.jsx)(CommitRow, {
+					children: commits.map((commit) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)(CommitRow, {
 						commit,
 						repositoryPath
 					}, commit.sha))
@@ -552,45 +551,45 @@ window.__ModuleLoader__.load({
 				}
 			}
 			const selected = models.find((model) => model.key === selectedKey);
-			return (0, react_jsx_runtime.jsx)("div", {
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 				className: pr_assistant_module_css_default.modalBackdrop,
 				role: "presentation",
 				onMouseDown: (event) => {
 					if (event.target === event.currentTarget) onClose();
 				},
-				children: (0, react_jsx_runtime.jsxs)("section", {
+				children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
 					className: pr_assistant_module_css_default.reviewDialog,
 					role: "dialog",
 					"aria-modal": "true",
 					"aria-labelledby": "ai-review-title",
 					children: [
-						(0, react_jsx_runtime.jsx)("span", {
+						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 							className: pr_assistant_module_css_default.eyebrow,
 							children: "AI CODE REVIEW"
 						}),
-						(0, react_jsx_runtime.jsx)("h2", {
+						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h2", {
 							id: "ai-review-title",
 							children: "选择评审模型"
 						}),
-						(0, react_jsx_runtime.jsxs)("p", { children: [
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("p", { children: [
 							"将为 ",
 							repository.repository,
 							" 的 PR #",
 							pullRequest.number,
 							" 创建一个只读评审对话。"
 						] }),
-						error ? (0, react_jsx_runtime.jsx)("div", {
+						error ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 							className: pr_assistant_module_css_default.reviewError,
 							role: "alert",
 							children: error
 						}) : null,
-						(0, react_jsx_runtime.jsxs)("label", {
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", {
 							className: pr_assistant_module_css_default.modelField,
-							children: [(0, react_jsx_runtime.jsx)("span", { children: "Harness 模型" }), (0, react_jsx_runtime.jsx)("select", {
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "Harness 模型" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("select", {
 								disabled: loading || starting,
 								value: selectedKey,
 								onChange: (event) => setSelectedKey(event.target.value),
-								children: models.map((model) => (0, react_jsx_runtime.jsxs)("option", {
+								children: models.map((model) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("option", {
 									value: model.key,
 									children: [
 										model.providerName,
@@ -600,16 +599,16 @@ window.__ModuleLoader__.load({
 								}, model.key))
 							})]
 						}),
-						(0, react_jsx_runtime.jsx)("div", {
+						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 							className: pr_assistant_module_css_default.modelHint,
 							children: loading ? "正在读取可用模型…" : selected?.description || selected?.providerName || "没有可用模型"
 						}),
-						(0, react_jsx_runtime.jsxs)("footer", { children: [(0, react_jsx_runtime.jsx)("button", {
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("footer", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 							type: "button",
 							disabled: starting,
 							onClick: onClose,
 							children: "取消"
-						}), (0, react_jsx_runtime.jsx)("button", {
+						}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 							type: "button",
 							disabled: !selected || loading || starting,
 							onClick: () => void startReview(),
@@ -864,22 +863,22 @@ window.__ModuleLoader__.load({
 			const reviewResult = useReviewResult(ctx, linkedSessionId);
 			const conflictSessionId = conflict?.sessionId;
 			const conflictResult = useReviewResult(ctx, conflictSessionId ?? null);
-			return (0, react_jsx_runtime.jsxs)("section", {
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
 				ref: panelRef,
 				className: pr_assistant_module_css_default.workbench,
 				"aria-label": "PR 助手",
 				children: [
-					(0, react_jsx_runtime.jsxs)("header", {
+					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("header", {
 						className: pr_assistant_module_css_default.header,
-						children: [(0, react_jsx_runtime.jsxs)("div", { children: [
-							(0, react_jsx_runtime.jsx)("span", {
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 								className: pr_assistant_module_css_default.eyebrow,
 								children: "REVIEW RADAR"
 							}),
-							(0, react_jsx_runtime.jsxs)("div", {
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 								className: pr_assistant_module_css_default.titleRow,
 								children: [
-									selection && commitView ? (0, react_jsx_runtime.jsx)("button", {
+									selection && commitView ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 										className: pr_assistant_module_css_default.titleBack,
 										type: "button",
 										"aria-label": "返回 PR 详情",
@@ -887,7 +886,7 @@ window.__ModuleLoader__.load({
 										onClick: () => setCommitView(false),
 										children: "←"
 									}) : null,
-									selection && !commitView ? (0, react_jsx_runtime.jsx)("button", {
+									selection && !commitView ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 										className: pr_assistant_module_css_default.titleBack,
 										type: "button",
 										"aria-label": "返回 PR 列表",
@@ -895,31 +894,31 @@ window.__ModuleLoader__.load({
 										onClick: () => setSelection(null),
 										children: "←"
 									}) : null,
-									(0, react_jsx_runtime.jsx)("h1", { children: selection ? commitView ? `#${selection.pullRequest.number} 按提交查看` : `#${selection.pullRequest.number} PR 详情` : "PR 助手" })
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h1", { children: selection ? commitView ? `#${selection.pullRequest.number} 按提交查看` : `#${selection.pullRequest.number} PR 详情` : "PR 助手" })
 								]
 							}),
-							(0, react_jsx_runtime.jsx)("p", { children: selection ? commitView ? `${detail?.commits.length ?? 0} 个提交` : selection.repository.repository : `${healthy} 个代码仓库 · ${total} 个待处理 PR` })
-						] }), (0, react_jsx_runtime.jsxs)("div", {
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", { children: selection ? commitView ? `${detail?.commits.length ?? 0} 个提交` : selection.repository.repository : `${healthy} 个代码仓库 · ${total} 个待处理 PR` })
+						] }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 							className: pr_assistant_module_css_default.actions,
-							children: [!selection ? (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
-								(0, react_jsx_runtime.jsxs)("label", {
+							children: [!selection ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", {
 									className: pr_assistant_module_css_default.search,
-									children: [(0, react_jsx_runtime.jsx)("span", {
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 										"aria-hidden": "true",
 										children: "⌕"
-									}), (0, react_jsx_runtime.jsx)("input", {
+									}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
 										value: query,
 										onChange: (event) => setQuery(event.target.value),
 										placeholder: "搜索仓库"
 									})]
 								}),
-								(0, react_jsx_runtime.jsx)("button", {
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 									type: "button",
 									disabled: loading,
 									onClick: () => void refresh(),
 									children: loading ? "同步中…" : "刷新"
 								}),
-								hiddenRepositories.size ? (0, react_jsx_runtime.jsxs)("button", {
+								hiddenRepositories.size ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 									type: "button",
 									onClick: () => {
 										setRestoreWorkspaceId("");
@@ -931,7 +930,7 @@ window.__ModuleLoader__.load({
 										")"
 									]
 								}) : null
-							] }) : null, (0, react_jsx_runtime.jsx)("button", {
+							] }) : null, /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 								type: "button",
 								"aria-label": "关闭",
 								onClick: close,
@@ -939,55 +938,55 @@ window.__ModuleLoader__.load({
 							})]
 						})]
 					}),
-					(0, react_jsx_runtime.jsx)("div", {
+					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 						className: pr_assistant_module_css_default.scrollArea,
-						children: selection ? (0, react_jsx_runtime.jsxs)("main", {
+						children: selection ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("main", {
 							className: pr_assistant_module_css_default.detail,
 							children: [
-								detailLoading ? (0, react_jsx_runtime.jsx)("div", {
+								detailLoading ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 									className: pr_assistant_module_css_default.detailState,
 									children: "正在读取 PR 详情…"
 								}) : null,
-								detailError ? (0, react_jsx_runtime.jsx)("div", {
+								detailError ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 									className: pr_assistant_module_css_default.detailState,
 									role: "alert",
 									children: detailError
 								}) : null,
-								detail ? commitView ? (0, react_jsx_runtime.jsx)(CommitView, {
+								detail ? commitView ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)(CommitView, {
 									commits: detail.commits,
 									repositoryPath: selection.repository.localPath
-								}) : (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
-									(0, react_jsx_runtime.jsxs)("section", {
+								}) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
 										className: pr_assistant_module_css_default.detailHero,
-										children: [(0, react_jsx_runtime.jsxs)("div", { children: [
-											(0, react_jsx_runtime.jsxs)("span", { children: [
+										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [
+											/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: [
 												detail.author,
 												" · ",
 												relativeTime(detail.updatedAt)
 											] }),
-											(0, react_jsx_runtime.jsx)("h2", { children: detail.title }),
-											(0, react_jsx_runtime.jsxs)("code", { children: [
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h2", { children: detail.title }),
+											/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("code", { children: [
 												detail.sourceBranch,
 												" → ",
 												detail.targetBranch
 											] })
-										] }), (0, react_jsx_runtime.jsxs)("div", {
+										] }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 											className: pr_assistant_module_css_default.detailActions,
 											children: [
-												detail.conflictStatus === "conflicting" ? (0, react_jsx_runtime.jsx)("button", {
+												detail.conflictStatus === "conflicting" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 													className: pr_assistant_module_css_default.conflictButton,
 													type: "button",
 													disabled: conflictBusy,
 													onClick: () => void startConflictResolution(),
 													children: conflict ? "重新处理冲突" : conflictBusy ? "正在预检…" : "一键处理冲突"
 												}) : null,
-												(0, react_jsx_runtime.jsx)("button", {
+												/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 													className: pr_assistant_module_css_default.reviewButton,
 													type: "button",
 													onClick: openAiReview,
 													children: hasLinkedReview ? "重新分析" : "AI 评审"
 												}),
-												(0, react_jsx_runtime.jsx)("button", {
+												/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 													type: "button",
 													onClick: () => window.open(detail.url, "_blank", "noopener,noreferrer"),
 													children: "打开 PR ↗"
@@ -995,54 +994,54 @@ window.__ModuleLoader__.load({
 											]
 										})]
 									}),
-									(0, react_jsx_runtime.jsxs)("section", {
+									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
 										className: pr_assistant_module_css_default.detailStats,
 										children: [
-											(0, react_jsx_runtime.jsxs)("button", {
+											/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 												className: pr_assistant_module_css_default.commitStat,
 												type: "button",
 												disabled: detail.commitCount === null,
 												onClick: () => setCommitView(true),
-												children: [(0, react_jsx_runtime.jsx)("strong", { children: detail.commitCount ?? "—" }), (0, react_jsx_runtime.jsx)("span", { children: detail.commitCount === null ? "提交数暂不可用" : "提交 · 点击查看" })]
+												children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("strong", { children: detail.commitCount ?? "—" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: detail.commitCount === null ? "提交数暂不可用" : "提交 · 点击查看" })]
 											}),
-											(0, react_jsx_runtime.jsxs)("div", { children: [(0, react_jsx_runtime.jsx)("strong", { children: detail.changedFiles }), (0, react_jsx_runtime.jsx)("span", { children: "变更文件" })] }),
-											(0, react_jsx_runtime.jsxs)("div", { children: [(0, react_jsx_runtime.jsxs)("strong", {
+											/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("strong", { children: detail.changedFiles }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "变更文件" })] }),
+											/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("strong", {
 												className: pr_assistant_module_css_default.addition,
 												children: ["+", detail.additions]
-											}), (0, react_jsx_runtime.jsx)("span", { children: "新增行" })] }),
-											(0, react_jsx_runtime.jsxs)("div", { children: [(0, react_jsx_runtime.jsxs)("strong", {
+											}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "新增行" })] }),
+											/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("strong", {
 												className: pr_assistant_module_css_default.deletion,
 												children: ["−", detail.deletions]
-											}), (0, react_jsx_runtime.jsx)("span", { children: "删除行" })] }),
-											(0, react_jsx_runtime.jsxs)("div", {
+											}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "删除行" })] }),
+											/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 												title: detail.mergeStatus ? `平台状态：${detail.mergeStatus}` : void 0,
-												children: [(0, react_jsx_runtime.jsx)("strong", {
+												children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("strong", {
 													className: detail.conflictStatus === "conflicting" ? pr_assistant_module_css_default.conflict : detail.conflictStatus === "mergeable" ? pr_assistant_module_css_default.clean : pr_assistant_module_css_default.unknown,
 													children: conflictLabel(detail)
-												}), (0, react_jsx_runtime.jsx)("span", { children: "冲突状态" })]
+												}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "冲突状态" })]
 											})
 										]
 									}),
-									detail.description ? (0, react_jsx_runtime.jsxs)("section", {
+									detail.description ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
 										className: pr_assistant_module_css_default.description,
-										children: [(0, react_jsx_runtime.jsx)("h3", { children: "说明" }), (0, react_jsx_runtime.jsx)("p", { children: detail.description })]
+										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h3", { children: "说明" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", { children: detail.description })]
 									}) : null,
-									conflict || conflictError ? (0, react_jsx_runtime.jsxs)("section", {
+									conflict || conflictError ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
 										className: pr_assistant_module_css_default.conflictResult,
 										children: [
-											(0, react_jsx_runtime.jsxs)("header", { children: [(0, react_jsx_runtime.jsxs)("div", { children: [(0, react_jsx_runtime.jsx)("span", {
+											/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("header", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 												className: pr_assistant_module_css_default.eyebrow,
 												children: "CONFLICT RESOLUTION"
-											}), (0, react_jsx_runtime.jsx)("h3", { children: "冲突处理" })] }), (0, react_jsx_runtime.jsxs)("div", {
+											}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("h3", { children: "冲突处理" })] }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 												className: pr_assistant_module_css_default.conflictResultActions,
-												children: [conflictSessionId ? (0, react_jsx_runtime.jsx)("button", {
+												children: [conflictSessionId ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 													type: "button",
 													onClick: () => {
 														ctx.sessions.open(conflictSessionId);
 														close();
 													},
 													children: "打开处理会话 ↗"
-												}) : null, conflictStatus?.pushReady && !pushed ? (0, react_jsx_runtime.jsx)("button", {
+												}) : null, conflictStatus?.pushReady && !pushed ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 													className: pr_assistant_module_css_default.pushButton,
 													type: "button",
 													disabled: conflictBusy,
@@ -1050,55 +1049,55 @@ window.__ModuleLoader__.load({
 													children: conflictBusy ? "推送中…" : `Push 到 ${conflictStatus.sourceBranch}`
 												}) : null]
 											})] }),
-											conflictError ? (0, react_jsx_runtime.jsx)("div", {
+											conflictError ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 												className: pr_assistant_module_css_default.reviewError,
 												role: "alert",
 												children: conflictError
 											}) : null,
-											pushed ? (0, react_jsx_runtime.jsxs)("div", {
+											pushed ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 												className: pr_assistant_module_css_default.conflictSuccess,
 												children: ["已成功推送到 origin/", conflict?.sourceBranch]
 											}) : null,
-											conflictStatus ? (0, react_jsx_runtime.jsxs)("div", {
+											conflictStatus ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 												className: pr_assistant_module_css_default.conflictFacts,
 												children: [
-													(0, react_jsx_runtime.jsxs)("span", { children: ["当前分支 ", (0, react_jsx_runtime.jsx)("code", { children: conflictStatus.currentBranch || "detached HEAD" })] }),
-													(0, react_jsx_runtime.jsxs)("span", { children: ["工作区 ", conflictStatus.clean ? "干净" : "有未提交修改"] }),
-													(0, react_jsx_runtime.jsxs)("span", { children: ["未解决冲突 ", conflictStatus.unresolved.length] }),
-													(0, react_jsx_runtime.jsxs)("span", { children: ["目标已合并 ", conflictStatus.targetMerged ? "是" : "否"] }),
-													(0, react_jsx_runtime.jsxs)("span", { children: ["提交 ", conflictStatus.hasCommit ? conflictStatus.headSha.slice(0, 12) : "尚未生成"] })
+													/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: ["当前分支 ", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("code", { children: conflictStatus.currentBranch || "detached HEAD" })] }),
+													/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: ["工作区 ", conflictStatus.clean ? "干净" : "有未提交修改"] }),
+													/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: ["未解决冲突 ", conflictStatus.unresolved.length] }),
+													/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: ["目标已合并 ", conflictStatus.targetMerged ? "是" : "否"] }),
+													/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: ["提交 ", conflictStatus.hasCommit ? conflictStatus.headSha.slice(0, 12) : "尚未生成"] })
 												]
-											}) : (0, react_jsx_runtime.jsx)("div", {
+											}) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 												className: pr_assistant_module_css_default.commitState,
 												children: "正在读取仓库处理状态…"
 											}),
-											conflictStatus?.changedFiles.length ? (0, react_jsx_runtime.jsxs)("div", {
+											conflictStatus?.changedFiles.length ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 												className: pr_assistant_module_css_default.conflictChanges,
-												children: [(0, react_jsx_runtime.jsx)("h4", { children: "已提交修改位置" }), (0, react_jsx_runtime.jsx)("ol", { children: conflictStatus.changedFiles.map((file) => (0, react_jsx_runtime.jsxs)("li", { children: [(0, react_jsx_runtime.jsx)("b", { children: file.status }), (0, react_jsx_runtime.jsx)("code", { children: file.path })] }, `${file.status}:${file.path}`)) })]
+												children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h4", { children: "已提交修改位置" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("ol", { children: conflictStatus.changedFiles.map((file) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("li", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: file.status }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("code", { children: file.path })] }, `${file.status}:${file.path}`)) })]
 											}) : null,
-											conflictResult ? (0, react_jsx_runtime.jsxs)("div", {
+											conflictResult ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 												className: pr_assistant_module_css_default.conflictLogic,
-												children: [(0, react_jsx_runtime.jsx)("h4", { children: "AI 处理逻辑与测试结果" }), (0, react_jsx_runtime.jsx)("pre", { children: conflictResult.text })]
-											}) : (0, react_jsx_runtime.jsx)("div", {
+												children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h4", { children: "AI 处理逻辑与测试结果" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("pre", { children: conflictResult.text })]
+											}) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 												className: pr_assistant_module_css_default.commitState,
 												children: "AI 正在处理；完成后将在此回填修改位置、测试结果和处理逻辑。"
 											})
 										]
 									}) : null,
-									reviewResult ? (0, react_jsx_runtime.jsxs)("section", {
+									reviewResult ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
 										className: pr_assistant_module_css_default.reviewResult,
 										children: [
-											(0, react_jsx_runtime.jsxs)("header", { children: [(0, react_jsx_runtime.jsxs)("div", { children: [(0, react_jsx_runtime.jsx)("span", {
+											/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("header", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 												className: pr_assistant_module_css_default.eyebrow,
 												children: "AI REVIEW"
-											}), (0, react_jsx_runtime.jsx)("h3", { children: "AI 分析结果" })] }), (0, react_jsx_runtime.jsxs)("div", {
+											}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("h3", { children: "AI 分析结果" })] }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 												className: pr_assistant_module_css_default.reviewResultActions,
-												children: [(0, react_jsx_runtime.jsx)("button", {
+												children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 													type: "button",
 													disabled: commentBusy,
 													onClick: () => void publishReviewToPr(),
 													children: commentBusy ? "发布中…" : "评论到 PR"
-												}), (0, react_jsx_runtime.jsx)("button", {
+												}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 													type: "button",
 													onClick: () => {
 														if (linkedSessionId) {
@@ -1109,22 +1108,22 @@ window.__ModuleLoader__.load({
 													children: "打开评审对话 ↗"
 												})]
 											})] }),
-											commentStatus ? (0, react_jsx_runtime.jsx)("div", {
+											commentStatus ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 												className: commentStatus === "已成功评论到 PR。" ? pr_assistant_module_css_default.commentSuccess : pr_assistant_module_css_default.reviewError,
 												role: "status",
 												children: commentStatus
 											}) : null,
-											(0, react_jsx_runtime.jsx)("pre", { children: reviewResult.text })
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("pre", { children: reviewResult.text })
 										]
-									}) : hasLinkedReview ? (0, react_jsx_runtime.jsxs)("section", {
+									}) : hasLinkedReview ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
 										className: pr_assistant_module_css_default.reviewPending,
 										children: [
-											(0, react_jsx_runtime.jsx)("span", {
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 												className: pr_assistant_module_css_default.eyebrow,
 												children: "AI REVIEW"
 											}),
-											(0, react_jsx_runtime.jsx)("strong", { children: "AI 分析正在处理中" }),
-											(0, react_jsx_runtime.jsx)("button", {
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("strong", { children: "AI 分析正在处理中" }),
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 												type: "button",
 												onClick: () => {
 													if (linkedSessionId) {
@@ -1136,52 +1135,52 @@ window.__ModuleLoader__.load({
 											})
 										]
 									}) : null,
-									(0, react_jsx_runtime.jsxs)("section", {
+									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
 										className: pr_assistant_module_css_default.files,
-										children: [(0, react_jsx_runtime.jsxs)("h3", { children: ["文件差异 ", (0, react_jsx_runtime.jsx)("span", { children: detail.files.length })] }), (0, react_jsx_runtime.jsx)("ol", { children: detail.files.map((file) => (0, react_jsx_runtime.jsx)("li", { children: (0, react_jsx_runtime.jsxs)("details", { children: [(0, react_jsx_runtime.jsxs)("summary", { children: [
-											(0, react_jsx_runtime.jsx)("span", {
+										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("h3", { children: ["文件差异 ", /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: detail.files.length })] }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("ol", { children: detail.files.map((file) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("li", { children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("details", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("summary", { children: [
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 												className: pr_assistant_module_css_default.disclosureIcon,
 												"aria-hidden": "true",
-												children: (0, react_jsx_runtime.jsx)("svg", {
+												children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("svg", {
 													viewBox: "0 0 12 12",
-													children: (0, react_jsx_runtime.jsx)("path", { d: "m4.5 2.5 3.5 3.5-3.5 3.5" })
+													children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "m4.5 2.5 3.5 3.5-3.5 3.5" })
 												})
 											}),
-											(0, react_jsx_runtime.jsx)("span", {
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 												className: pr_assistant_module_css_default.fileStatus,
 												children: file.status === "added" ? "A" : file.status === "deleted" ? "D" : file.status === "renamed" ? "R" : "M"
 											}),
-											(0, react_jsx_runtime.jsx)("code", { children: file.path }),
-											(0, react_jsx_runtime.jsxs)("span", {
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("code", { children: file.path }),
+											/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
 												className: pr_assistant_module_css_default.fileCounts,
-												children: [(0, react_jsx_runtime.jsxs)("i", { children: ["+", file.additions] }), (0, react_jsx_runtime.jsxs)("b", { children: ["−", file.deletions] })]
+												children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("i", { children: ["+", file.additions] }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("b", { children: ["−", file.deletions] })]
 											})
-										] }), (0, react_jsx_runtime.jsx)(FileDiff, { diff: file.diff })] }) }, `${file.previousPath}:${file.path}`)) })]
+										] }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(FileDiff, { diff: file.diff })] }) }, `${file.previousPath}:${file.path}`)) })]
 									})
 								] }) : null
 							]
-						}) : (0, react_jsx_runtime.jsxs)("main", {
+						}) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("main", {
 							className: pr_assistant_module_css_default.grid,
-							children: [filtered.map((result) => (0, react_jsx_runtime.jsxs)("article", {
+							children: [filtered.map((result) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("article", {
 								className: pr_assistant_module_css_default.repo,
 								children: [
-									(0, react_jsx_runtime.jsxs)("div", {
+									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 										className: pr_assistant_module_css_default.repoHeader,
-										children: [(0, react_jsx_runtime.jsxs)("div", {
+										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 											className: pr_assistant_module_css_default.repoIdentity,
-											children: [(0, react_jsx_runtime.jsx)("span", {
+											children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 												className: pr_assistant_module_css_default.provider,
 												children: result.provider ?? "GIT"
-											}), (0, react_jsx_runtime.jsx)("h2", {
+											}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("h2", {
 												title: result.repository ?? result.workspaceTitle,
 												children: result.repository ?? result.workspaceTitle
 											})]
-										}), (0, react_jsx_runtime.jsxs)("div", {
+										}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 											className: pr_assistant_module_css_default.repoTools,
-											children: [(0, react_jsx_runtime.jsxs)("span", {
+											children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
 												className: result.openCount ? pr_assistant_module_css_default.countActive : pr_assistant_module_css_default.count,
 												children: [result.openCount, " 个 PR"]
-											}), (0, react_jsx_runtime.jsx)("button", {
+											}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 												className: pr_assistant_module_css_default.hideRepo,
 												type: "button",
 												onClick: () => hideRepository(result.workspaceId),
@@ -1189,14 +1188,14 @@ window.__ModuleLoader__.load({
 											})]
 										})]
 									}),
-									result.error ? (0, react_jsx_runtime.jsxs)("div", {
+									result.error ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 										className: pr_assistant_module_css_default.error,
-										children: [(0, react_jsx_runtime.jsx)("strong", { children: "无法读取" }), (0, react_jsx_runtime.jsx)("span", { children: result.error })]
-									}) : result.pullRequests.length ? (0, react_jsx_runtime.jsx)("ol", {
+										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("strong", { children: "无法读取" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: result.error })]
+									}) : result.pullRequests.length ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("ol", {
 										className: pr_assistant_module_css_default.prList,
-										children: result.pullRequests.map((pr) => (0, react_jsx_runtime.jsx)("li", { children: (0, react_jsx_runtime.jsxs)("div", {
+										children: result.pullRequests.map((pr) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("li", { children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 											className: pr_assistant_module_css_default.prRow,
-											children: [(0, react_jsx_runtime.jsxs)("button", {
+											children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
 												className: pr_assistant_module_css_default.prMain,
 												type: "button",
 												onClick: () => setSelection({
@@ -1204,38 +1203,38 @@ window.__ModuleLoader__.load({
 													pullRequest: pr
 												}),
 												children: [
-													(0, react_jsx_runtime.jsxs)("span", {
+													/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
 														className: pr_assistant_module_css_default.prNumber,
 														children: ["#", pr.number]
 													}),
-													(0, react_jsx_runtime.jsx)("span", {
+													/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 														className: pr_assistant_module_css_default.prTitle,
 														children: pr.title
 													}),
-													pr.draft ? (0, react_jsx_runtime.jsx)("span", {
+													pr.draft ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 														className: pr_assistant_module_css_default.draft,
 														children: "草稿"
 													}) : null,
-													pr.conflictStatus === "conflicting" ? (0, react_jsx_runtime.jsx)("span", {
+													pr.conflictStatus === "conflicting" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 														className: pr_assistant_module_css_default.conflictTag,
 														children: "冲突"
-													}) : pr.conflictStatus === "unknown" ? (0, react_jsx_runtime.jsx)("span", {
+													}) : pr.conflictStatus === "unknown" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 														className: pr_assistant_module_css_default.unknownTag,
 														children: "待检测"
 													}) : null,
-													pr.sourceBranch || pr.targetBranch ? (0, react_jsx_runtime.jsxs)("span", {
+													pr.sourceBranch || pr.targetBranch ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
 														className: pr_assistant_module_css_default.branches,
-														children: [(0, react_jsx_runtime.jsxs)("span", {
+														children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
 															className: pr_assistant_module_css_default.sourceBranch,
 															title: `来源分支：${pr.sourceBranch || "未知"}`,
-															children: [(0, react_jsx_runtime.jsx)("b", { children: "来源" }), (0, react_jsx_runtime.jsx)("code", { children: pr.sourceBranch || "未知" })]
-														}), (0, react_jsx_runtime.jsxs)("span", {
+															children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: "来源" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("code", { children: pr.sourceBranch || "未知" })]
+														}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
 															className: pr_assistant_module_css_default.targetBranch,
 															title: `目标分支：${pr.targetBranch || "未知"}`,
-															children: [(0, react_jsx_runtime.jsx)("b", { children: "目标" }), (0, react_jsx_runtime.jsx)("code", { children: pr.targetBranch || "未知" })]
+															children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: "目标" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("code", { children: pr.targetBranch || "未知" })]
 														})]
 													}) : null,
-													(0, react_jsx_runtime.jsxs)("span", {
+													/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
 														className: pr_assistant_module_css_default.meta,
 														children: [
 															pr.author || "未知作者",
@@ -1244,39 +1243,39 @@ window.__ModuleLoader__.load({
 														]
 													})
 												]
-											}), (0, react_jsx_runtime.jsx)("button", {
+											}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 												className: pr_assistant_module_css_default.externalLink,
 												type: "button",
 												"aria-label": "打开 PR",
 												title: "打开 PR",
 												onClick: () => window.open(pr.url, "_blank", "noopener,noreferrer"),
-												children: (0, react_jsx_runtime.jsx)("svg", {
+												children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("svg", {
 													"aria-hidden": "true",
 													viewBox: "0 0 16 16",
-													children: (0, react_jsx_runtime.jsx)("path", { d: "M6 3H3.8A1.8 1.8 0 0 0 2 4.8v7.4A1.8 1.8 0 0 0 3.8 14h7.4a1.8 1.8 0 0 0 1.8-1.8V10M9 2h5v5M14 2 7.5 8.5" })
+													children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M6 3H3.8A1.8 1.8 0 0 0 2 4.8v7.4A1.8 1.8 0 0 0 3.8 14h7.4a1.8 1.8 0 0 0 1.8-1.8V10M9 2h5v5M14 2 7.5 8.5" })
 												})
 											})]
 										}) }, pr.number))
-									}) : (0, react_jsx_runtime.jsxs)("div", {
+									}) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 										className: pr_assistant_module_css_default.empty,
 										children: [
-											(0, react_jsx_runtime.jsx)("span", { children: "✓" }),
-											(0, react_jsx_runtime.jsx)("p", { children: "队列已清空" }),
-											(0, react_jsx_runtime.jsx)("small", { children: "当前没有待处理的 PR" })
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "✓" }),
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", { children: "队列已清空" }),
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("small", { children: "当前没有待处理的 PR" })
 										]
 									}),
-									result.truncated ? (0, react_jsx_runtime.jsx)("p", {
+									result.truncated ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
 										className: pr_assistant_module_css_default.notice,
 										children: "仅显示前 100 个 PR"
 									}) : null
 								]
-							}, result.workspaceId)), !loading && filtered.length === 0 ? (0, react_jsx_runtime.jsx)("div", {
+							}, result.workspaceId)), !loading && filtered.length === 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 								className: pr_assistant_module_css_default.noResults,
 								children: "没有匹配的仓库"
 							}) : null]
 						})
 					}),
-					reviewOpen && selection && detail ? (0, react_jsx_runtime.jsx)(AiReviewDialog, {
+					reviewOpen && selection && detail ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)(AiReviewDialog, {
 						ctx,
 						repository: selection.repository,
 						pullRequest: selection.pullRequest,
@@ -1284,39 +1283,39 @@ window.__ModuleLoader__.load({
 						onClose: () => setReviewOpen(false),
 						onStarted: close
 					}) : null,
-					restoreOpen ? (0, react_jsx_runtime.jsx)("div", {
+					restoreOpen ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 						className: pr_assistant_module_css_default.modalBackdrop,
 						role: "presentation",
 						onMouseDown: (event) => {
 							if (event.target === event.currentTarget) setRestoreOpen(false);
 						},
-						children: (0, react_jsx_runtime.jsxs)("section", {
+						children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
 							className: pr_assistant_module_css_default.restoreDialog,
 							role: "dialog",
 							"aria-modal": "true",
 							"aria-labelledby": "restore-repository-title",
 							children: [
-								(0, react_jsx_runtime.jsx)("span", {
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 									className: pr_assistant_module_css_default.eyebrow,
 									children: "HIDDEN REPOSITORIES"
 								}),
-								(0, react_jsx_runtime.jsx)("h2", {
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h2", {
 									id: "restore-repository-title",
 									children: "恢复隐藏仓库"
 								}),
-								(0, react_jsx_runtime.jsx)("p", { children: "选择一个仓库恢复到 PR 助手。" }),
-								(0, react_jsx_runtime.jsx)("ol", { children: results.filter((result) => hiddenRepositories.has(result.workspaceId)).map((result) => (0, react_jsx_runtime.jsx)("li", { children: (0, react_jsx_runtime.jsxs)("label", { children: [(0, react_jsx_runtime.jsx)("input", {
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", { children: "选择一个仓库恢复到 PR 助手。" }),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("ol", { children: results.filter((result) => hiddenRepositories.has(result.workspaceId)).map((result) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("li", { children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
 									type: "radio",
 									name: "restore-repository",
 									value: result.workspaceId,
 									checked: restoreWorkspaceId === result.workspaceId,
 									onChange: () => setRestoreWorkspaceId(result.workspaceId)
-								}), (0, react_jsx_runtime.jsxs)("span", { children: [(0, react_jsx_runtime.jsx)("strong", { children: result.repository ?? result.workspaceTitle }), (0, react_jsx_runtime.jsx)("small", { children: result.workspaceTitle })] })] }) }, result.workspaceId)) }),
-								(0, react_jsx_runtime.jsxs)("footer", { children: [(0, react_jsx_runtime.jsx)("button", {
+								}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("strong", { children: result.repository ?? result.workspaceTitle }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("small", { children: result.workspaceTitle })] })] }) }, result.workspaceId)) }),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("footer", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 									type: "button",
 									onClick: () => setRestoreOpen(false),
 									children: "取消"
-								}), (0, react_jsx_runtime.jsx)("button", {
+								}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 									type: "button",
 									disabled: !restoreWorkspaceId,
 									onClick: () => restoreRepository(restoreWorkspaceId),
@@ -1330,32 +1329,28 @@ window.__ModuleLoader__.load({
 		}
 		const inject = [
 			"slots",
+			"layout",
 			"sessions",
 			"workspaces",
 			"remote",
 			"remote.session"
 		];
 		function apply(ctx) {
+			const close = () => ctx.layout.selectPanel(null);
+			ctx.slots.inject("main", () => ctx.slots.register({
+				name: "main",
+				key: "pr-assistant",
+				id: "pr-assistant-panel"
+			}, () => /* @__PURE__ */ (0, react_jsx_runtime.jsx)(PrAssistantPanel, {
+				ctx,
+				close
+			})));
 			ctx.slots.inject("sidebar.footer.action", () => ctx.slots.register({
 				name: "sidebar.footer.action",
 				id: "pr-assistant"
-			}, (props) => (0, react_jsx_runtime.jsx)(SidebarAction, {
+			}, (props) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)(SidebarAction, {
 				...props,
-				openWorkbench: () => {
-					if (disposeWorkbench) return;
-					const close = () => {
-						const dispose = disposeWorkbench;
-						disposeWorkbench = null;
-						dispose?.();
-					};
-					disposeWorkbench = ctx.slots.inject("shell.overlay", () => ctx.slots.register({
-						name: "shell.overlay",
-						id: "pr-assistant-panel"
-					}, () => (0, react_jsx_runtime.jsx)(PrAssistantPanel, {
-						ctx,
-						close
-					})));
-				}
+				openWorkbench: () => ctx.layout.selectPanel("pr-assistant")
 			})));
 		}
 		//#endregion

@@ -26,6 +26,15 @@ npx @deepseek-ai/dsh plugin --profile desktop add .
 
 安装前请先确认必备的 Gitee CLI 已配置完成，具体要求见下方“必备环境”。
 
+## 0.3.2 更新
+
+- 使用 Harness `main` 主内容区展示工作台，保留左侧栏，关闭后返回原对话。
+- 刷新成功提示改用 Harness 原生 Toast。
+
+## 界面兼容性
+
+工作台注册到 Harness 的 `main` 主内容区，打开时替换对话页并保留左侧会话栏，关闭后返回原对话。需要支持 `main` keyed slot 和 `ctx.layout.selectPanel` 的 Harness 版本；已在 DSH Desktop 2.0.13 验证。构建时也需要对应版本的 Harness 源码与类型声明。
+
 ## 功能
 
 ### 事项看板
@@ -87,11 +96,11 @@ command -v gitee
 
 ## 安装
 
-当前版本：`0.3.1`。已安装用户在对应 profile 目录升级：
+当前版本：`0.3.2`。已安装用户在对应 profile 目录升级：
 
 ```bash
 cd ~/.dsh/profiles/desktop # Web 用户改为 web
-pnpm add @stephen1620/dsh-tomato-board@0.3.1
+pnpm add @stephen1620/dsh-tomato-board@0.3.2
 ```
 
 保留已有 `dsh.profile.bundles` 注册项，升级后完全退出并重新打开 Harness。

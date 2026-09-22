@@ -2,6 +2,14 @@
 
 在 DeepSeek Harness 中汇总所有项目对应仓库的 Open Pull Request。
 
+## 0.1.4 更新
+
+- 使用 Harness `main` 主内容区展示 PR 助手，保留左侧栏，关闭后返回原对话。
+
+## 界面兼容性
+
+工作台注册到 Harness 的 `main` 主内容区，打开时替换对话页并保留左侧会话栏，关闭后返回原对话。需要支持 `main` keyed slot 和 `ctx.layout.selectPanel` 的 Harness 版本；已在 DSH Desktop 2.0.13 验证。构建时也需要对应版本的 Harness 源码与类型声明。
+
 ## 功能
 
 - 自动读取 Harness 项目及其 Git `origin`
@@ -30,7 +38,7 @@
 
 ```bash
 cd ~/.dsh/profiles/desktop # Web 用户改为 web
-pnpm add @stephen1620/dsh-pr-assistant@0.1.2
+pnpm add @stephen1620/dsh-pr-assistant@0.1.4
 ```
 
 保留已有 `dsh.profile.bundles` 注册项，升级后完全退出并重新打开 Harness。
@@ -106,7 +114,7 @@ pnpm remove @stephen1620/dsh-pr-assistant
 
 记得同步从 `dsh.profile.bundles` 中移除该包名。
 
-当前版本：`0.1.2`。
+当前版本：`0.1.4`。
 
 ## AI 评审
 

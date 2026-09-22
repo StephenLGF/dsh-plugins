@@ -8,7 +8,7 @@ import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 import {
-  Button, IconChevronDownOutline14, IconCloseOutline16, IconRefreshOutline16, Menu, Modal,
+  Button, IconChevronDownOutline14, IconCloseOutline16, IconRefreshOutline16, Menu, Modal, Toast,
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { MenuEntry } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
@@ -68,7 +68,6 @@ interface BoardState {
 }
 
 let state: BoardState = { open: false, loading: false, loaded: false, items: [], error: null, successMessage: null, selectedItem: null, truncated: false }
-let disposeWorkbench: (() => void) | null = null
 const listeners = new Set<() => void>()
 const emit = (patch: Partial<BoardState>) => {
   state = { ...state, ...patch }
@@ -181,7 +180,6 @@ async function refresh(assignee = 'currentUser()') {
     const body = await response.json() as { items?: TomatoItem[]; truncated?: boolean; error?: string }
     if (!response.ok) throw new Error(body.error || `请求失败 (${response.status})`)
     emit({ items: body.items ?? [], truncated: body.truncated === true, loaded: true, successMessage: `已刷新 ${body.items?.length ?? 0} 条事项` })
-    setTimeout(() => emit({ successMessage: null }), 2000)
   } catch (error) {
     emit({ error: error instanceof Error ? error.message : '番茄事项读取失败' })
   } finally {
@@ -189,12 +187,14 @@ async function refresh(assignee = 'currentUser()') {
   }
 }
 
-function closeWorkbench() {
-  const dispose = disposeWorkbench
-  disposeWorkbench = null
+function dismissSuccessMessage() {
+  emit({ successMessage: null })
+}
+
+function closeWorkbench(ctx: Context) {
   // 关闭时清掉 loaded 和 error：下次打开工作台会重新拉取一次最新数据。
   emit({ open: false, selectedItem: null, loaded: false, error: null, successMessage: null })
-  dispose?.()
+  ctx.layout.selectPanel(null)
 }
 
 function TomatoBoardAction({ wide, openWorkbench }: { wide: boolean; openWorkbench: () => void }) {
@@ -249,7 +249,7 @@ function CreateConversationDialog({ ctx, item }: { ctx: Context; item: TomatoIte
       if (!prompted.ok) throw new Error(`事项上下文写入失败：${prompted.error.message}`)
       saveSessionLink(item.itemKey, createdSessionId)
       ctx.sessions.open(createdSessionId)
-      closeWorkbench()
+      closeWorkbench(ctx)
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Harness 对话创建失败')
     } finally {
@@ -350,7 +350,7 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
       if (!(event.target instanceof Element)) return
       if (workbenchRef.current?.contains(event.target)) return
       if (event.target.closest('[role="dialog"], [role="menu"]')) return
-      closeWorkbench()
+      closeWorkbench(ctx)
     }
     document.addEventListener('pointerdown', closeOnOutsideNavigation, true)
     return () => document.removeEventListener('pointerdown', closeOnOutsideNavigation, true)
@@ -409,7 +409,7 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
     if (associated) {
       saveSessionLink(item.itemKey, associated)
       ctx.sessions.open(associated)
-      closeWorkbench()
+      closeWorkbench(ctx)
       return
     }
     emit({ selectedItem: item })
@@ -542,7 +542,7 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
               icon={<IconCloseOutline16 />}
               title="关闭番茄工作台"
               aria-label="关闭番茄工作台"
-              onClick={closeWorkbench}
+              onClick={() => closeWorkbench(ctx)}
             />
           </div>
         </div>
@@ -552,7 +552,12 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
         </nav>
       </header>
       {page === 'points' ? <StoryPoints toolbarTarget={setStoryToolbar} onOpenItem={openItem} /> : <>
-      {board.successMessage && <div className={css.success} role="status">{board.successMessage}</div>}
+      {board.successMessage && <Toast
+        text={board.successMessage}
+        anchor={workbenchRef.current}
+        holdMs={1500}
+        onDone={dismissSuccessMessage}
+      />}
       {board.error && <div className={css.error} role="alert">{board.error}</div>}
       {board.truncated && <p className={css.notice} role="status">事项数量已达配置上限，当前仅展示前 {board.items.length} 条。</p>}
       <div className={css.board}>
@@ -1005,16 +1010,16 @@ function TomatoConversationShortcut({ ctx, sessionId, useSessions }: PropsRuntim
   )
 }
 
-export const inject = ['slots', 'sessions', 'workspaces']
+export const inject = ['slots', 'layout', 'sessions', 'workspaces']
 
 export function apply(ctx: Context): void {
+  ctx.slots.inject('main', () => ctx.slots.register(
+    { name: 'main', key: 'tomato-board', id: 'tomato-board-panel' },
+    () => <TomatoBoardPanel ctx={ctx} />,
+  ))
   const openWorkbench = () => {
-    if (disposeWorkbench) return
-    emit({ open: true })
-    disposeWorkbench = ctx.slots.inject('shell.overlay', () => ctx.slots.register(
-      { name: 'shell.overlay', id: 'tomato-board-panel' },
-      () => <TomatoBoardPanel ctx={ctx} />,
-    ))
+    emit({ open: true, loaded: false, error: null })
+    ctx.layout.selectPanel('tomato-board')
   }
   ctx.slots.inject('conversation.session.header.actions', () => ctx.slots.register(
     { name: 'conversation.session.header.actions', id: 'tomato-shortcut', order: 12 },
