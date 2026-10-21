@@ -4,7 +4,7 @@ import { isAbsolute, relative } from "node:path";
 import { promisify } from "node:util";
 import { randomUUID } from "node:crypto";
 //#region lib/types/index.js
-const execFileAsync = promisify(execFile);
+const execFileAsync = (file, args, options = {}) => promisify(execFile)(file, args, { windowsHide: true, ...options });
 const ROUTE = "/api/pr-assistant/repository";
 const DETAIL_ROUTE = "/api/pr-assistant/pull-request";
 const COMMIT_ROUTE = "/api/pr-assistant/commit";
