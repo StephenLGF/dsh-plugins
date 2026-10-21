@@ -3,7 +3,9 @@ import process from 'node:process'
 import { promisify } from 'node:util'
 import type { Context } from '@deepseek-ai/cordis'
 
-const execFileAsync = promisify(execFile)
+// windowsHide：DSH 以无控制台方式运行时，spawn 控制台子进程会弹出终端窗口挡住界面，统一隐藏。
+const execFileAsync = (file: string, args: string[], options: object = {}) =>
+  promisify(execFile)(file, args, { windowsHide: true, ...options })
 const ROUTE = '/api/tomato-board/items'
 const OPEN_ROUTE = '/api/tomato-board/open'
 const TRANSITIONS_ROUTE = '/api/tomato-board/transitions'

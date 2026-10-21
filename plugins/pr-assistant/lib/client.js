@@ -531,19 +531,28 @@ window.__ModuleLoader__.load({
 						...selected.reasoningEffort ? { reasoningEffort: selected.reasoningEffort } : {}
 					});
 					if (!selectedResult.ok) throw new Error(`模型选择失败：${selectedResult.error.message}`);
-					const session = ctx.sessions.binding(sessionId)?.session;
-					if (!session) throw new Error("新建评审对话未能在 Harness 中加载");
-					const renamed = await session.rename(`[PR #${pullRequest.number}] ${pullRequest.title}`);
-					if (!renamed.ok) throw new Error(`评审对话命名失败：${renamed.error.message}`);
-					const prompt = buildReviewPrompt(repository, pullRequest, detail);
-					const prompted = await session.prompt([{
-						type: "text",
-						text: prompt
-					}], "queue");
-					if (!prompted.ok) throw new Error(`评审任务发送失败：${prompted.error.message}`);
-					saveReviewSession(repository, pullRequest, sessionId);
-					ctx.sessions.open(sessionId);
-					onStarted();
+					// rc.2 起 create 只登记会话、不保留 binding：必须显式 retain 后才能拿到 session，
+					// 否则 binding() 恒为 undefined（误报「新建评审对话未能在 Harness 中加载」）。
+					const reference = ctx.sessions.retain(sessionId, { source: "pr-assistant" });
+					try {
+						await reference.ready;
+						const session = reference.binding.session;
+						if (!session) throw new Error("新建评审对话未能在 Harness 中加载");
+						const renamed = await session.rename(`[PR #${pullRequest.number}] ${pullRequest.title}`);
+						if (!renamed.ok) throw new Error(`评审对话命名失败：${renamed.error.message}`);
+						const prompt = buildReviewPrompt(repository, pullRequest, detail);
+						const prompted = await session.prompt([{
+							type: "text",
+							text: prompt
+						}], "queue");
+						if (!prompted.ok) throw new Error(`评审任务发送失败：${prompted.error.message}`);
+						saveReviewSession(repository, pullRequest, sessionId);
+						// rc.2 起会话导航在 ctx.uiWorkspace.openSession，ctx.sessions 上不再有 open。
+						ctx.uiWorkspace.openSession(sessionId);
+						onStarted();
+					} finally {
+						reference.release();
+					}
 				} catch (reason) {
 					setError(reason instanceof Error ? reason.message : "AI 评审启动失败");
 				} finally {
@@ -807,22 +816,30 @@ window.__ModuleLoader__.load({
 						...selected
 					});
 					if (!selectedResult.ok) throw new Error(`模型选择失败：${selectedResult.error.message}`);
-					const session = ctx.sessions.binding(sessionId)?.session;
-					if (!session) throw new Error("新建冲突处理对话未能在 Harness 中加载");
-					const renamed = await session.rename(`[PR #${selection.pullRequest.number}] 处理合并冲突`);
-					if (!renamed.ok) throw new Error(`对话命名失败：${renamed.error.message}`);
-					const link = {
-						...preflight,
-						sessionId: String(sessionId)
-					};
-					const prompted = await session.prompt([{
-						type: "text",
-						text: buildConflictPrompt(selection.pullRequest, link)
-					}], "queue");
-					if (!prompted.ok) throw new Error(`冲突处理任务发送失败：${prompted.error.message}`);
-					saveConflictLink(selection.repository, selection.pullRequest, link);
-					setConflict(link);
-					ctx.sessions.open(sessionId);
+					// rc.2 起 create 只登记会话、不保留 binding：必须显式 retain 后才能拿到 session。
+					const reference = ctx.sessions.retain(sessionId, { source: "pr-assistant" });
+					try {
+						await reference.ready;
+						const session = reference.binding.session;
+						if (!session) throw new Error("新建冲突处理对话未能在 Harness 中加载");
+						const renamed = await session.rename(`[PR #${selection.pullRequest.number}] 处理合并冲突`);
+						if (!renamed.ok) throw new Error(`对话命名失败：${renamed.error.message}`);
+						const link = {
+							...preflight,
+							sessionId: String(sessionId)
+						};
+						const prompted = await session.prompt([{
+							type: "text",
+							text: buildConflictPrompt(selection.pullRequest, link)
+						}], "queue");
+						if (!prompted.ok) throw new Error(`冲突处理任务发送失败：${prompted.error.message}`);
+						saveConflictLink(selection.repository, selection.pullRequest, link);
+						setConflict(link);
+						// rc.2 起会话导航在 ctx.uiWorkspace.openSession，ctx.sessions 上不再有 open。
+						ctx.uiWorkspace.openSession(sessionId);
+					} finally {
+						reference.release();
+					}
 				} catch (reason) {
 					setConflictError(reason instanceof Error ? reason.message : "冲突处理启动失败");
 				} finally {
@@ -1037,7 +1054,7 @@ window.__ModuleLoader__.load({
 												children: [conflictSessionId ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 													type: "button",
 													onClick: () => {
-														ctx.sessions.open(conflictSessionId);
+														ctx.uiWorkspace.openSession(conflictSessionId);
 														close();
 													},
 													children: "打开处理会话 ↗"
@@ -1101,7 +1118,7 @@ window.__ModuleLoader__.load({
 													type: "button",
 													onClick: () => {
 														if (linkedSessionId) {
-															ctx.sessions.open(linkedSessionId);
+															ctx.uiWorkspace.openSession(linkedSessionId);
 															close();
 														}
 													},
@@ -1127,7 +1144,7 @@ window.__ModuleLoader__.load({
 												type: "button",
 												onClick: () => {
 													if (linkedSessionId) {
-														ctx.sessions.open(linkedSessionId);
+														ctx.uiWorkspace.openSession(linkedSessionId);
 														close();
 													}
 												},
@@ -1333,7 +1350,8 @@ window.__ModuleLoader__.load({
 			"sessions",
 			"workspaces",
 			"remote",
-			"remote.session"
+			"remote.session",
+		"uiWorkspace"
 		];
 		function apply(ctx) {
 			const close = () => ctx.layout.selectPanel(null);

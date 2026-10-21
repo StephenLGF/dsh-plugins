@@ -6,6 +6,13 @@ window.__ModuleLoader__.load({
 		Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
 		let react = require("react");
 		let _deepseek_ai_dsh_client_ui_primitives = require("@deepseek-ai/dsh-client-ui-primitives");
+		// 兼容旧版 shell：sized 图标名（*14/*16）在 0.2.0-rc.2 中不存在，回退到 Medium/Regular。
+		_deepseek_ai_dsh_client_ui_primitives = {
+			..._deepseek_ai_dsh_client_ui_primitives,
+			IconChevronDownOutline14: _deepseek_ai_dsh_client_ui_primitives.IconChevronDownOutline14 ?? _deepseek_ai_dsh_client_ui_primitives.IconChevronDownOutlineMedium ?? _deepseek_ai_dsh_client_ui_primitives.IconChevronDownOutlineRegular,
+			IconCloseOutline16: _deepseek_ai_dsh_client_ui_primitives.IconCloseOutline16 ?? _deepseek_ai_dsh_client_ui_primitives.IconCloseOutlineMedium ?? _deepseek_ai_dsh_client_ui_primitives.IconCloseOutlineRegular,
+			IconRefreshOutline16: _deepseek_ai_dsh_client_ui_primitives.IconRefreshOutline16 ?? _deepseek_ai_dsh_client_ui_primitives.IconRefreshOutlineMedium ?? _deepseek_ai_dsh_client_ui_primitives.IconRefreshOutlineRegular,
+		};
 		let react_jsx_runtime = require("react/jsx-runtime");
 		//#region ../../../../../../Users/gengfeng/deepseek-harness/packages/core/session/src/types.ts
 		/**
@@ -984,8 +991,11 @@ window.__ModuleLoader__.load({
 				setError(null);
 				try {
 					const createdSessionId = await ctx.sessions.create({ workspaceId: selectedWorkspace.workspaceId });
-					const session = ctx.sessions.binding(createdSessionId)?.session;
-					if (!session) throw new Error("新建对话未能在 Harness 中加载");
+					// rc.2：create 只登记会话，必须先 retain 才能拿到 binding，否则恒为 undefined。
+					const reference = ctx.sessions.retain(createdSessionId, { source: "tomato-board" });
+					await reference.ready;
+					const session = reference.binding.session;
+					if (!session) { reference.release(); throw new Error("新建对话未能在 Harness 中加载"); }
 					const title = `[${item.itemKey}] ${item.title}`;
 					const renamed = await session.rename(title);
 					if (!renamed.ok) throw new Error(`对话标题设置失败：${renamed.error.message}`);
@@ -1002,8 +1012,9 @@ window.__ModuleLoader__.load({
 					}], "queue");
 					if (!prompted.ok) throw new Error(`事项上下文写入失败：${prompted.error.message}`);
 					saveSessionLink(item.itemKey, createdSessionId);
-					ctx.sessions.open(createdSessionId);
+					ctx.uiWorkspace.openSession(createdSessionId);
 					closeWorkbench(ctx);
+					reference.release();
 				} catch (reason) {
 					setError(reason instanceof Error ? reason.message : "Harness 对话创建失败");
 				} finally {
@@ -1157,7 +1168,7 @@ window.__ModuleLoader__.load({
 				const associated = stored && hasConversation(stored) ? stored : discovered;
 				if (associated) {
 					saveSessionLink(item.itemKey, associated);
-					ctx.sessions.open(associated);
+					ctx.uiWorkspace.openSession(associated);
 					closeWorkbench(ctx);
 					return;
 				}
@@ -1851,7 +1862,8 @@ window.__ModuleLoader__.load({
 			"slots",
 			"layout",
 			"sessions",
-			"workspaces"
+			"workspaces",
+			"uiWorkspace"
 		];
 		function apply(ctx) {
 			ctx.slots.inject("main", () => ctx.slots.register({

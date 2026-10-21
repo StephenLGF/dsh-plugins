@@ -5,7 +5,9 @@ import { promisify } from 'node:util'
 import { randomUUID } from 'node:crypto'
 import type { Context } from '@deepseek-ai/cordis'
 
-const execFileAsync = promisify(execFile)
+// windowsHide：DSH 以无控制台方式运行时，spawn 控制台子进程会弹出终端窗口挡住界面，统一隐藏。
+const execFileAsync = (file: string, args: string[], options: object = {}) =>
+  promisify(execFile)(file, args, { windowsHide: true, ...options })
 const ROUTE = '/api/pr-assistant/repository'
 const DETAIL_ROUTE = '/api/pr-assistant/pull-request'
 const COMMIT_ROUTE = '/api/pr-assistant/commit'

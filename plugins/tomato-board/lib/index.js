@@ -2,7 +2,7 @@ import { execFile } from "node:child_process";
 import process from "node:process";
 import { promisify } from "node:util";
 //#region lib/types/index.js
-const execFileAsync = promisify(execFile);
+const execFileAsync = (file, args, options = {}) => promisify(execFile)(file, args, { windowsHide: true, ...options });
 const ROUTE = "/api/tomato-board/items";
 const OPEN_ROUTE = "/api/tomato-board/open";
 const TRANSITIONS_ROUTE = "/api/tomato-board/transitions";
@@ -207,7 +207,7 @@ async function loadItems(config, assignee) {
 			"--iql",
 			iql,
 			"--fields",
-			"priority,createdBy,assignee",
+			"key,name,status,itemType,workspace,priority,createdBy,assignee",
 			"--output",
 			"json"
 		], {
@@ -373,7 +373,7 @@ async function loadStoryItems(config, sprint, assignee) {
 			"--iql",
 			iql,
 			"--fields",
-			"StoryPoint,assignee,sprint",
+			"key,name,status,itemType,StoryPoint,assignee,sprint",
 			"--page",
 			String(page),
 			"--size",

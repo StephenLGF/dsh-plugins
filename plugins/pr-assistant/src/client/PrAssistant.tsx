@@ -9,6 +9,7 @@ import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
 import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
+import type {} from '@deepseek-ai/dsh-client-ui-workspace/client'
 import css from './pr-assistant.module.css'
 
 interface PullRequest {
@@ -540,16 +541,25 @@ function AiReviewDialog({
         ...(selected.reasoningEffort ? { reasoningEffort: selected.reasoningEffort } : {}),
       })
       if (!selectedResult.ok) throw new Error(`模型选择失败：${selectedResult.error.message}`)
-      const session = ctx.sessions.binding(sessionId)?.session
-      if (!session) throw new Error('新建评审对话未能在 Harness 中加载')
-      const renamed = await session.rename(`[PR #${pullRequest.number}] ${pullRequest.title}`)
-      if (!renamed.ok) throw new Error(`评审对话命名失败：${renamed.error.message}`)
-      const prompt = buildReviewPrompt(repository, pullRequest, detail)
-      const prompted = await session.prompt([{ type: 'text', text: prompt }], 'queue')
-      if (!prompted.ok) throw new Error(`评审任务发送失败：${prompted.error.message}`)
-      saveReviewSession(repository, pullRequest, sessionId)
-      ctx.sessions.open(sessionId)
-      onStarted()
+      // rc.2 起 create 只登记会话、不保留 binding：必须显式 retain 后才能拿到 session，
+      // 否则 binding() 恒为 undefined（误报「新建评审对话未能在 Harness 中加载」）。
+      const reference = ctx.sessions.retain(sessionId, { source: 'pr-assistant' as never })
+      try {
+        await reference.ready
+        const session = reference.binding.session
+        if (!session) throw new Error('新建评审对话未能在 Harness 中加载')
+        const renamed = await session.rename(`[PR #${pullRequest.number}] ${pullRequest.title}`)
+        if (!renamed.ok) throw new Error(`评审对话命名失败：${renamed.error.message}`)
+        const prompt = buildReviewPrompt(repository, pullRequest, detail)
+        const prompted = await session.prompt([{ type: 'text', text: prompt }], 'queue')
+        if (!prompted.ok) throw new Error(`评审任务发送失败：${prompted.error.message}`)
+        saveReviewSession(repository, pullRequest, sessionId)
+        // rc.2 起会话导航在 ctx.uiWorkspace.openSession，ctx.sessions 上不再有 open。
+        ctx.uiWorkspace.openSession(sessionId)
+        onStarted()
+      } finally {
+        reference.release()
+      }
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'AI 评审启动失败')
     } finally {
@@ -754,16 +764,24 @@ function PrAssistantPanel({ ctx, close }: { ctx: Context; close: () => void }) {
       const selected = catalog.value.default
       const selectedResult = await ctx.remote.session.selectModel({ sessionId, ...selected })
       if (!selectedResult.ok) throw new Error(`模型选择失败：${selectedResult.error.message}`)
-      const session = ctx.sessions.binding(sessionId)?.session
-      if (!session) throw new Error('新建冲突处理对话未能在 Harness 中加载')
-      const renamed = await session.rename(`[PR #${selection.pullRequest.number}] 处理合并冲突`)
-      if (!renamed.ok) throw new Error(`对话命名失败：${renamed.error.message}`)
-      const link: ConflictLink = { ...preflight, sessionId: String(sessionId) }
-      const prompted = await session.prompt([{ type: 'text', text: buildConflictPrompt(selection.pullRequest, link) }], 'queue')
-      if (!prompted.ok) throw new Error(`冲突处理任务发送失败：${prompted.error.message}`)
-      saveConflictLink(selection.repository, selection.pullRequest, link)
-      setConflict(link)
-      ctx.sessions.open(sessionId)
+      // rc.2 起 create 只登记会话、不保留 binding：必须显式 retain 后才能拿到 session。
+      const reference = ctx.sessions.retain(sessionId, { source: 'pr-assistant' as never })
+      try {
+        await reference.ready
+        const session = reference.binding.session
+        if (!session) throw new Error('新建冲突处理对话未能在 Harness 中加载')
+        const renamed = await session.rename(`[PR #${selection.pullRequest.number}] 处理合并冲突`)
+        if (!renamed.ok) throw new Error(`对话命名失败：${renamed.error.message}`)
+        const link: ConflictLink = { ...preflight, sessionId: String(sessionId) }
+        const prompted = await session.prompt([{ type: 'text', text: buildConflictPrompt(selection.pullRequest, link) }], 'queue')
+        if (!prompted.ok) throw new Error(`冲突处理任务发送失败：${prompted.error.message}`)
+        saveConflictLink(selection.repository, selection.pullRequest, link)
+        setConflict(link)
+        // rc.2 起会话导航在 ctx.uiWorkspace.openSession，ctx.sessions 上不再有 open。
+        ctx.uiWorkspace.openSession(sessionId)
+      } finally {
+        reference.release()
+      }
     } catch (reason) {
       setConflictError(reason instanceof Error ? reason.message : '冲突处理启动失败')
     } finally {
@@ -863,7 +881,7 @@ function PrAssistantPanel({ ctx, close }: { ctx: Context; close: () => void }) {
                   <header>
                     <div><span className={css.eyebrow}>CONFLICT RESOLUTION</span><h3>冲突处理</h3></div>
                     <div className={css.conflictResultActions}>
-                      {conflictSessionId ? <button type="button" onClick={() => { ctx.sessions.open(conflictSessionId); close() }}>打开处理会话 ↗</button> : null}
+                      {conflictSessionId ? <button type="button" onClick={() => { ctx.uiWorkspace.openSession(conflictSessionId); close() }}>打开处理会话 ↗</button> : null}
                       {conflictStatus?.pushReady && !pushed ? <button className={css.pushButton} type="button" disabled={conflictBusy} onClick={() => void pushConflictResolution()}>{conflictBusy ? '推送中…' : `Push 到 ${conflictStatus.sourceBranch}`}</button> : null}
                     </div>
                   </header>
@@ -888,7 +906,7 @@ function PrAssistantPanel({ ctx, close }: { ctx: Context; close: () => void }) {
                     <div><span className={css.eyebrow}>AI REVIEW</span><h3>AI 分析结果</h3></div>
                     <div className={css.reviewResultActions}>
                       <button type="button" disabled={commentBusy} onClick={() => void publishReviewToPr()}>{commentBusy ? '发布中…' : '评论到 PR'}</button>
-                      <button type="button" onClick={() => { if (linkedSessionId) { ctx.sessions.open(linkedSessionId); close() } }}>打开评审对话 ↗</button>
+                      <button type="button" onClick={() => { if (linkedSessionId) { ctx.uiWorkspace.openSession(linkedSessionId); close() } }}>打开评审对话 ↗</button>
                     </div>
                   </header>
                   {commentStatus ? <div className={commentStatus === '已成功评论到 PR。' ? css.commentSuccess : css.reviewError} role="status">{commentStatus}</div> : null}
@@ -898,7 +916,7 @@ function PrAssistantPanel({ ctx, close }: { ctx: Context; close: () => void }) {
                 <section className={css.reviewPending}>
                   <span className={css.eyebrow}>AI REVIEW</span>
                   <strong>AI 分析正在处理中</strong>
-                  <button type="button" onClick={() => { if (linkedSessionId) { ctx.sessions.open(linkedSessionId); close() } }}>查看评审对话</button>
+                  <button type="button" onClick={() => { if (linkedSessionId) { ctx.uiWorkspace.openSession(linkedSessionId); close() } }}>查看评审对话</button>
                 </section>
               ) : null}
               <section className={css.files}>
@@ -1006,7 +1024,7 @@ function PrAssistantPanel({ ctx, close }: { ctx: Context; close: () => void }) {
   )
 }
 
-export const inject = ['slots', 'layout', 'sessions', 'workspaces', 'remote', 'remote.session']
+export const inject = ['slots', 'layout', 'sessions', 'workspaces', 'remote', 'remote.session', 'uiWorkspace']
 
 export function apply(ctx: Context): void {
   const close = () => ctx.layout.selectPanel(null)
