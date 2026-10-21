@@ -1,9 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Dispatch, ReactNode, SetStateAction } from 'react'
-import { Button, IconRefreshOutline16 } from '@deepseek-ai/dsh-client-ui-primitives'
+import { Button } from '@deepseek-ai/dsh-client-ui-primitives'
+import * as uiPrimitives from '@deepseek-ai/dsh-client-ui-primitives'
 import css from './story-points.module.css'
 import { Tag } from './Tag'
 import type { TomatoItem } from './TomatoBoard'
+import type { ComponentType } from 'react'
+
+// 兼容不同 shell 版本的图标命名：新版导出 sized 名（*16），0.2.0-rc.2 及更早版本只有 Medium/Regular。
+const IconRefreshOutline16 = (() => {
+  const exports = uiPrimitives as unknown as Record<string, ComponentType<{ className?: string }>>
+  return exports.IconRefreshOutline16 ?? exports.IconRefreshOutlineMedium ?? exports.IconRefreshOutlineRegular
+})()
 
 type User = { username: string; name: string }
 type Sprint = { sprintId: string; name: string; workspaceKey: string; status: string; startDate?: string }

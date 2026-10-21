@@ -7,10 +7,23 @@ import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
 import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
+import type {} from '@deepseek-ai/dsh-client-ui-workspace/client'
 import {
-  Button, IconChevronDownOutline14, IconCloseOutline16, IconRefreshOutline16, Menu, Modal, Toast,
+  Button, Menu, Modal, Toast,
 } from '@deepseek-ai/dsh-client-ui-primitives'
+import * as uiPrimitives from '@deepseek-ai/dsh-client-ui-primitives'
 import type { MenuEntry } from '@deepseek-ai/dsh-client-ui-primitives'
+import type { ComponentType } from 'react'
+
+// 兼容不同 shell 版本的图标命名：新版导出 sized 名（*14/*16），0.2.0-rc.2 及更早版本只有 Medium/Regular。
+const pickIcon = (...names: string[]): ComponentType<{ className?: string }> => (
+  names
+    .map(name => (uiPrimitives as unknown as Record<string, ComponentType<{ className?: string }>>)[name])
+    .find(Boolean)!
+)
+const IconChevronDownOutline14 = pickIcon('IconChevronDownOutline14', 'IconChevronDownOutlineMedium', 'IconChevronDownOutlineRegular')
+const IconCloseOutline16 = pickIcon('IconCloseOutline16', 'IconCloseOutlineMedium', 'IconCloseOutlineRegular')
+const IconRefreshOutline16 = pickIcon('IconRefreshOutline16', 'IconRefreshOutlineMedium', 'IconRefreshOutlineRegular')
 import type { PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import { SessionId } from '@deepseek-ai/dsh-session/types'
 import css from './tomato-board.module.css'
@@ -233,23 +246,32 @@ function CreateConversationDialog({ ctx, item }: { ctx: Context; item: TomatoIte
     setError(null)
     try {
       const createdSessionId = await ctx.sessions.create({ workspaceId: selectedWorkspace.workspaceId })
-      const session = ctx.sessions.binding(createdSessionId)?.session
-      if (!session) throw new Error('新建对话未能在 Harness 中加载')
-      const title = `[${item.itemKey}] ${item.title}`
-      const renamed = await session.rename(title)
-      if (!renamed.ok) throw new Error(`对话标题设置失败：${renamed.error.message}`)
-      const prompt = [
-        `请处理番茄事项 ${item.itemKey}。`,
-        `标题：${item.title}`,
-        `类型：${item.itemType || '未设置'}`,
-        `状态：${item.status || '未设置'}`,
-        `优先级：${item.priority || '未设置'}`,
-      ].join('\n')
-      const prompted = await session.prompt([{ type: 'text', text: prompt }], 'queue')
-      if (!prompted.ok) throw new Error(`事项上下文写入失败：${prompted.error.message}`)
-      saveSessionLink(item.itemKey, createdSessionId)
-      ctx.sessions.open(createdSessionId)
-      closeWorkbench(ctx)
+      // rc.2 起 create 只登记会话、不保留 binding：必须显式 retain 后才能拿到 session，
+      // 否则 binding() 恒为 undefined（误报「新建对话未能在 Harness 中加载」）。
+      const reference = ctx.sessions.retain(createdSessionId, { source: 'tomato-board' as never })
+      try {
+        await reference.ready
+        const session = reference.binding.session
+        if (!session) throw new Error('新建对话未能在 Harness 中加载')
+        const title = `[${item.itemKey}] ${item.title}`
+        const renamed = await session.rename(title)
+        if (!renamed.ok) throw new Error(`对话标题设置失败：${renamed.error.message}`)
+        const prompt = [
+          `请处理番茄事项 ${item.itemKey}。`,
+          `标题：${item.title}`,
+          `类型：${item.itemType || '未设置'}`,
+          `状态：${item.status || '未设置'}`,
+          `优先级：${item.priority || '未设置'}`,
+        ].join('\n')
+        const prompted = await session.prompt([{ type: 'text', text: prompt }], 'queue')
+        if (!prompted.ok) throw new Error(`事项上下文写入失败：${prompted.error.message}`)
+        saveSessionLink(item.itemKey, createdSessionId)
+        // rc.2 起会话导航在 ctx.uiWorkspace.openSession，ctx.sessions 上不再有 open。
+        ctx.uiWorkspace.openSession(createdSessionId)
+        closeWorkbench(ctx)
+      } finally {
+        reference.release()
+      }
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Harness 对话创建失败')
     } finally {
@@ -408,7 +430,7 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
     const associated = stored && hasConversation(stored) ? stored : discovered
     if (associated) {
       saveSessionLink(item.itemKey, associated)
-      ctx.sessions.open(associated)
+      ctx.uiWorkspace.openSession(associated)
       closeWorkbench(ctx)
       return
     }
@@ -1010,7 +1032,7 @@ function TomatoConversationShortcut({ ctx, sessionId, useSessions }: PropsRuntim
   )
 }
 
-export const inject = ['slots', 'layout', 'sessions', 'workspaces']
+export const inject = ['slots', 'layout', 'sessions', 'workspaces', 'uiWorkspace']
 
 export function apply(ctx: Context): void {
   ctx.slots.inject('main', () => ctx.slots.register(

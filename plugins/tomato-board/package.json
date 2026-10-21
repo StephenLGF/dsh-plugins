@@ -1,6 +1,6 @@
 {
   "name": "@stephen1620/dsh-tomato-board",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Gitee Team/Tomato workboard and native conversation launcher for DeepSeek Harness",
   "license": "MIT",
   "repository": {
@@ -54,7 +54,8 @@
         "@deepseek-ai/dsh-client-ui-layout",
         "@deepseek-ai/dsh-client-ui-conversation",
         "@deepseek-ai/dsh-client-ui-renderer",
-        "@deepseek-ai/dsh-client-ui-sidebar"
+        "@deepseek-ai/dsh-client-ui-sidebar",
+        "@deepseek-ai/dsh-client-ui-workspace"
       ],
       "platform": "web"
     }
