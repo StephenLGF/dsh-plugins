@@ -1,6 +1,8 @@
 import { execFile } from 'node:child_process'
 import process from 'node:process'
 import { promisify } from 'node:util'
+import { resolveCliExecutable } from './cli-path.ts'
+import { registerWorktime } from './worktime.ts'
 import type { Context } from '@deepseek-ai/cordis'
 
 const execFileAsync = promisify(execFile)
@@ -49,6 +51,7 @@ interface Config {
   maxItems?: number
   excludedStatuses?: string[]
   priorityNames?: Record<string, string>
+  worktimeDataFile?: string
 }
 
 let itemsCache: { key: string; expiresAt: number; value: unknown } | null = null
@@ -120,6 +123,7 @@ function normalizeItem(raw: unknown, priorityNames = DEFAULT_PRIORITY_NAMES) {
     workspaceKey,
     workspaceName,
     creator: firstText(item.creator ?? item.createdBy ?? nested['创建人'] ?? nested.createdBy),
+    createdAt: firstText(item.createdAt ?? nested.createdAt ?? nested['创建时间']),
     assignees: textList(item.assignees ?? item.assignee ?? nested.assignees ?? nested.assignee ?? nested['负责人']),
     priority: (() => {
       const priority = firstText(item.priority ?? nested.priority ?? nested['优先级'])
@@ -157,7 +161,7 @@ function tomatoItemUrl(config: Config, itemKey: string): string {
 
 function cliSettings(config: Config) {
   return {
-    executable: config.executable || process.env.TOMATO_CLI_EXECUTABLE || 'gitee',
+    executable: resolveCliExecutable(config.executable || process.env.TOMATO_CLI_EXECUTABLE || 'gitee'),
     profile: config.profile || process.env.TOMATO_PROFILE || 'osc',
   }
 }
@@ -233,7 +237,7 @@ async function loadItems(config: Config, assignee: string) {
       '--page', String(page),
       '--size', '50',
       '--iql', iql,
-      '--fields', 'key,name,status,itemType,workspace,priority,createdBy,assignee',
+      '--fields', 'key,name,status,itemType,workspace,priority,createdBy,assignee,createdAt',
       '--output', 'json',
     ], {
       timeout: 120_000,
@@ -396,6 +400,11 @@ export const inject = ['webServer']
 
 export function apply(ctx: Context, config: Config = {}): void {
   const webServer = ctx.get('webServer') as unknown as WebServer
+  registerWorktime(ctx, {
+    server: webServer, run: args => runJson(config, args), crossSite: isCrossSite,
+    scope: JSON.stringify([config.profile || process.env.TOMATO_PROFILE || 'osc', config.tomatoOrigin ?? 'https://osc.gitee.work', config.tomatoTenant ?? 'xly-poc']),
+    ...(config.worktimeDataFile ? { dataFile: config.worktimeDataFile } : {}), invalidate: () => { itemsCache = null },
+  })
   ctx.effect(() => webServer.register({
     kind: 'exact', path: '/api/tomato-board/sprints',
     async handler(request, response) {

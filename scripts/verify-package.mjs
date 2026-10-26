@@ -13,8 +13,19 @@ for (const file of required) {
   if (!info?.isFile() || info.size === 0) throw new Error(`${manifest.name}: missing or empty ${file}`)
 }
 
-const source = await readFile(resolve(packageRoot, `src/client/${manifest.name.includes('tomato-board') ? 'TomatoBoard' : 'PrAssistant'}.tsx`), 'utf8')
+const clientSource = manifest.dshPlugins?.clientSource ?? `src/client/${manifest.name.includes('tomato-board') ? 'TomatoBoard' : 'PrAssistant'}.tsx`
+const source = await readFile(resolve(packageRoot, clientSource), 'utf8')
 const sourceMap = JSON.parse(await readFile(resolve(packageRoot, 'lib/client.js.map'), 'utf8'))
 if (!Array.isArray(sourceMap.sourcesContent) || !sourceMap.sourcesContent.includes(source)) {
-  throw new Error(`${manifest.name}: lib/client.js.map does not match the current client source; rebuild in deepseek-harness first`)
+  throw new Error(`${manifest.name}: lib/client.js.map does not match the current client source; rebuild the package first`)
+}
+
+// Check every bundled source, including nested editors and the worktime model.
+for (const [index, name] of sourceMap.sources.entries()) {
+  const match = name.match(/(?:^|\/)src\/(.+)$/u)
+  if (!match) continue
+  const path = resolve(packageRoot, 'src', match[1])
+  if (await readFile(path, 'utf8') !== sourceMap.sourcesContent[index]) {
+    throw new Error(`${manifest.name}: stale bundled source ${match[1]}; rebuild the package`)
+  }
 }

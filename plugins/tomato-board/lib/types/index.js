@@ -88,6 +88,7 @@ function normalizeItem(raw, priorityNames = DEFAULT_PRIORITY_NAMES) {
         workspaceKey,
         workspaceName,
         creator: firstText(item.creator ?? item.createdBy ?? nested['创建人'] ?? nested.createdBy),
+        createdAt: firstText(item.createdAt ?? nested.createdAt ?? nested['创建时间']),
         assignees: textList(item.assignees ?? item.assignee ?? nested.assignees ?? nested.assignee ?? nested['负责人']),
         priority: (() => {
             const priority = firstText(item.priority ?? nested.priority ?? nested['优先级']);
@@ -193,7 +194,7 @@ async function loadItems(config, assignee) {
             '--page', String(page),
             '--size', '50',
             '--iql', iql,
-            '--fields', 'priority,createdBy,assignee',
+            '--fields', 'key,name,status,itemType,workspace,priority,createdBy,assignee,createdAt',
             '--output', 'json',
         ], {
             timeout: 120_000,
@@ -306,7 +307,7 @@ async function loadStoryItems(config, sprint, assignee) {
     const items = new Map();
     const limit = Math.max(1, Math.min(config.maxItems ?? 5000, 20_000));
     for (let page = 1;; page += 1) {
-        const payload = await runJson(config, ['team', 'item', 'search', '--iql', iql, '--fields', 'StoryPoint,assignee,sprint', '--page', String(page), '--size', '50']);
+        const payload = await runJson(config, ['team', 'item', 'search', '--iql', iql, '--fields', 'key,name,status,itemType,StoryPoint,assignee,sprint', '--page', String(page), '--size', '50']);
         const values = unwrapItems(payload);
         for (const raw of values) {
             const item = normalizeItem(raw);

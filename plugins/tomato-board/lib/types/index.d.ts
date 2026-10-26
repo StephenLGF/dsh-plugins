@@ -9,6 +9,7 @@ interface Config {
     maxItems?: number;
     excludedStatuses?: string[];
     priorityNames?: Record<string, string>;
+    worktimeDataFile?: string;
 }
 export declare const name = "tomato-board";
 export declare const inject: string[];

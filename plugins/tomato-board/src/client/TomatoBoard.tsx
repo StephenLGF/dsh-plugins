@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
 import type { Context } from '@deepseek-ai/cordis'
 import type {} from '@deepseek-ai/dsh-api-session-controller/client'
 import type { WorkspaceView } from '@deepseek-ai/dsh-api-workspace-controller/client'
@@ -12,9 +12,12 @@ import {
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { MenuEntry } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
-import { SessionId } from '@deepseek-ai/dsh-session/types'
+import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import css from './tomato-board.module.css'
 import { StoryPoints } from './StoryPoints'
+import { Worktime } from './Worktime.tsx'
+import { AssigneePicker } from './AssigneePicker.tsx'
+import { worktimeText } from './worktime-locale.ts'
 import { Tag } from './Tag'
 
 export interface TomatoItem {
@@ -26,6 +29,7 @@ export interface TomatoItem {
   workspaceKey: string
   workspaceName: string
   creator: string
+  createdAt: string
   assignees: string[]
   priority: string
   tomatoUrl: string
@@ -89,6 +93,7 @@ const TOMATO_STATUS_ORDER = [
   '已取消', '延期解决', '测试完成', '待开发', '不修复', '已挂起',
 ]
 const TOMATO_FILTER_BLACKLIST_KEY = 'taskboard.tomatoFilterBlacklist.v1'
+const TOMATO_SEARCH_KEY = 'taskboard.tomatoSearch.v1'
 const TOMATO_SESSION_LINKS_KEY = 'taskboard.tomatoSessionLinks.v1'
 const TOMATO_MUTED_ITEMS_KEY = 'taskboard.tomatoMutedItems.v1'
 const TOMATO_LANE_ORDER_KEY = 'taskboard.tomatoLaneOrder.v1'
@@ -141,7 +146,7 @@ function readSessionLinks(): Record<string, string> {
 
 function linkedSessionId(itemKey: string): SessionId | '' {
   const value = readSessionLinks()[itemKey]
-  return typeof value === 'string' && value ? SessionId(value) : ''
+  return typeof value === 'string' && value ? value as SessionId : ''
 }
 
 function saveSessionLink(itemKey: string, sessionId: SessionId) {
@@ -169,6 +174,23 @@ function readMutedItems(): Set<string> {
     return new Set(Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [])
   } catch {
     return new Set()
+  }
+}
+
+function readSearch(): string {
+  try {
+    return window.localStorage.getItem(TOMATO_SEARCH_KEY) ?? ''
+  } catch {
+    return ''
+  }
+}
+
+function saveSearch(value: string) {
+  try {
+    if (value) window.localStorage.setItem(TOMATO_SEARCH_KEY, value)
+    else window.localStorage.removeItem(TOMATO_SEARCH_KEY)
+  } catch {
+    // localStorage may be unavailable in restricted browser contexts; the in-memory search still works.
   }
 }
 
@@ -313,9 +335,9 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
   const board = useSyncExternalStore(subscribe, snapshot, snapshot)
   const workbenchRef = useRef<HTMLElement>(null)
   const filterMenuRef = useRef<HTMLDetailsElement>(null)
-  const [page, setPage] = useState<'board' | 'points'>('board')
+  const [page, setPage] = useState<'board' | 'points' | 'worktime'>('board')
   const [storyToolbar, setStoryToolbar] = useState<React.ReactNode>(null)
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = useState(readSearch)
   const [blacklist, setBlacklist] = useState(readFilterBlacklist)
   const [mutedItems, setMutedItems] = useState(readMutedItems)
   const [selectedAssignee, setSelectedAssignee] = useState('currentUser()')
@@ -506,11 +528,11 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
               <input
                 type="search"
                 value={search}
-                onChange={event => setSearch(event.target.value)}
+                onChange={event => { const value = event.target.value; setSearch(value); saveSearch(value) }}
                 placeholder="搜索标题或 tag…"
                 aria-label="搜索标题或 tag"
               />
-              {search && <button type="button" aria-label="清空搜索词" onClick={() => setSearch('')}>×</button>}
+              {search && <button type="button" aria-label="清空搜索词" onClick={() => { setSearch(''); saveSearch('') }}>×</button>}
             </label>
             <details ref={filterMenuRef} className={css.filterMenu}>
               <summary aria-label="空间、负责人、类型和状态筛选" title="空间、负责人、类型和状态筛选">
@@ -548,10 +570,11 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
         </div>
         <nav className={css.pageTabs} aria-label="番茄工作台页面">
           <button type="button" aria-current={page === 'board' ? 'page' : undefined} onClick={() => setPage('board')}>事项看板</button>
+          <button type="button" aria-current={page === 'worktime' ? 'page' : undefined} onClick={() => setPage('worktime')}>{worktimeText.title}</button>
           <button type="button" aria-current={page === 'points' ? 'page' : undefined} onClick={() => setPage('points')}>迭代投入</button>
         </nav>
       </header>
-      {page === 'points' ? <StoryPoints toolbarTarget={setStoryToolbar} onOpenItem={openItem} /> : <>
+      {page === 'worktime' ? <Worktime key={selectedAssignee} assignee={selectedAssignee} users={filterDirectory.users} onAssigneeChange={value => { setSelectedAssignee(value); void refresh(value) }} onRefresh={() => { void refresh(selectedAssignee) }} /> : page === 'points' ? <StoryPoints toolbarTarget={setStoryToolbar} onOpenItem={openItem} /> : <>
       {board.successMessage && <Toast
         text={board.successMessage}
         anchor={workbenchRef.current}
@@ -562,7 +585,10 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
       {board.truncated && <p className={css.notice} role="status">事项数量已达配置上限，当前仅展示前 {board.items.length} 条。</p>}
       <div className={css.board}>
         {statuses.map(status => {
-          const items = filteredItems.filter(item => item.status === status)
+          const items = filteredItems
+            .filter(item => item.status === status)
+            // 泳道内卡片按创建时间从新到旧（新创建的排最上面）
+            .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
           return (
             <section
               ref={element => { if (element) laneElements.current.set(status, element); else laneElements.current.delete(status) }}
@@ -785,55 +811,6 @@ function WorkspaceFilterRow({ options, hidden, onToggle, onSetAll }: {
             </button>
           }
         />
-      </div>
-    </div>
-  )
-}
-
-function AssigneePicker({ users, value, onChange }: {
-  users: FilterDirectory['users']
-  value: string
-  onChange: (value: string) => void
-}) {
-  const rootRef = useRef<HTMLDivElement>(null)
-  const [open, setOpen] = useState(false)
-  const [query, setQuery] = useState('')
-  const options = useMemo(() => [{ username: 'currentUser()', name: '我负责的' }, ...users.filter(user => user.username !== 'currentUser()')], [users])
-  const selected = options.find(option => option.username === value) ?? options[0]
-  const needle = query.trim().toLowerCase()
-  const filtered = needle
-    ? options.filter(option => `${option.name} ${option.username}`.toLowerCase().includes(needle))
-    : options
-
-  useEffect(() => {
-    if (!open) return
-    const close = (event: PointerEvent) => {
-      if (event.target instanceof Node && !rootRef.current?.contains(event.target)) setOpen(false)
-    }
-    document.addEventListener('pointerdown', close, true)
-    return () => document.removeEventListener('pointerdown', close, true)
-  }, [open])
-
-  return (
-    <div className={css.assigneeFilter}>
-      <span>负责人</span>
-      <div ref={rootRef} className={css.assigneePicker}>
-        <Button variant="outline" size="sm" className={css.assigneeTrigger} aria-haspopup="listbox" aria-expanded={open} onClick={() => { setOpen(current => !current); setQuery('') }}>
-          <span>{selected?.name ?? value}</span><IconChevronDownOutline14 />
-        </Button>
-        {open ? (
-          <div className={css.assigneeDropdown}>
-            <input autoFocus type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="搜索昵称或用户名…" aria-label="搜索负责人" />
-            <div role="listbox" aria-label="负责人">
-              {filtered.map(option => (
-                <button key={option.username} type="button" role="option" aria-selected={option.username === value} onClick={() => { onChange(option.username); setOpen(false); setQuery('') }}>
-                  <strong>{option.name}</strong>{option.name !== option.username && option.username !== 'currentUser()' ? <small>{option.username}</small> : null}
-                </button>
-              ))}
-              {filtered.length === 0 ? <p>没有匹配的负责人</p> : null}
-            </div>
-          </div>
-        ) : null}
       </div>
     </div>
   )

@@ -8,6 +8,7 @@ export interface TomatoItem {
     workspaceKey: string;
     workspaceName: string;
     creator: string;
+    createdAt: string;
     assignees: string[];
     priority: string;
     tomatoUrl: string;

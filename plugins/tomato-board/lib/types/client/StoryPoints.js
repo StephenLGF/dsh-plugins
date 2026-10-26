@@ -50,7 +50,6 @@ export function StoryPoints({ toolbarTarget, onOpenItem }) {
     const [owner, setOwner] = useState(() => savedValue(OWNER_KEY, 'currentUser()'));
     const [teams, setTeams] = useState(readTeams);
     const [openTeamId, setOpenTeamId] = useState(() => readTeams()[0]?.id ?? '');
-    const [loadedTeams, setLoadedTeams] = useState(() => { const first = readTeams()[0]?.id; return new Set(first ? [first] : []); });
     const [teamDraft, setTeamDraft] = useState('');
     const [teamEditor, setTeamEditor] = useState(null);
     const [addingTeamId, setAddingTeamId] = useState('');
@@ -87,12 +86,20 @@ export function StoryPoints({ toolbarTarget, onOpenItem }) {
     catch { } }, [owner]);
     const openTeam = teams.find(team => team.id === openTeamId);
     const openMembers = openTeam?.members ?? [];
-    const ownersKey = JSON.stringify([...new Set([owner, ...(loadedTeams.has(openTeamId) ? openMembers : [])])].sort());
+    const ownersKey = JSON.stringify([...new Set([owner, ...openMembers])].sort());
+    const resultScope = useRef('');
     useEffect(() => {
-        if (!sprint)
+        if (directoryLoading || !sprint)
             return;
+        const scope = JSON.stringify([sprint, version]);
+        const sameScope = resultScope.current === scope;
+        if (!sameScope) {
+            resultScope.current = scope;
+            setResults({});
+            setErrors({});
+        }
         const controller = new AbortController();
-        const owners = JSON.parse(ownersKey).filter(username => !results[username] && !errors[username]);
+        const owners = JSON.parse(ownersKey).filter(username => !sameScope || (!results[username] && !errors[username]));
         const worker = async () => { while (owners.length && !controller.signal.aborted) {
             const username = owners.shift();
             try {
@@ -107,7 +114,7 @@ export function StoryPoints({ toolbarTarget, onOpenItem }) {
         } };
         void Promise.all([worker(), worker(), worker()]);
         return () => controller.abort();
-    }, [sprint, ownersKey, version]);
+    }, [directoryLoading, sprint, ownersKey, version]);
     const personal = results[owner];
     const items = useMemo(() => [...(personal?.items ?? [])].sort((a, b) => (b.storyPoints ?? -1) - (a.storyPoints ?? -1) || a.itemKey.localeCompare(b.itemKey)), [personal]);
     const sum = total(items);
@@ -115,7 +122,7 @@ export function StoryPoints({ toolbarTarget, onOpenItem }) {
     let offset = 0;
     const gradient = slices.map((item, index) => { const start = offset; offset += item.storyPoints / sum * 100; return `${colors[index % colors.length]} ${start}% ${offset}%`; }).join(', ');
     const userName = (username) => username === 'currentUser()' ? '我' : users.find(user => user.username === username)?.name ?? username;
-    const toggleTeam = (id) => { setOpenTeamId(current => current === id ? '' : id); setLoadedTeams(current => new Set(current).add(id)); setAddingTeamId(''); setTeamEditor(null); };
+    const toggleTeam = (id) => { setOpenTeamId(current => current === id ? '' : id); setAddingTeamId(''); setTeamEditor(null); };
     const ranking = openMembers.map(username => ({ username, result: results[username], points: total(results[username]?.items ?? []) })).sort((a, b) => Number(Boolean(b.result)) - Number(Boolean(a.result)) || b.points - a.points || a.username.localeCompare(b.username));
     const max = Math.max(1, ...ranking.map(row => row.points));
     const available = users.filter(user => !openMembers.includes(user.username) && `${user.name} ${user.username}`.toLowerCase().includes(search.toLowerCase()));
@@ -124,19 +131,18 @@ export function StoryPoints({ toolbarTarget, onOpenItem }) {
         const team = { id: teamId(), name, members: [] };
         setTeams(current => [...current, team]);
         setOpenTeamId(team.id);
-        setLoadedTeams(current => new Set(current).add(team.id));
     }
     else
         setTeams(current => current.map(team => team.id === teamEditor.id ? { ...team, name } : team)); setTeamDraft(''); setTeamEditor(null); };
     const deleteTeam = (id) => { setTeams(current => current.filter(team => team.id !== id)); if (openTeamId === id)
-        setOpenTeamId(''); setLoadedTeams(current => { const next = new Set(current); next.delete(id); return next; }); };
+        setOpenTeamId(''); };
     const updateMembers = (id, updater) => setTeams(current => current.map(team => team.id === id ? { ...team, members: updater(team.members) } : team));
     useEffect(() => { if (!addingTeamId)
         return; const close = (event) => { if (event.target instanceof Node && !addPeopleRef.current?.contains(event.target)) {
         setAddingTeamId('');
         setSearch('');
     } }; document.addEventListener('pointerdown', close, true); requestAnimationFrame(() => addPeopleInputRef.current?.focus()); return () => document.removeEventListener('pointerdown', close, true); }, [addingTeamId]);
-    useEffect(() => { toolbarTarget(_jsxs("div", { className: css.headerControls, children: [_jsxs("label", { children: [_jsx("span", { children: "\u8FED\u4EE3" }), _jsxs("select", { "aria-label": "\u9009\u62E9\u8FED\u4EE3", value: sprint, disabled: directoryLoading, onChange: event => { setSprint(event.target.value); setResults({}); setErrors({}); setLoadedTeams(new Set()); }, children: [!sprints.length && _jsx("option", { value: "", children: directoryLoading ? '正在读取迭代…' : '暂无迭代' }), sprints.map(value => _jsxs("option", { value: value.sprintId, children: [value.name, " \u00B7 ", value.workspaceKey, value.status === 'completed' ? '（已结束）' : ''] }, value.sprintId))] })] }), _jsx(Button, { variant: "toolbar", size: "sm", className: css.headerIconButton, icon: _jsx(IconRefreshOutline16, {}), title: "\u5237\u65B0", "aria-label": "\u5237\u65B0\u8FED\u4EE3\u6545\u4E8B\u70B9", onClick: () => { setResults({}); setErrors({}); setVersion(value => value + 1); if (directoryError || !sprints.length)
+    useEffect(() => { toolbarTarget(_jsxs("div", { className: css.headerControls, children: [_jsxs("label", { children: [_jsx("span", { children: "\u8FED\u4EE3" }), _jsxs("select", { "aria-label": "\u9009\u62E9\u8FED\u4EE3", value: sprint, disabled: directoryLoading, onChange: event => { setSprint(event.target.value); setResults({}); setErrors({}); }, children: [!sprints.length && _jsx("option", { value: "", children: directoryLoading ? '正在读取迭代…' : '暂无迭代' }), sprints.map(value => _jsxs("option", { value: value.sprintId, children: [value.name, " \u00B7 ", value.workspaceKey, value.status === 'completed' ? '（已结束）' : ''] }, value.sprintId))] })] }), _jsx(Button, { variant: "toolbar", size: "sm", className: css.headerIconButton, icon: _jsx(IconRefreshOutline16, {}), title: "\u5237\u65B0", "aria-label": "\u5237\u65B0\u8FED\u4EE3\u6545\u4E8B\u70B9", onClick: () => { setResults({}); setErrors({}); setVersion(value => value + 1); if (directoryError || !sprints.length)
                     setDirectoryVersion(value => value + 1); } })] })); return () => toolbarTarget(null); }, [directoryError, directoryLoading, sprint, sprints, toolbarTarget]);
     return _jsxs("div", { className: css.page, children: [directoryError && _jsxs("p", { className: css.error, children: [directoryError, "\uFF0C\u8BF7\u70B9\u51FB\u5237\u65B0\u91CD\u8BD5\u3002"] }), _jsxs("div", { className: css.columns, children: [_jsxs("section", { className: css.panel, "aria-label": "\u4E2A\u4EBA\u6545\u4E8B\u70B9", children: [_jsxs("div", { className: css.panelHeader, children: [_jsx("h3", { children: "\u4E2A\u4EBA\u5206\u5E03" }), _jsxs("select", { "aria-label": "\u9009\u62E9\u4E2A\u4EBA\u8D1F\u8D23\u4EBA", value: owner, onChange: event => setOwner(event.target.value), children: [_jsx("option", { value: "currentUser()", children: "\u6211\u8D1F\u8D23\u7684" }), users.map(user => _jsxs("option", { value: user.username, children: [user.name, " \u00B7 ", user.username] }, user.username))] })] }), errors[owner] ? _jsx("p", { className: css.error, children: errors[owner] }) : !personal ? _jsx("p", { className: css.empty, children: sprint ? '正在读取个人故事点…' : '请选择迭代' }) : _jsxs(_Fragment, { children: [_jsxs("div", { className: css.summary, children: [_jsxs("div", { children: [_jsx("span", { className: css.eyebrow, children: "\u6545\u4E8B\u70B9\u603B\u6570" }), _jsxs("div", { className: css.total, children: [number(sum), _jsx("small", { children: " SP" })] })] }), _jsx("div", { className: css.pie, style: { background: gradient ? `conic-gradient(${gradient})` : undefined }, children: _jsxs("div", { children: [_jsx("strong", { children: slices.length }), _jsx("span", { children: "\u9879\u5360\u6BD4" })] }) })] }), _jsxs("div", { className: css.listHeading, children: [_jsx("h4", { children: "\u9700\u6C42\u5217\u8868" }), _jsxs("span", { children: [items.length, " \u9879"] })] }), !items.length && _jsx("p", { className: css.empty, children: "\u8BE5\u8D1F\u8D23\u4EBA\u5728\u672C\u8FED\u4EE3\u6682\u65E0\u4E8B\u9879\u3002" }), _jsx("div", { children: items.map(item => _jsxs("div", { className: css.item, role: "button", tabIndex: 0, "aria-label": `打开 ${item.itemKey} 的对话`, onClick: () => onOpenItem(item), onKeyDown: event => { if (event.key === 'Enter' || event.key === ' ') {
                                                 event.preventDefault();

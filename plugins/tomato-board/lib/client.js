@@ -7,24 +7,14 @@ window.__ModuleLoader__.load({
 		let react = require("react");
 		let _deepseek_ai_dsh_client_ui_primitives = require("@deepseek-ai/dsh-client-ui-primitives");
 		let react_jsx_runtime = require("react/jsx-runtime");
-		//#region ../../../../../../Users/gengfeng/deepseek-harness/packages/core/session/src/types.ts
-		/**
-		* Brand a string as a {@link SessionId}.
-		* @param id - the raw session id string.
-		* @returns the same string, branded (a compile-time cast — no runtime cost).
-		*/
-		function SessionId(id) {
-			return id;
-		}
-		//#endregion
 		//#region \0dsh-css:/Users/gengfeng/dsh-tomato-board/plugins/tomato-board/src/client/tomato-board.module.css.mjs
-		const css$2 = "._9lHw_W_sidebarAction{width:100%;min-height:36px;color:var(--dsw-alias-label-primary);cursor:pointer;font:inherit;white-space:nowrap;transition:background var(--ds-transition-duration-fast) var(--ds-ease-in-out), border-color var(--ds-transition-duration-fast) var(--ds-ease-in-out);background:0 0;border:0;border-radius:10px;align-items:center;gap:9px;margin:0;padding:0 10px;display:flex}._9lHw_W_sidebarAction:hover{background:var(--dsw-alias-interactive-bg-hover)}._9lHw_W_topbarAction{border:1px solid var(--dsw-alias-border-l2);min-height:28px;color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-base);cursor:pointer;font:inherit;white-space:nowrap;border-radius:8px;align-items:center;gap:7px;padding:4px 9px;font-size:12px;font-weight:600;display:inline-flex}._9lHw_W_topbarAction:hover{border-color:color-mix(in srgb, var(--tomato-accent,var(--dsw-alias-state-error-primary)) 45%, var(--dsw-alias-border-l2));background:var(--dsw-alias-interactive-bg-hover)}._9lHw_W_topbarAction:focus-visible{outline:2px solid var(--tomato-accent,var(--dsw-alias-state-error-primary));outline-offset:2px}._9lHw_W_topbarAction ._9lHw_W_tomatoIcon{border-radius:5px;width:16px;height:16px;font-size:10px}._9lHw_W_tomatoIcon{width:18px;height:18px;color:var(--dsw-alias-label-primary-inverted);background:var(--tomato-accent,var(--dsw-alias-state-error-primary));border-radius:6px;flex:none;place-items:center;font-size:11px;font-weight:750;display:inline-grid}._9lHw_W_transitionTrigger{align-items:center;gap:6px;display:inline-flex}._9lHw_W_transitionCaption{color:var(--dsw-alias-label-secondary);font-size:12px}._9lHw_W_transitionTrigger strong{color:var(--dsw-alias-label-primary);font-size:12px;font-weight:650}._9lHw_W_transitionDivider{background:var(--dsw-alias-border-l2);width:1px;height:14px;margin:0 2px}._9lHw_W_transitionAction{color:var(--tomato-accent,var(--dsw-alias-state-business-primary));font-size:12px;font-weight:650}._9lHw_W_transitionChevron{color:var(--tomato-accent,var(--dsw-alias-state-business-primary));transition:transform var(--ds-transition-duration-fast) var(--ds-ease-in-out)}._9lHw_W_transitionTrigger[aria-expanded=true] ._9lHw_W_transitionChevron{transform:rotate(180deg)}._9lHw_W_workbench{--tomato-accent:var(--dsw-alias-state-business-primary,#3478c8);--tomato-accent-soft:color-mix(in srgb, var(--tomato-accent) 12%, transparent);--tomato-accent-border:color-mix(in srgb, var(--tomato-accent) 48%, var(--dsw-alias-border-l2));width:100%;height:100%;min-height:0;color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-base);font-family:var(--dsw-font-family);border-left:1px solid var(--dsw-alias-border-l2);flex-direction:column;display:flex;position:relative;overflow:hidden}._9lHw_W_createDialog{width:min(480px,100%)}._9lHw_W_dialogBody{flex-direction:column;gap:12px;display:flex}._9lHw_W_dialogBody>span{color:var(--tomato-accent,var(--dsw-alias-state-error-primary));font-size:12px;font-weight:700}._9lHw_W_dialogBody code{color:var(--dsw-alias-label-secondary);overflow-wrap:anywhere;font-size:13px}._9lHw_W_workspaceTrigger{justify-content:space-between;width:100%;display:flex}._9lHw_W_header{z-index:20;border-bottom:1px solid #0000;flex:none;padding:12px 28px 0 20px;position:relative}._9lHw_W_header:after{content:\"\";z-index:0;background:var(--dsw-alias-border-l2);pointer-events:none;height:1px;position:absolute;bottom:1px;left:0;right:0}._9lHw_W_titleRow{align-items:center;gap:10px;min-height:32px;display:flex}._9lHw_W_header h1{text-overflow:ellipsis;white-space:nowrap;border-radius:12px;flex:1;min-width:0;margin:0;padding:4px 8px;font-size:14px;font-weight:500;line-height:20px;overflow:hidden}._9lHw_W_pageTabs{z-index:1;gap:36px;margin-top:4px;padding-left:8px;display:flex;position:relative}._9lHw_W_pageTabs button{color:var(--dsw-alias-label-tertiary);cursor:pointer;font:inherit;background:0 0;border:0;padding:0 0 11px;font-size:13px;font-weight:500;line-height:16px;position:relative}._9lHw_W_pageTabs button:after{content:\"\";background:0 0;border-radius:2px;height:2px;position:absolute;bottom:1px;left:0;right:0}._9lHw_W_pageTabs button:hover,._9lHw_W_pageTabs button[aria-current=page]{color:var(--dsw-alias-state-business-primary)}._9lHw_W_pageTabs button[aria-current=page]:after{background:var(--dsw-alias-state-business-primary)}._9lHw_W_pageTabs button:focus-visible{outline:2px solid var(--dsw-alias-state-business-primary);outline-offset:3px}._9lHw_W_actions{z-index:1;align-items:center;gap:8px;min-height:32px;display:flex;position:relative}._9lHw_W_actions ._9lHw_W_headerIconButton{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);width:28px;min-width:28px;height:28px;color:var(--dsw-alias-label-secondary);transition:all var(--ds-transition-duration-fast) var(--ds-ease-in-out);border-radius:8px;padding:0}._9lHw_W_actions ._9lHw_W_headerIconButton:hover{border-color:var(--dsw-alias-border-l3);background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-primary)}._9lHw_W_actions ._9lHw_W_headerIconButton:disabled{opacity:.5;cursor:not-allowed}._9lHw_W_searchField{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);border-radius:10px;align-items:center;gap:6px;width:220px;min-height:28px;padding:0 8px;display:flex}._9lHw_W_searchField input{min-width:0;color:inherit;font:inherit;background:0 0;border:0;outline:0;flex:1}._9lHw_W_searchField button{border:0;min-height:24px;padding:0 5px}._9lHw_W_filterMenu{position:relative}._9lHw_W_filterMenu summary{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);cursor:pointer;border-radius:10px;place-items:center;width:28px;height:28px;list-style:none;display:grid;position:relative}._9lHw_W_filterMenu summary::-webkit-details-marker{display:none}._9lHw_W_filterMenu summary i{background:var(--tomato-accent,var(--dsw-alias-state-error-primary));border-radius:50%;width:5px;height:5px;position:absolute;top:5px;right:5px}._9lHw_W_filterPopover{z-index:30;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-2);width:min(500px,100vw - 320px);box-shadow:var(--dsw-shadow-lv3);border-radius:16px;gap:10px;padding:12px;display:grid;position:absolute;top:calc(100% + 8px);right:0}._9lHw_W_assigneeFilter{align-items:flex-start;gap:12px;display:flex}._9lHw_W_assigneeFilter>span{width:48px;color:var(--dsw-alias-label-secondary);white-space:nowrap;flex:0 0 48px;padding-top:8px;font-size:13px}._9lHw_W_assigneePicker{min-width:260px;position:relative}._9lHw_W_assigneeFilter ._9lHw_W_assigneeTrigger{border:1px solid color-mix(in srgb, var(--dsw-alias-border-l2) 82%, transparent);width:100%;height:30px;color:var(--dsw-alias-label-secondary);background:color-mix(in srgb, var(--dsw-alias-bg-overlay) 46%, transparent);border-radius:999px;justify-content:space-between;align-items:center;gap:12px;padding:0 8px 0 12px;font-size:12px;display:flex}._9lHw_W_assigneeFilter ._9lHw_W_assigneeTrigger:hover{background:var(--dsw-alias-interactive-bg-hover)}._9lHw_W_assigneeTrigger>span{color:var(--dsw-alias-label-primary);text-overflow:ellipsis;white-space:nowrap;overflow:hidden}._9lHw_W_assigneeDropdown{z-index:40;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);width:320px;box-shadow:var(--dsw-shadow-lv3);border-radius:10px;padding:8px;position:absolute;top:calc(100% + 5px);left:0}._9lHw_W_assigneeDropdown>input{border:1px solid var(--dsw-alias-border-l2);width:100%;height:32px;color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-base);font:inherit;border-radius:7px;outline:0;padding:0 9px}._9lHw_W_assigneeDropdown>input:focus{border-color:var(--tomato-accent,var(--dsw-alias-state-business-primary))}._9lHw_W_assigneeDropdown>[role=listbox]{max-height:260px;margin-top:7px;overflow:auto}._9lHw_W_assigneeDropdown [role=option]{width:100%;min-height:38px;color:var(--dsw-alias-label-primary);text-align:left;cursor:pointer;background:0 0;border:0;border-radius:7px;flex-direction:column;justify-content:center;align-items:flex-start;gap:2px;padding:6px 9px;display:flex}._9lHw_W_assigneeDropdown [role=option]:hover,._9lHw_W_assigneeDropdown [role=option][aria-selected=true]{background:var(--dsw-alias-interactive-bg-hover)}._9lHw_W_assigneeDropdown strong{font-size:12px;font-weight:550}._9lHw_W_assigneeDropdown small{color:var(--dsw-alias-label-secondary);font-size:10px}._9lHw_W_assigneeDropdown p{color:var(--dsw-alias-label-secondary);text-align:center;margin:0;padding:18px 8px;font-size:11px}._9lHw_W_filterRow{align-items:flex-start;gap:12px;display:flex}._9lHw_W_filterRow>span{width:48px;color:var(--dsw-alias-label-secondary);white-space:nowrap;flex:0 0 48px;padding-top:7px;font-size:13px}._9lHw_W_filterRow>div{flex-wrap:wrap;flex:1;gap:7px;display:flex}._9lHw_W_workspaceSelect{flex:1;min-width:0;display:block;position:relative}._9lHw_W_workspaceSelect>span{flex:1}._9lHw_W_filterRow ._9lHw_W_workspaceTrigger{border:1px solid color-mix(in srgb, var(--dsw-alias-border-l2) 82%, transparent);width:100%;min-height:30px;color:var(--dsw-alias-label-secondary);background:color-mix(in srgb, var(--dsw-alias-bg-overlay) 46%, transparent);font:inherit;text-align:left;cursor:pointer;border-radius:999px;justify-content:space-between;align-items:center;gap:10px;padding:3px 8px 3px 12px;font-size:12px;display:flex}._9lHw_W_filterRow ._9lHw_W_workspaceTrigger:hover{background:var(--dsw-alias-interactive-bg-hover)}._9lHw_W_filterRow ._9lHw_W_workspaceTrigger>span{min-width:0;color:var(--dsw-alias-label-primary);text-overflow:ellipsis;white-space:nowrap;overflow:hidden}._9lHw_W_workspaceChevron{color:var(--dsw-alias-label-tertiary);flex:none;transition:transform .16s;display:inline-flex}._9lHw_W_workspaceTrigger[aria-expanded=true] ._9lHw_W_workspaceChevron{color:var(--tomato-accent,var(--dsw-alias-state-business-primary));transform:rotate(180deg)}._9lHw_W_error{color:var(--tomato-accent,var(--dsw-alias-state-error-primary));background:var(--dsw-alias-state-error-secondary);border-radius:12px;margin:16px 24px 0;padding:12px 14px}._9lHw_W_notice{color:var(--dsw-alias-label-secondary);margin:0;padding:8px 20px;font-size:11px}._9lHw_W_board{z-index:1;flex:1;align-items:flex-start;gap:12px;padding:8px 12px;display:flex;position:relative;overflow:auto}._9lHw_W_lane{border:1px solid var(--dsw-alias-border-l2);background:color-mix(in srgb, var(--dsw-alias-bg-module-platform) 86%, transparent);width:300px;min-width:300px;max-height:100%;transition:transform .16s var(--ds-ease-in-out), opacity .16s var(--ds-ease-in-out), box-shadow .16s var(--ds-ease-in-out);border-radius:16px;flex-direction:column;display:flex}._9lHw_W_laneDragging{opacity:.5;transform:scale(.985)}._9lHw_W_laneDropBefore{box-shadow:-4px 0 0 var(--tomato-accent,var(--dsw-alias-state-business-primary));transform:translate(8px)}._9lHw_W_laneDropAfter{box-shadow:4px 0 0 var(--tomato-accent,var(--dsw-alias-state-business-primary));transform:translate(-8px)}._9lHw_W_laneHeader{cursor:grab;user-select:none;justify-content:space-between;align-items:center;padding:12px 14px 10px;display:flex}._9lHw_W_laneHeader:active{cursor:grabbing}@media (prefers-reduced-motion:reduce){._9lHw_W_lane{transition:none}}._9lHw_W_laneHeader h2{margin:0;font-size:14px}._9lHw_W_laneHeader span{text-align:center;min-width:22px;color:var(--dsw-alias-label-secondary);background:var(--dsw-alias-bg-overlay);border-radius:999px;padding:2px 6px;font-size:12px}._9lHw_W_cards{padding:0 8px 8px;overflow-y:auto}._9lHw_W_card{border:1px solid var(--dsw-alias-border-l2);min-width:0;max-width:100%;color:inherit;background:color-mix(in srgb, var(--dsw-alias-bg-layer-1) 96%, transparent);box-shadow:var(--dsw-shadow-lv1);text-align:left;transition:background var(--ds-transition-duration-fast) var(--ds-ease-in-out), border-color var(--ds-transition-duration-fast) var(--ds-ease-in-out), box-shadow var(--ds-transition-duration-fast) var(--ds-ease-in-out);cursor:pointer;border-radius:14px;flex-direction:column;gap:7px;margin-top:8px;padding:12px;text-decoration:none;display:flex;overflow:hidden}._9lHw_W_card:hover{border-color:var(--dsw-alias-border-l3);background:var(--dsw-alias-button-floating-hover);box-shadow:var(--dsw-shadow-lv2)}._9lHw_W_cardMuted{opacity:.46;filter:saturate(.2);box-shadow:none}._9lHw_W_cardMuted:hover{opacity:.62}._9lHw_W_card:focus-visible{outline:2px solid var(--tomato-accent,var(--dsw-alias-state-business-primary));outline-offset:2px}._9lHw_W_card strong,._9lHw_W_key,._9lHw_W_meta{overflow-wrap:anywhere;word-break:normal;min-width:0}._9lHw_W_cardTopline{justify-content:space-between;align-items:center;gap:8px;min-width:0;display:flex}._9lHw_W_cardButtons{align-items:center;gap:2px;display:inline-flex}._9lHw_W_muteButton,._9lHw_W_tomatoLink{border-radius:8px;flex:none;place-items:center;width:28px;min-width:28px;height:28px;min-height:28px;padding:0;line-height:1;display:inline-grid}._9lHw_W_muteButton{color:var(--dsw-alias-label-tertiary);font-size:9px}._9lHw_W_muteButton[aria-pressed=true]{color:var(--dsw-alias-label-primary)}._9lHw_W_card strong{font-size:14px;font-weight:600;line-height:1.45}._9lHw_W_key{color:var(--dsw-alias-label-secondary);font-size:12px;font-weight:650}._9lHw_W_cardMeta{flex-wrap:wrap;align-items:center;gap:5px;min-width:0;display:flex}._9lHw_W_empty{color:var(--dsw-alias-label-tertiary);margin:auto}@media (width<=820px){._9lHw_W_titleRow{flex-wrap:wrap}._9lHw_W_actions{flex-wrap:wrap;justify-content:flex-end}._9lHw_W_searchField{width:170px}}";
-		const tagId$2 = "@stephen1620/dsh-tomato-board/tomato-board.module.css";
-		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId$2) + "]") === null) {
+		const css$3 = "._9lHw_W_sidebarAction{width:100%;min-height:36px;color:var(--dsw-alias-label-primary);cursor:pointer;font:inherit;white-space:nowrap;transition:background var(--ds-transition-duration-fast) var(--ds-ease-in-out), border-color var(--ds-transition-duration-fast) var(--ds-ease-in-out);background:0 0;border:0;border-radius:10px;align-items:center;gap:9px;margin:0;padding:0 10px;display:flex}._9lHw_W_sidebarAction:hover{background:var(--dsw-alias-interactive-bg-hover)}._9lHw_W_topbarAction{border:1px solid var(--dsw-alias-border-l2);min-height:28px;color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-base);cursor:pointer;font:inherit;white-space:nowrap;border-radius:8px;align-items:center;gap:7px;padding:4px 9px;font-size:12px;font-weight:600;display:inline-flex}._9lHw_W_topbarAction:hover{border-color:color-mix(in srgb, var(--tomato-accent,var(--dsw-alias-state-error-primary)) 45%, var(--dsw-alias-border-l2));background:var(--dsw-alias-interactive-bg-hover)}._9lHw_W_topbarAction:focus-visible{outline:2px solid var(--tomato-accent,var(--dsw-alias-state-error-primary));outline-offset:2px}._9lHw_W_topbarAction ._9lHw_W_tomatoIcon{border-radius:5px;width:16px;height:16px;font-size:10px}._9lHw_W_tomatoIcon{width:18px;height:18px;color:var(--dsw-alias-label-primary-inverted);background:var(--tomato-accent,var(--dsw-alias-state-error-primary));border-radius:6px;flex:none;place-items:center;font-size:11px;font-weight:750;display:inline-grid}._9lHw_W_transitionTrigger{align-items:center;gap:6px;display:inline-flex}._9lHw_W_transitionCaption{color:var(--dsw-alias-label-secondary);font-size:12px}._9lHw_W_transitionTrigger strong{color:var(--dsw-alias-label-primary);font-size:12px;font-weight:650}._9lHw_W_transitionDivider{background:var(--dsw-alias-border-l2);width:1px;height:14px;margin:0 2px}._9lHw_W_transitionAction{color:var(--tomato-accent,var(--dsw-alias-state-business-primary));font-size:12px;font-weight:650}._9lHw_W_transitionChevron{color:var(--tomato-accent,var(--dsw-alias-state-business-primary));transition:transform var(--ds-transition-duration-fast) var(--ds-ease-in-out)}._9lHw_W_transitionTrigger[aria-expanded=true] ._9lHw_W_transitionChevron{transform:rotate(180deg)}._9lHw_W_workbench{--tomato-accent:var(--dsw-alias-state-business-primary,#3478c8);--tomato-accent-soft:color-mix(in srgb, var(--tomato-accent) 12%, transparent);--tomato-accent-border:color-mix(in srgb, var(--tomato-accent) 48%, var(--dsw-alias-border-l2));width:100%;height:100%;min-height:0;color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-base);font-family:var(--dsw-font-family);border-left:1px solid var(--dsw-alias-border-l2);flex-direction:column;display:flex;position:relative;overflow:hidden}._9lHw_W_createDialog{width:min(480px,100%)}._9lHw_W_dialogBody{flex-direction:column;gap:12px;display:flex}._9lHw_W_dialogBody>span{color:var(--tomato-accent,var(--dsw-alias-state-error-primary));font-size:12px;font-weight:700}._9lHw_W_dialogBody code{color:var(--dsw-alias-label-secondary);overflow-wrap:anywhere;font-size:13px}._9lHw_W_workspaceTrigger{justify-content:space-between;width:100%;display:flex}._9lHw_W_header{z-index:20;border-bottom:1px solid #0000;flex:none;padding:12px 28px 0 20px;position:relative}._9lHw_W_header:after{content:\"\";z-index:0;background:var(--dsw-alias-border-l2);pointer-events:none;height:1px;position:absolute;bottom:1px;left:0;right:0}._9lHw_W_titleRow{align-items:center;gap:10px;min-height:32px;display:flex}._9lHw_W_header h1{text-overflow:ellipsis;white-space:nowrap;border-radius:12px;flex:1;min-width:0;margin:0;padding:4px 8px;font-size:14px;font-weight:500;line-height:20px;overflow:hidden}._9lHw_W_pageTabs{z-index:1;gap:36px;margin-top:4px;padding-left:8px;display:flex;position:relative}._9lHw_W_pageTabs button{color:var(--dsw-alias-label-tertiary);cursor:pointer;font:inherit;background:0 0;border:0;padding:0 0 11px;font-size:13px;font-weight:500;line-height:16px;position:relative}._9lHw_W_pageTabs button:after{content:\"\";background:0 0;border-radius:2px;height:2px;position:absolute;bottom:1px;left:0;right:0}._9lHw_W_pageTabs button:hover,._9lHw_W_pageTabs button[aria-current=page]{color:var(--dsw-alias-state-business-primary)}._9lHw_W_pageTabs button[aria-current=page]:after{background:var(--dsw-alias-state-business-primary)}._9lHw_W_pageTabs button:focus-visible{outline:2px solid var(--dsw-alias-state-business-primary);outline-offset:3px}._9lHw_W_actions{z-index:1;align-items:center;gap:8px;min-height:32px;display:flex;position:relative}._9lHw_W_actions ._9lHw_W_headerIconButton{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);width:28px;min-width:28px;height:28px;color:var(--dsw-alias-label-secondary);transition:all var(--ds-transition-duration-fast) var(--ds-ease-in-out);border-radius:8px;padding:0}._9lHw_W_actions ._9lHw_W_headerIconButton:hover{border-color:var(--dsw-alias-border-l3);background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-primary)}._9lHw_W_actions ._9lHw_W_headerIconButton:disabled{opacity:.5;cursor:not-allowed}._9lHw_W_searchField{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);border-radius:10px;align-items:center;gap:6px;width:220px;min-height:28px;padding:0 8px;display:flex}._9lHw_W_searchField input{min-width:0;color:inherit;font:inherit;background:0 0;border:0;outline:0;flex:1}._9lHw_W_searchField button{border:0;min-height:24px;padding:0 5px}._9lHw_W_filterMenu{position:relative}._9lHw_W_filterMenu summary{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);cursor:pointer;border-radius:10px;place-items:center;width:28px;height:28px;list-style:none;display:grid;position:relative}._9lHw_W_filterMenu summary::-webkit-details-marker{display:none}._9lHw_W_filterMenu summary i{background:var(--tomato-accent,var(--dsw-alias-state-error-primary));border-radius:50%;width:5px;height:5px;position:absolute;top:5px;right:5px}._9lHw_W_filterPopover{z-index:30;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-2);width:min(500px,100vw - 320px);box-shadow:var(--dsw-shadow-lv3);border-radius:16px;gap:10px;padding:12px;display:grid;position:absolute;top:calc(100% + 8px);right:0}._9lHw_W_assigneeFilter{align-items:flex-start;gap:12px;display:flex}._9lHw_W_assigneeFilter>span{width:48px;color:var(--dsw-alias-label-secondary);white-space:nowrap;flex:0 0 48px;padding-top:8px;font-size:13px}._9lHw_W_assigneePicker{min-width:var(--assignee-picker-min-width,260px);position:relative}._9lHw_W_assigneeFilter ._9lHw_W_assigneeTrigger{border:1px solid color-mix(in srgb, var(--dsw-alias-border-l2) 82%, transparent);width:100%;height:30px;color:var(--dsw-alias-label-secondary);background:color-mix(in srgb, var(--dsw-alias-bg-overlay) 46%, transparent);border-radius:999px;justify-content:space-between;align-items:center;gap:12px;padding:0 8px 0 12px;font-size:12px;display:flex}._9lHw_W_assigneeFilter ._9lHw_W_assigneeTrigger:hover{background:var(--dsw-alias-interactive-bg-hover)}._9lHw_W_assigneeTrigger>span{color:var(--dsw-alias-label-primary);text-overflow:ellipsis;white-space:nowrap;overflow:hidden}._9lHw_W_assigneeDropdown{z-index:40;width:var(--assignee-dropdown-width,320px);border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);box-shadow:var(--dsw-shadow-lv3);border-radius:10px;padding:8px;position:absolute;top:calc(100% + 5px);left:0}._9lHw_W_assigneeDropdown>input{border:1px solid var(--dsw-alias-border-l2);width:100%;height:32px;color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-base);font:inherit;border-radius:7px;outline:0;padding:0 9px}._9lHw_W_assigneeDropdown>input:focus{border-color:var(--tomato-accent,var(--dsw-alias-state-business-primary))}._9lHw_W_assigneeDropdown>[role=listbox]{max-height:260px;margin-top:7px;overflow:auto}._9lHw_W_assigneeDropdown [role=option]{width:100%;min-height:38px;color:var(--dsw-alias-label-primary);text-align:left;cursor:pointer;background:0 0;border:0;border-radius:7px;flex-direction:column;justify-content:center;align-items:flex-start;gap:2px;padding:6px 9px;display:flex}._9lHw_W_assigneeDropdown [role=option]:hover,._9lHw_W_assigneeDropdown [role=option][aria-selected=true]{background:var(--dsw-alias-interactive-bg-hover)}._9lHw_W_assigneeDropdown strong{font-size:12px;font-weight:550}._9lHw_W_assigneeDropdown small{color:var(--dsw-alias-label-secondary);font-size:10px}._9lHw_W_assigneeDropdown p{color:var(--dsw-alias-label-secondary);text-align:center;margin:0;padding:18px 8px;font-size:11px}._9lHw_W_filterRow{align-items:flex-start;gap:12px;display:flex}._9lHw_W_filterRow>span{width:48px;color:var(--dsw-alias-label-secondary);white-space:nowrap;flex:0 0 48px;padding-top:7px;font-size:13px}._9lHw_W_filterRow>div{flex-wrap:wrap;flex:1;gap:7px;display:flex}._9lHw_W_workspaceSelect{flex:1;min-width:0;display:block;position:relative}._9lHw_W_workspaceSelect>span{flex:1}._9lHw_W_filterRow ._9lHw_W_workspaceTrigger{border:1px solid color-mix(in srgb, var(--dsw-alias-border-l2) 82%, transparent);width:100%;min-height:30px;color:var(--dsw-alias-label-secondary);background:color-mix(in srgb, var(--dsw-alias-bg-overlay) 46%, transparent);font:inherit;text-align:left;cursor:pointer;border-radius:999px;justify-content:space-between;align-items:center;gap:10px;padding:3px 8px 3px 12px;font-size:12px;display:flex}._9lHw_W_filterRow ._9lHw_W_workspaceTrigger:hover{background:var(--dsw-alias-interactive-bg-hover)}._9lHw_W_filterRow ._9lHw_W_workspaceTrigger>span{min-width:0;color:var(--dsw-alias-label-primary);text-overflow:ellipsis;white-space:nowrap;overflow:hidden}._9lHw_W_workspaceChevron{color:var(--dsw-alias-label-tertiary);flex:none;transition:transform .16s;display:inline-flex}._9lHw_W_workspaceTrigger[aria-expanded=true] ._9lHw_W_workspaceChevron{color:var(--tomato-accent,var(--dsw-alias-state-business-primary));transform:rotate(180deg)}._9lHw_W_error{color:var(--tomato-accent,var(--dsw-alias-state-error-primary));background:var(--dsw-alias-state-error-secondary);border-radius:12px;margin:16px 24px 0;padding:12px 14px}._9lHw_W_notice{color:var(--dsw-alias-label-secondary);margin:0;padding:8px 20px;font-size:11px}._9lHw_W_board{z-index:1;flex:1;align-items:flex-start;gap:12px;padding:8px 12px;display:flex;position:relative;overflow:auto}._9lHw_W_lane{border:1px solid var(--dsw-alias-border-l2);background:color-mix(in srgb, var(--dsw-alias-bg-module-platform) 86%, transparent);width:300px;min-width:300px;max-height:100%;transition:transform .16s var(--ds-ease-in-out), opacity .16s var(--ds-ease-in-out), box-shadow .16s var(--ds-ease-in-out);border-radius:16px;flex-direction:column;display:flex}._9lHw_W_laneDragging{opacity:.5;transform:scale(.985)}._9lHw_W_laneDropBefore{box-shadow:-4px 0 0 var(--tomato-accent,var(--dsw-alias-state-business-primary));transform:translate(8px)}._9lHw_W_laneDropAfter{box-shadow:4px 0 0 var(--tomato-accent,var(--dsw-alias-state-business-primary));transform:translate(-8px)}._9lHw_W_laneHeader{cursor:grab;user-select:none;justify-content:space-between;align-items:center;padding:12px 14px 10px;display:flex}._9lHw_W_laneHeader:active{cursor:grabbing}@media (prefers-reduced-motion:reduce){._9lHw_W_lane{transition:none}}._9lHw_W_laneHeader h2{margin:0;font-size:14px}._9lHw_W_laneHeader span{text-align:center;min-width:22px;color:var(--dsw-alias-label-secondary);background:var(--dsw-alias-bg-overlay);border-radius:999px;padding:2px 6px;font-size:12px}._9lHw_W_cards{padding:0 8px 8px;overflow-y:auto}._9lHw_W_card{border:1px solid var(--dsw-alias-border-l2);min-width:0;max-width:100%;color:inherit;background:color-mix(in srgb, var(--dsw-alias-bg-layer-1) 96%, transparent);box-shadow:var(--dsw-shadow-lv1);text-align:left;transition:background var(--ds-transition-duration-fast) var(--ds-ease-in-out), border-color var(--ds-transition-duration-fast) var(--ds-ease-in-out), box-shadow var(--ds-transition-duration-fast) var(--ds-ease-in-out);cursor:pointer;border-radius:14px;flex-direction:column;gap:7px;margin-top:8px;padding:12px;text-decoration:none;display:flex;overflow:hidden}._9lHw_W_card:hover{border-color:var(--dsw-alias-border-l3);background:var(--dsw-alias-button-floating-hover);box-shadow:var(--dsw-shadow-lv2)}._9lHw_W_cardMuted{opacity:.46;filter:saturate(.2);box-shadow:none}._9lHw_W_cardMuted:hover{opacity:.62}._9lHw_W_card:focus-visible{outline:2px solid var(--tomato-accent,var(--dsw-alias-state-business-primary));outline-offset:2px}._9lHw_W_card strong,._9lHw_W_key,._9lHw_W_meta{overflow-wrap:anywhere;word-break:normal;min-width:0}._9lHw_W_cardTopline{justify-content:space-between;align-items:center;gap:8px;min-width:0;display:flex}._9lHw_W_cardButtons{align-items:center;gap:2px;display:inline-flex}._9lHw_W_muteButton,._9lHw_W_tomatoLink{border-radius:8px;flex:none;place-items:center;width:28px;min-width:28px;height:28px;min-height:28px;padding:0;line-height:1;display:inline-grid}._9lHw_W_muteButton{color:var(--dsw-alias-label-tertiary);font-size:9px}._9lHw_W_muteButton[aria-pressed=true]{color:var(--dsw-alias-label-primary)}._9lHw_W_card strong{font-size:14px;font-weight:600;line-height:1.45}._9lHw_W_key{color:var(--dsw-alias-label-secondary);font-size:12px;font-weight:650}._9lHw_W_cardMeta{flex-wrap:wrap;align-items:center;gap:5px;min-width:0;display:flex}._9lHw_W_empty{color:var(--dsw-alias-label-tertiary);margin:auto}@media (width<=820px){._9lHw_W_titleRow{flex-wrap:wrap}._9lHw_W_actions{flex-wrap:wrap;justify-content:flex-end}._9lHw_W_searchField{width:170px}}";
+		const tagId$3 = "@stephen1620/dsh-tomato-board/tomato-board.module.css";
+		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId$3) + "]") === null) {
 			const tag = document.createElement("style");
 			tag.dataset.plugin = "@stephen1620/dsh-tomato-board";
-			tag.dataset.pluginCss = tagId$2;
-			tag.textContent = css$2;
+			tag.dataset.pluginCss = tagId$3;
+			tag.textContent = css$3;
 			document.head.appendChild(tag);
 		}
 		var tomato_board_module_css_default = {
@@ -77,13 +67,13 @@ window.__ModuleLoader__.load({
 		};
 		//#endregion
 		//#region \0dsh-css:/Users/gengfeng/dsh-tomato-board/plugins/tomato-board/src/client/story-points.module.css.mjs
-		const css$1 = ".d6j1rW_page{--tomato-accent:var(--dsw-alias-state-business-primary,#3478c8);--tomato-accent-soft:color-mix(in srgb, var(--tomato-accent) 10%, transparent);min-height:0;color:var(--dsw-alias-label-primary,#292d32);flex:1;padding:14px 18px 18px;overflow:auto}.d6j1rW_page *{box-sizing:border-box}.d6j1rW_page button,.d6j1rW_page select,.d6j1rW_page input{font:inherit;color:inherit;border:1px solid var(--dsw-alias-border-l2,#dedfdf);background:var(--dsw-alias-bg-base,white);border-radius:8px;min-width:0;padding:8px 12px}.d6j1rW_page button{cursor:pointer;white-space:nowrap}.d6j1rW_page button:hover{background:var(--dsw-alias-interactive-bg-hover,#f4f4f2)}.d6j1rW_page button:disabled{opacity:.5;cursor:wait}.d6j1rW_page :focus-visible{outline:2px solid var(--tomato-accent);outline-offset:3px}.d6j1rW_page h3,.d6j1rW_page h4,.d6j1rW_page p{margin:0}.d6j1rW_panelHeader,.d6j1rW_listHeading,.d6j1rW_rankLabel{justify-content:space-between;align-items:center;gap:12px;display:flex}.d6j1rW_caption,.d6j1rW_footnote,.d6j1rW_itemText small,.d6j1rW_rankRow small,.d6j1rW_listHeading span{color:var(--dsw-alias-label-secondary,#797c80);font-size:12px;line-height:1.5}.d6j1rW_eyebrow{letter-spacing:1.6px;color:var(--dsw-alias-label-secondary,#797c80);font-size:10px;font-weight:650}.d6j1rW_headerControls{align-items:center;gap:8px;display:flex}.d6j1rW_headerControls label{color:var(--dsw-alias-label-secondary,#797c80);align-items:center;gap:7px;font-size:12px;display:flex}.d6j1rW_headerControls select{border:1px solid var(--dsw-alias-border-l2,#dedfdf);width:min(320px,34vw);min-width:0;height:28px;color:var(--dsw-alias-label-primary,#292d32);background:var(--dsw-alias-bg-base,white);font:inherit;border-radius:9px;padding:0 10px}.d6j1rW_headerIconButton{border-radius:8px;width:28px;min-width:28px;height:28px;min-height:28px;padding:0!important}.d6j1rW_columns{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);align-items:start;gap:14px;display:grid}.d6j1rW_teamsHeader{border-bottom:1px solid var(--dsw-alias-border-l2,#e4e4df);justify-content:space-between;align-items:center;padding-bottom:12px;display:flex}.d6j1rW_teamsHeader h3{font-size:16px}.d6j1rW_addTeamButton{height:30px;font-weight:600;min-width:0!important;padding:0 10px!important;font-size:12px!important}.d6j1rW_teamEditor{background:var(--dsw-alias-interactive-bg-hover,#f3f3f1);border-radius:9px;align-items:center;gap:7px;margin:9px 0;padding:8px;display:flex}.d6j1rW_teamEditor input{flex:1;min-width:0}.d6j1rW_teamEditor button{padding:6px 8px;font-size:11px}.d6j1rW_teamAccordions{gap:8px;margin-top:10px;display:grid}.d6j1rW_teamAccordion{border:1px solid var(--dsw-alias-border-l2,#e4e4df);border-radius:10px;overflow:visible}.d6j1rW_teamAccordionHeader{align-items:center;gap:2px;min-height:42px;padding:4px 6px;display:flex}.d6j1rW_teamToggle{text-align:left;align-items:center;gap:8px;min-width:0;display:flex;background:0 0!important;border:0!important;padding:6px!important}.d6j1rW_teamToggle strong{text-overflow:ellipsis;min-width:0;font-size:13px;overflow:hidden}.d6j1rW_teamToggle small{color:var(--dsw-alias-label-secondary);font-size:10px}.d6j1rW_renameTeam{width:27px;height:27px;margin-left:-3px;min-width:27px!important;color:var(--dsw-alias-label-secondary)!important;background:0 0!important;border-color:#0000!important;padding:0!important}.d6j1rW_renameTeam:hover{color:var(--tomato-accent)!important}.d6j1rW_chevron{color:var(--dsw-alias-label-tertiary);font-size:18px;line-height:1;transition:transform .16s}.d6j1rW_teamToggle[aria-expanded=true] .d6j1rW_chevron{color:var(--tomato-accent);transform:rotate(90deg)}.d6j1rW_teamRowActions{gap:2px;margin-left:auto;display:flex}.d6j1rW_teamRowActions button{width:27px;min-width:27px;height:27px;color:var(--dsw-alias-label-secondary);background:0 0;border-color:#0000;padding:0}.d6j1rW_teamRowActions button:last-child:hover{color:var(--dsw-alias-state-error-primary,#bd4336)}.d6j1rW_teamBody{border-top:1px solid var(--dsw-alias-border-l2,#e4e4df);padding:10px 12px 12px;position:relative}.d6j1rW_teamBodyToolbar{color:var(--dsw-alias-label-secondary);justify-content:space-between;align-items:center;gap:8px;font-size:11px;display:flex}.d6j1rW_smallAddButton{border-radius:6px!important;padding:4px 7px!important;font-size:10px!important}.d6j1rW_teamBodyEmpty{color:var(--dsw-alias-label-secondary);text-align:center;padding:20px 8px 10px;font-size:11px}.d6j1rW_memberRow{align-items:center;gap:4px;display:flex}.d6j1rW_memberRow .d6j1rW_rankLabel{flex:1;min-width:0}.d6j1rW_rankIndex{font-variant-numeric:tabular-nums;flex:0 0 22px;width:22px;color:var(--dsw-alias-label-tertiary)!important}.d6j1rW_memberAvatar{background:var(--tomato-accent-soft);border-radius:9px;flex:0 0 28px;place-items:center;width:28px;height:28px;font-weight:750;display:inline-grid;color:var(--tomato-accent)!important;font-size:12px!important}.d6j1rW_memberIdentity{z-index:1;flex:1;gap:1px;min-width:0;display:grid;position:relative}.d6j1rW_memberIdentity strong{text-overflow:ellipsis;overflow:hidden}.d6j1rW_memberIdentity small{color:var(--dsw-alias-label-tertiary);font-size:10px;font-weight:400}.d6j1rW_rankFill{z-index:0;border-radius:inherit;background:color-mix(in srgb, var(--tomato-accent) 22%, transparent);pointer-events:none;max-width:100%;position:absolute;inset:0 auto 0 0}.d6j1rW_rankLabel>.d6j1rW_rankIndex,.d6j1rW_rankLabel>.d6j1rW_memberAvatar,.d6j1rW_rankLabel>b{z-index:1;position:relative}.d6j1rW_removeMember{opacity:0;width:25px;height:25px;min-width:25px!important;color:var(--dsw-alias-label-tertiary)!important;background:0 0!important;border-color:#0000!important;padding:0!important}.d6j1rW_memberRow:hover .d6j1rW_removeMember,.d6j1rW_removeMember:focus-visible{opacity:1}.d6j1rW_removeMember:hover{color:var(--dsw-alias-state-error-primary,#bd4336)!important}.d6j1rW_panel{border:1px solid var(--dsw-alias-border-l2,#e4e4df);background:var(--dsw-alias-bg-base,white);border-radius:14px;min-width:0;padding:16px}.d6j1rW_panelHeader{border-bottom:1px solid var(--dsw-alias-border-l2,#e4e4df);padding-bottom:12px}.d6j1rW_panelHeader h3{white-space:nowrap;font-size:16px}.d6j1rW_panelHeader select{max-width:65%;font-size:12px}.d6j1rW_panelHeader button{font-size:12px}.d6j1rW_summary{justify-content:space-between;align-items:center;gap:16px;padding:16px 0;display:flex}.d6j1rW_total{font-variant-numeric:tabular-nums;letter-spacing:-2px;font-size:48px;font-weight:600;line-height:1.15}.d6j1rW_total small{letter-spacing:0;color:var(--dsw-alias-label-secondary,#797c80);font-size:15px}.d6j1rW_pie{background:var(--dsw-alias-border-l2,#e7e7e2);width:136px;height:136px;box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--dsw-alias-border-l2,#ddd) 55%, transparent), 0 14px 36px #00000012;border-radius:50%;flex:0 0 136px;padding:17px;position:relative;transform:rotate(-90deg)}.d6j1rW_pie:after{content:\"\";border:1px solid color-mix(in srgb, var(--tomato-accent) 24%, transparent);border-radius:50%;position:absolute;inset:-6px}.d6j1rW_pie>div{z-index:1;background:var(--dsw-alias-bg-base,white);width:100%;height:100%;box-shadow:inset 0 0 0 1px var(--dsw-alias-border-l2,#e7e7e2);border-radius:50%;flex-direction:column;justify-content:center;align-items:center;display:flex;position:relative;transform:rotate(90deg)}.d6j1rW_pie strong{font-size:28px;line-height:1}.d6j1rW_pie span{letter-spacing:.08em;color:var(--dsw-alias-label-secondary,#797c80);margin-top:5px;font-size:10px}.d6j1rW_listHeading{padding:10px 0}.d6j1rW_listHeading h4{font-size:13px}.d6j1rW_item{border-top:1px solid var(--dsw-alias-border-l2,#e4e4df);align-items:center;gap:10px;padding:10px 12px;display:flex}.d6j1rW_dot{border-radius:3px;flex-shrink:0;width:8px;height:8px}.d6j1rW_itemText{flex:1;min-width:0}.d6j1rW_itemTitle{color:inherit;overflow-wrap:anywhere;font-size:13px;line-height:1.5;text-decoration:none}.d6j1rW_itemTitle:hover{text-decoration:underline}.d6j1rW_itemText small{margin-right:7px;font-size:10px;display:inline-block}.d6j1rW_itemPoints{white-space:nowrap;font-variant-numeric:tabular-nums;font-size:12px}.d6j1rW_item button{padding:5px 8px;font-size:11px}.d6j1rW_chips{flex-wrap:wrap;gap:8px;margin:12px 0 8px;display:flex}.d6j1rW_chips>span{background:var(--dsw-alias-interactive-bg-hover,#f2f3f0);border-radius:6px;align-items:center;gap:6px;padding:3px 5px 3px 10px;font-size:12px;display:flex}.d6j1rW_chips button{background:0 0;border:0;padding:1px 5px}.d6j1rW_ranking{gap:3px;margin-top:8px;display:grid}.d6j1rW_rankRow{border-radius:9px}.d6j1rW_rankLabel{text-align:left;background:0 0;border:0;border-radius:9px;gap:8px;width:100%;min-height:48px;padding:6px 4px;font-size:13px;position:relative}.d6j1rW_rankLabel:hover{color:var(--tomato-accent);box-shadow:inset 0 0 0 1.5px color-mix(in srgb, var(--tomato-accent) 45%, transparent);background:0 0!important}.d6j1rW_rankLabel[aria-pressed=true]{color:var(--tomato-accent);box-shadow:inset 0 0 0 1.5px var(--tomato-accent);background:0 0!important}.d6j1rW_rankLabel[aria-pressed=true] .d6j1rW_memberAvatar{background:var(--tomato-accent);color:#fff!important}.d6j1rW_rankLabel b{font-variant-numeric:tabular-nums;flex:none;font-size:13px}.d6j1rW_track{display:none}.d6j1rW_footnote{border-top:1px solid var(--dsw-alias-border-l2,#e4e4df);padding-top:12px;font-size:11px;margin-top:20px!important}.d6j1rW_empty{text-align:center;color:var(--dsw-alias-label-secondary,#797c80);padding:36px 12px;font-size:13px}.d6j1rW_empty h4{margin-bottom:8px}.d6j1rW_emptyIcon{color:var(--tomato-accent);margin-bottom:12px;font-size:32px;display:block}.d6j1rW_error{color:var(--dsw-alias-state-error-primary,#bd4336);overflow-wrap:anywhere;padding:10px 0;font-size:12px}.d6j1rW_notice{color:var(--dsw-alias-label-secondary,#797c80);padding:8px 0;font-size:12px}.d6j1rW_teamHeader{overflow:visible}.d6j1rW_addPeopleRoot{position:relative}.d6j1rW_addPeople{z-index:30;border:1px solid var(--dsw-alias-border-l2,#ddd);background:var(--dsw-alias-bg-layer-2,white);border-radius:12px;width:min(330px,72vw);padding:10px;position:absolute;top:calc(100% + 7px);right:0;box-shadow:0 16px 46px #0002}.d6j1rW_addPeopleTitle{justify-content:space-between;align-items:center;gap:10px;display:flex;margin:0 0 8px!important}.d6j1rW_addPeopleTitle strong{font-size:12px}.d6j1rW_addPeopleTitle button{justify-content:center;min-width:26px;height:26px;width:26px!important;padding:0!important}.d6j1rW_addPeople input{width:100%}.d6j1rW_addPeople>div:last-child{max-height:210px;margin-top:8px;overflow:auto}.d6j1rW_addPeople>div:last-child>button{text-align:left;border:0;gap:8px;width:100%;display:flex}.d6j1rW_addPeople small{opacity:.6;flex:1}@media (width<=1000px){.d6j1rW_columns{grid-template-columns:1fr}.d6j1rW_page{padding:14px}}@media (width<=620px){.d6j1rW_teamHeader{flex-direction:column;align-items:flex-start}.d6j1rW_teamActions{justify-content:flex-start}.d6j1rW_memberToolbar{flex-direction:column;align-items:stretch}}@media (width<=540px){.d6j1rW_page{padding:10px}.d6j1rW_panel{padding:12px}.d6j1rW_headerControls label>span{display:none}.d6j1rW_headerControls select{width:min(220px,55vw)}.d6j1rW_pie{flex-basis:120px;width:120px;height:120px;padding:16px}.d6j1rW_total{font-size:42px}.d6j1rW_item{gap:7px}}.d6j1rW_item[role=button]{cursor:pointer;border-radius:8px}.d6j1rW_item[role=button]:hover{background:var(--dsw-alias-interactive-bg-hover)}.d6j1rW_item[role=button]:focus-visible{outline:2px solid var(--dsw-alias-state-business-primary);outline-offset:2px}.d6j1rW_item .d6j1rW_tomatoLink{background:0 0;border:0;flex:none;width:28px;height:28px;padding:0}";
-		const tagId$1 = "@stephen1620/dsh-tomato-board/story-points.module.css";
-		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId$1) + "]") === null) {
+		const css$2 = ".d6j1rW_page{--tomato-accent:var(--dsw-alias-state-business-primary,#3478c8);--tomato-accent-soft:color-mix(in srgb, var(--tomato-accent) 10%, transparent);min-height:0;color:var(--dsw-alias-label-primary,#292d32);flex:1;padding:14px 18px 18px;overflow:auto}.d6j1rW_page *{box-sizing:border-box}.d6j1rW_page button,.d6j1rW_page select,.d6j1rW_page input{font:inherit;color:inherit;border:1px solid var(--dsw-alias-border-l2,#dedfdf);background:var(--dsw-alias-bg-base,white);border-radius:8px;min-width:0;padding:8px 12px}.d6j1rW_page button{cursor:pointer;white-space:nowrap}.d6j1rW_page button:hover{background:var(--dsw-alias-interactive-bg-hover,#f4f4f2)}.d6j1rW_page button:disabled{opacity:.5;cursor:wait}.d6j1rW_page :focus-visible{outline:2px solid var(--tomato-accent);outline-offset:3px}.d6j1rW_page h3,.d6j1rW_page h4,.d6j1rW_page p{margin:0}.d6j1rW_panelHeader,.d6j1rW_listHeading,.d6j1rW_rankLabel{justify-content:space-between;align-items:center;gap:12px;display:flex}.d6j1rW_caption,.d6j1rW_footnote,.d6j1rW_itemText small,.d6j1rW_rankRow small,.d6j1rW_listHeading span{color:var(--dsw-alias-label-secondary,#797c80);font-size:12px;line-height:1.5}.d6j1rW_eyebrow{letter-spacing:1.6px;color:var(--dsw-alias-label-secondary,#797c80);font-size:10px;font-weight:650}.d6j1rW_headerControls{align-items:center;gap:8px;display:flex}.d6j1rW_headerControls label{color:var(--dsw-alias-label-secondary,#797c80);align-items:center;gap:7px;font-size:12px;display:flex}.d6j1rW_headerControls select{border:1px solid var(--dsw-alias-border-l2,#dedfdf);width:min(320px,34vw);min-width:0;height:28px;color:var(--dsw-alias-label-primary,#292d32);background:var(--dsw-alias-bg-base,white);font:inherit;border-radius:9px;padding:0 10px}.d6j1rW_headerIconButton{border-radius:8px;width:28px;min-width:28px;height:28px;min-height:28px;padding:0!important}.d6j1rW_columns{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);align-items:start;gap:14px;display:grid}.d6j1rW_teamsHeader{border-bottom:1px solid var(--dsw-alias-border-l2,#e4e4df);justify-content:space-between;align-items:center;padding-bottom:12px;display:flex}.d6j1rW_teamsHeader h3{font-size:16px}.d6j1rW_addTeamButton{height:30px;font-weight:600;min-width:0!important;padding:0 10px!important;font-size:12px!important}.d6j1rW_teamEditor{background:var(--dsw-alias-interactive-bg-hover,#f3f3f1);border-radius:9px;align-items:center;gap:7px;margin:9px 0;padding:8px;display:flex}.d6j1rW_teamEditor input{flex:1;min-width:0}.d6j1rW_teamEditor button{padding:6px 8px;font-size:11px}.d6j1rW_teamAccordions{gap:8px;margin-top:10px;display:grid}.d6j1rW_teamAccordion{border:1px solid var(--dsw-alias-border-l2,#e4e4df);border-radius:10px;overflow:visible}.d6j1rW_teamAccordionHeader{align-items:center;gap:2px;min-height:42px;padding:4px 6px;display:flex}.d6j1rW_teamToggle{text-align:left;align-items:center;gap:8px;min-width:0;display:flex;background:0 0!important;border:0!important;padding:6px!important}.d6j1rW_teamToggle strong{text-overflow:ellipsis;min-width:0;font-size:13px;overflow:hidden}.d6j1rW_teamToggle small{color:var(--dsw-alias-label-secondary);font-size:10px}.d6j1rW_renameTeam{width:27px;height:27px;margin-left:-3px;min-width:27px!important;color:var(--dsw-alias-label-secondary)!important;background:0 0!important;border-color:#0000!important;padding:0!important}.d6j1rW_renameTeam:hover{color:var(--tomato-accent)!important}.d6j1rW_chevron{color:var(--dsw-alias-label-tertiary);font-size:18px;line-height:1;transition:transform .16s}.d6j1rW_teamToggle[aria-expanded=true] .d6j1rW_chevron{color:var(--tomato-accent);transform:rotate(90deg)}.d6j1rW_teamRowActions{gap:2px;margin-left:auto;display:flex}.d6j1rW_teamRowActions button{width:27px;min-width:27px;height:27px;color:var(--dsw-alias-label-secondary);background:0 0;border-color:#0000;padding:0}.d6j1rW_teamRowActions button:last-child:hover{color:var(--dsw-alias-state-error-primary,#bd4336)}.d6j1rW_teamBody{border-top:1px solid var(--dsw-alias-border-l2,#e4e4df);padding:10px 12px 12px;position:relative}.d6j1rW_teamBodyToolbar{color:var(--dsw-alias-label-secondary);justify-content:space-between;align-items:center;gap:8px;font-size:11px;display:flex}.d6j1rW_smallAddButton{border-radius:6px!important;padding:4px 7px!important;font-size:10px!important}.d6j1rW_teamBodyEmpty{color:var(--dsw-alias-label-secondary);text-align:center;padding:20px 8px 10px;font-size:11px}.d6j1rW_memberRow{align-items:center;gap:4px;display:flex}.d6j1rW_memberRow .d6j1rW_rankLabel{flex:1;min-width:0}.d6j1rW_rankIndex{font-variant-numeric:tabular-nums;flex:0 0 22px;width:22px;color:var(--dsw-alias-label-tertiary)!important}.d6j1rW_memberAvatar{background:var(--tomato-accent-soft);border-radius:9px;flex:0 0 28px;place-items:center;width:28px;height:28px;font-weight:750;display:inline-grid;color:var(--tomato-accent)!important;font-size:12px!important}.d6j1rW_memberIdentity{z-index:1;flex:1;gap:1px;min-width:0;display:grid;position:relative}.d6j1rW_memberIdentity strong{text-overflow:ellipsis;overflow:hidden}.d6j1rW_memberIdentity small{color:var(--dsw-alias-label-tertiary);font-size:10px;font-weight:400}.d6j1rW_rankFill{z-index:0;border-radius:inherit;background:color-mix(in srgb, var(--tomato-accent) 22%, transparent);pointer-events:none;max-width:100%;position:absolute;inset:0 auto 0 0}.d6j1rW_rankLabel>.d6j1rW_rankIndex,.d6j1rW_rankLabel>.d6j1rW_memberAvatar,.d6j1rW_rankLabel>b{z-index:1;position:relative}.d6j1rW_removeMember{opacity:0;width:25px;height:25px;min-width:25px!important;color:var(--dsw-alias-label-tertiary)!important;background:0 0!important;border-color:#0000!important;padding:0!important}.d6j1rW_memberRow:hover .d6j1rW_removeMember,.d6j1rW_removeMember:focus-visible{opacity:1}.d6j1rW_removeMember:hover{color:var(--dsw-alias-state-error-primary,#bd4336)!important}.d6j1rW_panel{border:1px solid var(--dsw-alias-border-l2,#e4e4df);background:var(--dsw-alias-bg-base,white);border-radius:14px;min-width:0;padding:16px}.d6j1rW_panelHeader{border-bottom:1px solid var(--dsw-alias-border-l2,#e4e4df);padding-bottom:12px}.d6j1rW_panelHeader h3{white-space:nowrap;font-size:16px}.d6j1rW_panelHeader select{max-width:65%;font-size:12px}.d6j1rW_panelHeader button{font-size:12px}.d6j1rW_summary{justify-content:space-between;align-items:center;gap:16px;padding:16px 0;display:flex}.d6j1rW_total{font-variant-numeric:tabular-nums;letter-spacing:-2px;font-size:48px;font-weight:600;line-height:1.15}.d6j1rW_total small{letter-spacing:0;color:var(--dsw-alias-label-secondary,#797c80);font-size:15px}.d6j1rW_pie{background:var(--dsw-alias-border-l2,#e7e7e2);width:136px;height:136px;box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--dsw-alias-border-l2,#ddd) 55%, transparent), 0 14px 36px #00000012;border-radius:50%;flex:0 0 136px;padding:17px;position:relative;transform:rotate(-90deg)}.d6j1rW_pie:after{content:\"\";border:1px solid color-mix(in srgb, var(--tomato-accent) 24%, transparent);border-radius:50%;position:absolute;inset:-6px}.d6j1rW_pie>div{z-index:1;background:var(--dsw-alias-bg-base,white);width:100%;height:100%;box-shadow:inset 0 0 0 1px var(--dsw-alias-border-l2,#e7e7e2);border-radius:50%;flex-direction:column;justify-content:center;align-items:center;display:flex;position:relative;transform:rotate(90deg)}.d6j1rW_pie strong{font-size:28px;line-height:1}.d6j1rW_pie span{letter-spacing:.08em;color:var(--dsw-alias-label-secondary,#797c80);margin-top:5px;font-size:10px}.d6j1rW_listHeading{padding:10px 0}.d6j1rW_listHeading h4{font-size:13px}.d6j1rW_item{border-top:1px solid var(--dsw-alias-border-l2,#e4e4df);align-items:center;gap:10px;padding:10px 12px;display:flex}.d6j1rW_dot{border-radius:3px;flex-shrink:0;width:8px;height:8px}.d6j1rW_itemText{flex:1;min-width:0}.d6j1rW_itemTitle{color:inherit;overflow-wrap:anywhere;font-size:13px;line-height:1.5;text-decoration:none}.d6j1rW_itemTitle:hover{text-decoration:underline}.d6j1rW_itemText small{margin-right:7px;font-size:10px;display:inline-block}.d6j1rW_itemPoints{white-space:nowrap;font-variant-numeric:tabular-nums;font-size:12px}.d6j1rW_item button{padding:5px 8px;font-size:11px}.d6j1rW_chips{flex-wrap:wrap;gap:8px;margin:12px 0 8px;display:flex}.d6j1rW_chips>span{background:var(--dsw-alias-interactive-bg-hover,#f2f3f0);border-radius:6px;align-items:center;gap:6px;padding:3px 5px 3px 10px;font-size:12px;display:flex}.d6j1rW_chips button{background:0 0;border:0;padding:1px 5px}.d6j1rW_ranking{gap:3px;margin-top:8px;display:grid}.d6j1rW_rankRow{border-radius:9px}.d6j1rW_rankLabel{text-align:left;background:0 0;border:0;border-radius:9px;gap:8px;width:100%;min-height:48px;padding:6px 4px;font-size:13px;position:relative}.d6j1rW_rankLabel:hover{color:var(--tomato-accent);box-shadow:inset 0 0 0 1.5px color-mix(in srgb, var(--tomato-accent) 45%, transparent);background:0 0!important}.d6j1rW_rankLabel[aria-pressed=true]{color:var(--tomato-accent);box-shadow:inset 0 0 0 1.5px var(--tomato-accent);background:0 0!important}.d6j1rW_rankLabel[aria-pressed=true] .d6j1rW_memberAvatar{background:var(--tomato-accent);color:#fff!important}.d6j1rW_rankLabel b{font-variant-numeric:tabular-nums;flex:none;font-size:13px}.d6j1rW_track{display:none}.d6j1rW_footnote{border-top:1px solid var(--dsw-alias-border-l2,#e4e4df);padding-top:12px;font-size:11px;margin-top:20px!important}.d6j1rW_empty{text-align:center;color:var(--dsw-alias-label-secondary,#797c80);padding:36px 12px;font-size:13px}.d6j1rW_empty h4{margin-bottom:8px}.d6j1rW_emptyIcon{color:var(--tomato-accent);margin-bottom:12px;font-size:32px;display:block}.d6j1rW_error{color:var(--dsw-alias-state-error-primary,#bd4336);overflow-wrap:anywhere;padding:10px 0;font-size:12px}.d6j1rW_notice{color:var(--dsw-alias-label-secondary,#797c80);padding:8px 0;font-size:12px}.d6j1rW_teamHeader{overflow:visible}.d6j1rW_addPeopleRoot{position:relative}.d6j1rW_addPeople{z-index:30;border:1px solid var(--dsw-alias-border-l2,#ddd);background:var(--dsw-alias-bg-layer-2,white);border-radius:12px;width:min(330px,72vw);padding:10px;position:absolute;top:calc(100% + 7px);right:0;box-shadow:0 16px 46px #0002}.d6j1rW_addPeopleTitle{justify-content:space-between;align-items:center;gap:10px;display:flex;margin:0 0 8px!important}.d6j1rW_addPeopleTitle strong{font-size:12px}.d6j1rW_addPeopleTitle button{justify-content:center;min-width:26px;height:26px;width:26px!important;padding:0!important}.d6j1rW_addPeople input{width:100%}.d6j1rW_addPeople>div:last-child{max-height:210px;margin-top:8px;overflow:auto}.d6j1rW_addPeople>div:last-child>button{text-align:left;border:0;gap:8px;width:100%;display:flex}.d6j1rW_addPeople small{opacity:.6;flex:1}@media (width<=1000px){.d6j1rW_columns{grid-template-columns:1fr}.d6j1rW_page{padding:14px}}@media (width<=620px){.d6j1rW_teamHeader{flex-direction:column;align-items:flex-start}.d6j1rW_teamActions{justify-content:flex-start}.d6j1rW_memberToolbar{flex-direction:column;align-items:stretch}}@media (width<=540px){.d6j1rW_page{padding:10px}.d6j1rW_panel{padding:12px}.d6j1rW_headerControls label>span{display:none}.d6j1rW_headerControls select{width:min(220px,55vw)}.d6j1rW_pie{flex-basis:120px;width:120px;height:120px;padding:16px}.d6j1rW_total{font-size:42px}.d6j1rW_item{gap:7px}}.d6j1rW_item[role=button]{cursor:pointer;border-radius:8px}.d6j1rW_item[role=button]:hover{background:var(--dsw-alias-interactive-bg-hover)}.d6j1rW_item[role=button]:focus-visible{outline:2px solid var(--dsw-alias-state-business-primary);outline-offset:2px}.d6j1rW_item .d6j1rW_tomatoLink{background:0 0;border:0;flex:none;width:28px;height:28px;padding:0}";
+		const tagId$2 = "@stephen1620/dsh-tomato-board/story-points.module.css";
+		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId$2) + "]") === null) {
 			const tag = document.createElement("style");
 			tag.dataset.plugin = "@stephen1620/dsh-tomato-board";
-			tag.dataset.pluginCss = tagId$1;
-			tag.textContent = css$1;
+			tag.dataset.pluginCss = tagId$2;
+			tag.textContent = css$2;
 			document.head.appendChild(tag);
 		}
 		var story_points_module_css_default = {
@@ -144,13 +134,13 @@ window.__ModuleLoader__.load({
 		};
 		//#endregion
 		//#region \0dsh-css:/Users/gengfeng/dsh-tomato-board/plugins/tomato-board/src/client/tag.module.css.mjs
-		const css = ".KP77Yq_tag{--tag-border-color:color-mix(in srgb, var(--dsw-alias-border-l2) 82%, transparent);--tag-text-color:var(--dsw-alias-label-secondary);--tag-bg-color:color-mix(in srgb, var(--dsw-alias-bg-overlay) 46%, transparent);--tag-weight:550;overflow-wrap:anywhere;border:1px solid var(--tag-border-color);max-width:100%;color:var(--tag-text-color);background:var(--tag-bg-color);font-size:10px;font-weight:var(--tag-weight);white-space:normal;border-radius:999px;flex:none;padding:2px 9px;line-height:1.4}.KP77Yq_toned{--tag-border-color:color-mix(in srgb, var(--tag-tone) 38%, transparent);--tag-text-color:var(--tag-tone);--tag-bg-color:color-mix(in srgb, var(--tag-tone) 13%, transparent);--tag-weight:700}.KP77Yq_tag.KP77Yq_toggle{cursor:pointer;min-height:26px;font:inherit;font-size:10px;font-weight:var(--tag-weight);align-items:center;padding:2px 10px;line-height:1.4;display:inline-flex}.KP77Yq_tag.KP77Yq_toggle:hover{background:var(--dsw-alias-interactive-bg-hover)}.KP77Yq_tag.KP77Yq_toned.KP77Yq_toggle:hover{background:color-mix(in srgb, var(--tag-tone) 18%, transparent)}.KP77Yq_tag.KP77Yq_toggle:focus-visible{outline:2px solid var(--tag-tone,var(--dsw-alias-state-business-primary));outline-offset:2px}.KP77Yq_off{opacity:.5;filter:saturate(.55)}";
-		const tagId = "@stephen1620/dsh-tomato-board/tag.module.css";
-		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
+		const css$1 = ".KP77Yq_tag{--tag-border-color:color-mix(in srgb, var(--dsw-alias-border-l2) 82%, transparent);--tag-text-color:var(--dsw-alias-label-secondary);--tag-bg-color:color-mix(in srgb, var(--dsw-alias-bg-overlay) 46%, transparent);--tag-weight:550;overflow-wrap:anywhere;border:1px solid var(--tag-border-color);max-width:100%;color:var(--tag-text-color);background:var(--tag-bg-color);font-size:10px;font-weight:var(--tag-weight);white-space:normal;border-radius:999px;flex:none;padding:2px 9px;line-height:1.4}.KP77Yq_toned{--tag-border-color:color-mix(in srgb, var(--tag-tone) 38%, transparent);--tag-text-color:var(--tag-tone);--tag-bg-color:color-mix(in srgb, var(--tag-tone) 13%, transparent);--tag-weight:700}.KP77Yq_tag.KP77Yq_toggle{cursor:pointer;min-height:26px;font:inherit;font-size:10px;font-weight:var(--tag-weight);align-items:center;padding:2px 10px;line-height:1.4;display:inline-flex}.KP77Yq_tag.KP77Yq_toggle:hover{background:var(--dsw-alias-interactive-bg-hover)}.KP77Yq_tag.KP77Yq_toned.KP77Yq_toggle:hover{background:color-mix(in srgb, var(--tag-tone) 18%, transparent)}.KP77Yq_tag.KP77Yq_toggle:focus-visible{outline:2px solid var(--tag-tone,var(--dsw-alias-state-business-primary));outline-offset:2px}.KP77Yq_off{opacity:.5;filter:saturate(.55)}";
+		const tagId$1 = "@stephen1620/dsh-tomato-board/tag.module.css";
+		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId$1) + "]") === null) {
 			const tag = document.createElement("style");
 			tag.dataset.plugin = "@stephen1620/dsh-tomato-board";
-			tag.dataset.pluginCss = tagId;
-			tag.textContent = css;
+			tag.dataset.pluginCss = tagId$1;
+			tag.textContent = css$1;
 			document.head.appendChild(tag);
 		}
 		var tag_module_css_default = {
@@ -160,7 +150,7 @@ window.__ModuleLoader__.load({
 			"toned": "KP77Yq_toned"
 		};
 		//#endregion
-		//#region ../../../../../../Users/gengfeng/dsh-tomato-board/plugins/tomato-board/src/client/Tag.tsx
+		//#region src/client/Tag.tsx
 		/**
 		* The one tag chip used across the workbench — card metadata, filter chips and
 		* status labels. Static usage renders a span; interactive usage renders a
@@ -193,7 +183,7 @@ window.__ModuleLoader__.load({
 			});
 		}
 		//#endregion
-		//#region ../../../../../../Users/gengfeng/dsh-tomato-board/plugins/tomato-board/src/client/StoryPoints.tsx
+		//#region src/client/StoryPoints.tsx
 		const LEGACY_TEAM_KEY = "taskboard.tomatoStoryTeam.v1";
 		const TEAMS_KEY = "taskboard.tomatoStoryTeams.v2";
 		const SPRINT_KEY = "taskboard.tomatoStorySprint.v1";
@@ -782,7 +772,1231 @@ window.__ModuleLoader__.load({
 			});
 		}
 		//#endregion
-		//#region ../../../../../../Users/gengfeng/dsh-tomato-board/plugins/tomato-board/src/client/TomatoBoard.tsx
+		//#region src/worktime-model.ts
+		/** A Task may cover several ranges even though its record belongs to the first. */
+		function unitHasCreatedTasks(unit, units) {
+			return units.some((owner) => owner.itemKey === unit.itemKey && owner.tasks.some((task) => task.status === "created" && task.start <= unit.end && task.end >= unit.start));
+		}
+		/** Format a browser-local calendar date without UTC conversion. */
+		function dateKey(date) {
+			return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+		}
+		/** Add calendar days using local noon to avoid daylight-saving midnight gaps. */
+		function addDays(value, days) {
+			const date = /* @__PURE__ */ new Date(`${value}T12:00:00`);
+			date.setDate(date.getDate() + days);
+			return dateKey(date);
+		}
+		/** Inclusive, bounded dates; rejects invalid or reversed selections. */
+		function datesBetween(start, end) {
+			const valid = (s) => /^\d{4}-\d{2}-\d{2}$/u.test(s) && dateKey(/* @__PURE__ */ new Date(`${s}T12:00:00`)) === s;
+			if (!valid(start) || !valid(end) || end < start) throw new Error("请选择有效的连续日期");
+			const dates = [];
+			for (let day = start; day <= end; day = addDays(day, 1)) {
+				if (dates.length >= 366) throw new Error("一次安排最多 366 天");
+				dates.push(day);
+			}
+			return dates;
+		}
+		/** The five-week view starts two Saturdays before the anchor's week. */
+		function calendarStart(anchor) {
+			return addDays(anchor, -(((/* @__PURE__ */ new Date(`${anchor}T12:00:00`)).getDay() + 1) % 7) - 14);
+		}
+		/** Generate descriptive editable titles from the requirement and phase. */
+		function taskTitle(story, stage) {
+			const subject = story.replace(/^[【\[].*?[】\]]\s*/u, "").replace(/[-—]\s*(前端|后端)\s*$/u, "").trim();
+			const capability = subject.replace(/支持/u, "的");
+			switch (stage) {
+				case "understand": return `梳理${capability}需求与现有项目实现`;
+				case "design": return `设计${capability}的技术方案与实现路径`;
+				case "develop": return `实现${capability}能力并完成集成`;
+				case "verify": return `验证${capability}功能与边界场景`;
+				case "bugfix": return `定位并修复${subject}相关问题`;
+				default: throw new Error("未知任务阶段");
+			}
+		}
+		/** Every planned date of one requirement, de-duplicated and chronological. */
+		function unitDates(units) {
+			const dates = /* @__PURE__ */ new Set();
+			for (const unit of units) for (const day of datesBetween(unit.start, unit.end)) dates.add(day);
+			return [...dates].sort();
+		}
+		//#endregion
+		//#region src/client/worktime-locale.ts
+		/** Chinese worktime copy, kept separate from rendering and wire discriminants. */
+		const worktimeText = {
+			switchUser: "切换用户",
+			currentUser: "我（当前登录用户）",
+			readOnlyView: "只读",
+			title: "任务日历",
+			previous: "前一周",
+			next: "后一周",
+			today: "回到本周",
+			refresh: "刷新记录",
+			personDays: "人天",
+			days: "天",
+			cancel: "取消",
+			save: "保存",
+			saving: "正在保存…",
+			request: "需求安排",
+			task: "Task",
+			pending: "待创建",
+			created: "已创建",
+			uncertain: "结果待核对",
+			pickTitle: "选择需求",
+			confirmPick: "确定",
+			range: "时间段",
+			addRange: "＋ 添加时间段",
+			removeRange: "删除",
+			confirmDelete: "确认删除",
+			deleteKeepsTasks: "删除后番茄中已创建的 Task 会保留，并作为历史 Task 继续显示在日历上",
+			rangeEmpty: "请至少保留一个时间段",
+			rangeRemoved: "时间段已删除",
+			rangeIncomplete: "请填写完整的时间段（开始与结束日期）",
+			rangeInvalid: "时间段的结束日期不能早于开始日期",
+			rangeHint: "时间段可以增删；同一需求的多个时间段会合并计算 Task 人天。",
+			start: "开始日期",
+			end: "结束日期",
+			saveRanges: "保存时间段",
+			edit: "工时分配",
+			editHint: "每个阶段创建一个直属 Task。标题已结合需求润色，可直接修改。",
+			unallocated: "剩余未分配",
+			overAllocate: "阶段合计不能大于合计天数",
+			project: "所属项目",
+			owner: "负责人",
+			team: "所属团队",
+			cost: "工时成本归属",
+			category: "任务分类",
+			placeholder: "请选择",
+			loading: "正在读取…",
+			stages: "阶段与投入",
+			stage: "阶段",
+			taskTitle: "Task 标题",
+			total: "阶段合计",
+			create: "确认并创建 Task",
+			creating: "正在创建并核对…",
+			createdAllocation: "已分配投入",
+			currentCapacity: "本次可分配",
+			currentStages: "本次阶段与投入",
+			skippedFields: "未写入番茄的字段",
+			splitHint: "仅填写需要的阶段，留空的阶段不会创建。每个阶段至少 0.5 人天、按 0.5 递增，合计不能大于总天数。",
+			retryHint: "上次创建结果待核对。已有 Task 编号的记录不能直接重建；无编号的记录须先确认番茄中没有对应 Task，再重试。",
+			confirmRetry: "已核对番茄，确认没有本次待核对记录对应的 Task",
+			locked: "已创建 Task 的时间段已锁定并保留历史（日期不可改、不再重复提交）；新增的时间段可以继续安排工时并创建 Task。",
+			readFailed: "读取失败",
+			hostStale: "工时服务仍是旧版本，请退出并重新打开 DSH 后重试",
+			close: "关闭",
+			saved: "安排已保存",
+			createdMessage: "Task 已创建并核对",
+			duplicate: "该需求在相同日期已有安排，已打开原记录",
+			historyFailed: "番茄历史 Task 读取失败，本地安排仍保留",
+			view: "在番茄中查看",
+			taskHistory: "番茄历史 Task",
+			dateSelection: "选择日期",
+			dayPickHint: "点击某天，或拖动连续几天，即可为该需求安排工时",
+			stageLabels: {
+				understand: "需求与项目理解",
+				design: "方案设计",
+				develop: "功能开发",
+				verify: "联调与验证",
+				bugfix: "Bug 修复"
+			},
+			weekdays: [
+				"周六",
+				"周日",
+				"周一",
+				"周二",
+				"周三",
+				"周四",
+				"周五"
+			]
+		};
+		//#endregion
+		//#region src/client/AssigneePicker.tsx
+		/** Shared searchable assignee picker used by the board and worktime pages. */
+		function AssigneePicker({ users, value, onChange, label = "负责人", className, currentUserName = "我负责的", ariaLabel }) {
+			const rootRef = (0, react.useRef)(null);
+			const [open, setOpen] = (0, react.useState)(false);
+			const [query, setQuery] = (0, react.useState)("");
+			const options = (0, react.useMemo)(() => [{
+				username: "currentUser()",
+				name: currentUserName
+			}, ...users.filter((user) => user.username !== "currentUser()")], [users, currentUserName]);
+			const selected = options.find((option) => option.username === value) ?? options[0];
+			const needle = query.trim().toLowerCase();
+			const filtered = needle ? options.filter((option) => `${option.name} ${option.username}`.toLowerCase().includes(needle)) : options;
+			(0, react.useEffect)(() => {
+				if (!open) return;
+				const close = (event) => {
+					if (event.target instanceof Node && !rootRef.current?.contains(event.target)) setOpen(false);
+				};
+				document.addEventListener("pointerdown", close, true);
+				return () => document.removeEventListener("pointerdown", close, true);
+			}, [open]);
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+				className: [tomato_board_module_css_default.assigneeFilter, className].filter(Boolean).join(" "),
+				children: [label ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: label }) : null, /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					ref: rootRef,
+					className: tomato_board_module_css_default.assigneePicker,
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+						variant: "outline",
+						size: "sm",
+						className: tomato_board_module_css_default.assigneeTrigger,
+						"aria-label": ariaLabel,
+						"aria-haspopup": "listbox",
+						"aria-expanded": open,
+						onClick: () => {
+							setOpen((current) => !current);
+							setQuery("");
+						},
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: selected?.name ?? value }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconChevronDownOutline14, {})]
+					}), open ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						className: tomato_board_module_css_default.assigneeDropdown,
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+							autoFocus: true,
+							type: "search",
+							value: query,
+							onChange: (event) => setQuery(event.target.value),
+							placeholder: "搜索昵称或用户名…",
+							"aria-label": "搜索负责人"
+						}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							role: "listbox",
+							"aria-label": "负责人",
+							children: [filtered.map((option) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+								type: "button",
+								role: "option",
+								"aria-selected": option.username === value,
+								onClick: () => {
+									onChange(option.username);
+									setOpen(false);
+									setQuery("");
+								},
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("strong", { children: option.name }), option.name !== option.username && option.username !== "currentUser()" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("small", { children: option.username }) : null]
+							}, option.username)), filtered.length === 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", { children: "没有匹配的负责人" }) : null]
+						})]
+					}) : null]
+				})]
+			});
+		}
+		//#endregion
+		//#region \0dsh-css:/Users/gengfeng/dsh-tomato-board/plugins/tomato-board/src/client/worktime.module.css.mjs
+		const css = "._9MUeuG_page{--wt-accent:var(--dsw-alias-state-business-primary);--wt-task:var(--dsw-alias-state-success-primary,var(--dsw-alias-state-business-primary));--wt-line:var(--dsw-alias-border-l2);--wt-bg:var(--dsw-alias-bg-base);--wt-text:var(--dsw-alias-label-primary);--wt-muted:var(--dsw-alias-label-secondary);color:var(--wt-text);box-sizing:border-box;flex-direction:column;flex:1 1 0;min-height:0;padding:10px 14px;display:flex;overflow:hidden}._9MUeuG_toolbar{flex:none;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px;display:flex}._9MUeuG_period{flex-wrap:wrap;align-items:center;gap:16px;display:flex}._9MUeuG_toolbar h2{font-variant-numeric:tabular-nums;letter-spacing:-.04em;margin:0;font-size:18px;font-weight:600;line-height:1.4}._9MUeuG_toolbar h2>span{color:var(--wt-muted);padding:0 6px}._9MUeuG_page button,._9MUeuG_form button{cursor:pointer;font:inherit}._9MUeuG_navigation{flex-wrap:wrap;gap:6px;display:flex}._9MUeuG_navigation button,._9MUeuG_unitSummary button{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-base);color:var(--dsw-alias-label-primary);border-radius:6px;padding:4px 8px;font-size:12px;line-height:1.5}._9MUeuG_navigation button:hover{background:var(--dsw-alias-interactive-bg-hover)}._9MUeuG_page button:focus-visible,._9MUeuG_form button:focus-visible,._9MUeuG_form input:focus-visible,._9MUeuG_page input:focus-visible,._9MUeuG_form select:focus-visible{outline:2px solid var(--dsw-alias-state-business-primary);outline-offset:2px}._9MUeuG_legend{color:var(--wt-muted);align-items:center;gap:5px;margin:0;font-size:11px;display:flex}._9MUeuG_legend small{margin-left:auto;font-size:11px}._9MUeuG_storyDot,._9MUeuG_taskDot{background:var(--wt-accent);border-radius:2px;width:8px;height:8px;display:inline-block}._9MUeuG_taskDot{background:var(--dsw-alias-state-success-primary,var(--wt-text));border-radius:50%;margin-left:12px}._9MUeuG_help{color:var(--dsw-alias-label-secondary);margin:8px 0 12px;font-size:11px;line-height:1.7}._9MUeuG_calendarArea{flex-direction:column;flex:1;min-width:0;min-height:0;display:flex}._9MUeuG_dragging ._9MUeuG_bar{pointer-events:none}._9MUeuG_calendar{border:1px solid var(--wt-line);background:var(--wt-bg);border-radius:12px;flex:1;grid-template-rows:auto repeat(5,minmax(0,1fr));grid-template-columns:repeat(7,minmax(0,1fr));min-height:0;display:grid;overflow:hidden}._9MUeuG_weekday{text-align:center;color:var(--wt-muted);background:var(--dsw-alias-interactive-bg-hover);border-bottom:1px solid var(--wt-line);padding:5px 8px;font-size:11px}._9MUeuG_week{border-bottom:1px solid var(--wt-line);grid-column:1/-1;min-height:0;display:flex;position:relative;overflow:hidden}._9MUeuG_week:last-of-type{border-bottom:0}._9MUeuG_day{border-right:1px solid var(--wt-line);user-select:none;cursor:pointer;touch-action:none;flex:1 1 0;min-width:0;min-height:0;padding:4px 5px 5px;transition:background .12s;position:relative;overflow:hidden}._9MUeuG_day:nth-child(7){border-right:0}._9MUeuG_weekend{background:color-mix(in srgb, var(--wt-text) 5%, var(--wt-bg))}._9MUeuG_selectedDay{background:color-mix(in srgb, var(--wt-accent) 15%, var(--wt-bg));box-shadow:inset 0 0 0 1px var(--wt-accent)}._9MUeuG_dayNumber{min-width:24px;height:24px;color:var(--wt-text);font-variant-numeric:tabular-nums;background:0 0;border:0;border-radius:999px;justify-content:flex-start;align-items:center;gap:2px;margin:0 0 0 1px;padding:0 5px;display:inline-flex}._9MUeuG_week ._9MUeuG_dayNumber{letter-spacing:-.01em;font-size:14px;font-weight:600;line-height:1}._9MUeuG_dayNumber small{color:var(--wt-muted);font-size:10px;font-weight:400}._9MUeuG_events{z-index:1;pointer-events:none;grid-template-columns:repeat(7,minmax(0,1fr));grid-auto-rows:20px;align-content:start;gap:3px;padding-top:30px;display:grid;position:absolute;top:0;left:0;right:0}._9MUeuG_events ._9MUeuG_bar:hover{filter:brightness(.96)}._9MUeuG_events ._9MUeuG_bar{pointer-events:auto;white-space:nowrap;text-overflow:ellipsis;text-align:left;cursor:pointer;min-width:0;color:var(--wt-text);border-radius:4px;margin:0 3px;padding:0 5px;font-size:11px;line-height:18px;overflow:hidden}._9MUeuG_barUnit{border:1px solid color-mix(in srgb, var(--wt-accent) 30%, transparent);border-left:3px solid var(--wt-accent);background:color-mix(in srgb, var(--wt-accent) 12%, var(--wt-bg))}._9MUeuG_barTask{border:1px solid color-mix(in srgb, var(--wt-task) 26%, transparent);border-left:3px solid var(--wt-task);background:color-mix(in srgb, var(--wt-task) 10%, var(--wt-bg))}._9MUeuG_barUnverified{border:1px dashed color-mix(in srgb, var(--wt-task) 45%, transparent);border-left:3px solid var(--wt-task);background:color-mix(in srgb, var(--wt-task) 6%, var(--wt-bg))}._9MUeuG_readOnlyTag{border:1px solid var(--wt-line);color:var(--wt-muted);white-space:nowrap;border-radius:999px;flex:none;align-self:center;padding:2px 8px;font-size:11px}._9MUeuG_error{color:var(--dsw-alias-state-error-primary);overflow-wrap:anywhere;font-size:12px;line-height:1.7}._9MUeuG_notice{border:1px solid var(--dsw-alias-border-l2);color:var(--dsw-alias-label-secondary);border-radius:7px;padding:8px 12px;font-size:11px;line-height:1.7}._9MUeuG_dialog{max-width:94vw;width:min(850px,94vw)!important}._9MUeuG_dialogNarrow{max-width:92vw;width:min(420px,92vw)!important}._9MUeuG_form{color:var(--dsw-alias-label-primary);max-height:68vh;padding:6px;overflow-y:auto}._9MUeuG_form input:not([type=checkbox]),._9MUeuG_form select{box-sizing:border-box;width:100%;min-width:0;font:inherit;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-base);color:var(--dsw-alias-label-primary);border-radius:7px;padding:8px 10px;font-size:12px}._9MUeuG_form input:read-only{opacity:.75}._9MUeuG_form label{color:var(--dsw-alias-label-secondary);gap:6px;font-size:11px;display:grid}._9MUeuG_twoColumns{grid-template-columns:1fr 1fr;gap:12px;margin:12px 0;display:grid}._9MUeuG_ranges{gap:8px;margin:8px 0;display:grid}._9MUeuG_rangeRow{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto auto;align-items:center;gap:8px;display:grid}._9MUeuG_rangeRow small{color:var(--dsw-alias-label-secondary);white-space:nowrap;font-variant-numeric:tabular-nums;font-size:11px}._9MUeuG_rangeRow>button{color:var(--dsw-alias-state-error-primary);background:0 0;border:0;padding:0 2px;font-size:11px}._9MUeuG_rangeRow>button._9MUeuG_danger{color:var(--wt-bg);background:var(--dsw-alias-state-error-primary);border-radius:4px;padding:1px 6px;font-weight:600}._9MUeuG_addRange{border:1px dashed var(--dsw-alias-border-l2);color:var(--dsw-alias-state-business-primary);background:0 0;border-radius:7px;justify-self:start;margin-bottom:14px;padding:6px 10px;font-size:12px}._9MUeuG_unitSummary{border-bottom:1px solid var(--dsw-alias-border-l2);align-items:center;gap:12px;padding-bottom:10px;font-size:12px;display:flex}._9MUeuG_unitSummary span{color:var(--dsw-alias-label-secondary)}._9MUeuG_unitSummary button{margin-left:auto}._9MUeuG_stageHeading{justify-content:space-between;align-items:center;margin-top:18px;display:flex}._9MUeuG_stageHeading h3{margin:0;font-size:14px;line-height:1.5}._9MUeuG_stageHeading span{color:var(--dsw-alias-label-secondary);font-size:11px}._9MUeuG_stageHeading b{color:var(--dsw-alias-state-business-primary)}._9MUeuG_stages{gap:10px;margin-bottom:18px;display:grid}._9MUeuG_stageRow{grid-template-columns:130px minmax(0,1fr);gap:12px;display:grid}._9MUeuG_result{border-bottom:1px solid var(--dsw-alias-border-l2);gap:6px;padding:10px 0;display:grid}._9MUeuG_result strong{font-size:12px;font-weight:550;line-height:1.6}._9MUeuG_result small{color:var(--dsw-alias-label-secondary);font-size:11px}._9MUeuG_result button{color:var(--dsw-alias-state-business-primary);background:0 0;border:0;justify-self:start;padding:0;font-size:11px}@media (width<=1000px){._9MUeuG_page{padding:8px 10px}._9MUeuG_toolbar h2{font-size:18px}}@media (width<=720px){._9MUeuG_toolbar{flex-wrap:wrap;align-items:center}._9MUeuG_period{gap:6px 12px}._9MUeuG_navigation{gap:4px}._9MUeuG_legend small{display:none}._9MUeuG_twoColumns{grid-template-columns:1fr}._9MUeuG_stageRow{grid-template-columns:100px minmax(0,1fr)}._9MUeuG_rangeRow{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)}}@media (prefers-reduced-motion:reduce){._9MUeuG_day{transition:none}}._9MUeuG_userPicker{--assignee-picker-min-width:150px;--assignee-dropdown-width:280px;align-items:center}";
+		const tagId = "@stephen1620/dsh-tomato-board/worktime.module.css";
+		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
+			const tag = document.createElement("style");
+			tag.dataset.plugin = "@stephen1620/dsh-tomato-board";
+			tag.dataset.pluginCss = tagId;
+			tag.textContent = css;
+			document.head.appendChild(tag);
+		}
+		var worktime_module_css_default = {
+			"addRange": "_9MUeuG_addRange",
+			"bar": "_9MUeuG_bar",
+			"barTask": "_9MUeuG_barTask",
+			"barUnit": "_9MUeuG_barUnit",
+			"barUnverified": "_9MUeuG_barUnverified",
+			"calendar": "_9MUeuG_calendar",
+			"calendarArea": "_9MUeuG_calendarArea",
+			"danger": "_9MUeuG_danger",
+			"day": "_9MUeuG_day",
+			"dayNumber": "_9MUeuG_dayNumber",
+			"dialog": "_9MUeuG_dialog",
+			"dialogNarrow": "_9MUeuG_dialogNarrow",
+			"dragging": "_9MUeuG_dragging",
+			"error": "_9MUeuG_error",
+			"events": "_9MUeuG_events",
+			"form": "_9MUeuG_form",
+			"help": "_9MUeuG_help",
+			"legend": "_9MUeuG_legend",
+			"navigation": "_9MUeuG_navigation",
+			"notice": "_9MUeuG_notice",
+			"page": "_9MUeuG_page",
+			"period": "_9MUeuG_period",
+			"rangeRow": "_9MUeuG_rangeRow",
+			"ranges": "_9MUeuG_ranges",
+			"readOnlyTag": "_9MUeuG_readOnlyTag",
+			"result": "_9MUeuG_result",
+			"selectedDay": "_9MUeuG_selectedDay",
+			"stageHeading": "_9MUeuG_stageHeading",
+			"stageRow": "_9MUeuG_stageRow",
+			"stages": "_9MUeuG_stages",
+			"storyDot": "_9MUeuG_storyDot",
+			"taskDot": "_9MUeuG_taskDot",
+			"toolbar": "_9MUeuG_toolbar",
+			"twoColumns": "_9MUeuG_twoColumns",
+			"unitSummary": "_9MUeuG_unitSummary",
+			"userPicker": "_9MUeuG_userPicker",
+			"week": "_9MUeuG_week",
+			"weekday": "_9MUeuG_weekday",
+			"weekend": "_9MUeuG_weekend"
+		};
+		//#endregion
+		//#region src/client/Worktime.tsx
+		const stages = Object.keys(worktimeText.stageLabels);
+		const errorText = (error) => error instanceof Error ? error.message : worktimeText.readFailed;
+		async function api(path, input, signal) {
+			const response = await fetch(`/api/tomato-board/worktime${path}`, {
+				method: input === void 0 ? "GET" : "POST",
+				headers: {
+					"content-type": "application/json",
+					accept: "application/json"
+				},
+				...input === void 0 ? {} : { body: JSON.stringify(input) },
+				...signal ? { signal } : {}
+			});
+			if (response.status === 404) throw new Error(worktimeText.hostStale);
+			let data;
+			try {
+				data = await response.json();
+			} catch {
+				throw new Error(`${worktimeText.readFailed} (${response.status})`);
+			}
+			if (!response.ok) throw new Error(/缺少操作单元|未知路由|Not Found/u.test(String(data.error ?? "")) ? worktimeText.hostStale : data.error || `${worktimeText.readFailed} (${response.status})`);
+			return data;
+		}
+		const openItem = (itemKey) => window.open(`/api/tomato-board/open/${encodeURIComponent(itemKey)}`, "_blank", "noopener,noreferrer");
+		const todayKey = () => dateKey(/* @__PURE__ */ new Date());
+		const sorted = (units) => [...units].sort((a, b) => a.start < b.start ? -1 : a.start > b.start ? 1 : 0);
+		const daysIn = (start, end) => {
+			try {
+				return datesBetween(start, end).length;
+			} catch {
+				return 0;
+			}
+		};
+		/** Five-week planning calendar: pick days, then one plan per requirement. */
+		function Worktime({ assignee, users, onAssigneeChange, onRefresh }) {
+			const [items, setItems] = (0, react.useState)([]);
+			const [anchor, setAnchor] = (0, react.useState)(todayKey);
+			const [units, setUnits] = (0, react.useState)([]);
+			const [history, setHistory] = (0, react.useState)([]);
+			const [error, setError] = (0, react.useState)("");
+			const [historyError, setHistoryError] = (0, react.useState)("");
+			const [loading, setLoading] = (0, react.useState)(false);
+			const [version, setVersion] = (0, react.useState)(0);
+			const [selectedStory, setSelectedStory] = (0, react.useState)("");
+			const [selection, setSelection] = (0, react.useState)(null);
+			const [choosing, setChoosing] = (0, react.useState)(false);
+			const [dragging, setDragging] = (0, react.useState)(false);
+			const [editingKey, setEditingKey] = (0, react.useState)("");
+			const [saving, setSaving] = (0, react.useState)(false);
+			const [message, setMessage] = (0, react.useState)("");
+			const selecting = (0, react.useRef)(false);
+			const pending = (0, react.useRef)(null);
+			const readOnlyRef = (0, react.useRef)(false);
+			const justReleased = (0, react.useRef)(false);
+			const start = calendarStart(anchor);
+			const end = addDays(start, 34);
+			const dates = (0, react.useMemo)(() => datesBetween(start, end), [start, end]);
+			const requirements = (0, react.useMemo)(() => items.filter((item) => ["Story", "EnablerStory"].includes(item.itemType)), [items]);
+			const range = selection ? [selection.start, selection.end].sort() : null;
+			const readOnly = assignee !== "currentUser()";
+			(0, react.useEffect)(() => {
+				pending.current = selection;
+			}, [selection]);
+			(0, react.useEffect)(() => {
+				readOnlyRef.current = readOnly;
+			}, [readOnly]);
+			(0, react.useEffect)(() => {
+				const controller = new AbortController();
+				setLoading(true);
+				setError("");
+				setItems([]);
+				setUnits([]);
+				const query = encodeURIComponent(assignee);
+				Promise.all([api(`?assignee=${query}`, void 0, controller.signal).then((data) => setUnits(data.units)), fetch(`/api/tomato-board/items?assignee=${query}`, {
+					signal: controller.signal,
+					headers: { accept: "application/json" }
+				}).then(async (response) => {
+					const data = await response.json();
+					if (!response.ok) throw new Error(data.error || worktimeText.readFailed);
+					setItems(data.items ?? []);
+				})]).catch((error) => {
+					if (!controller.signal.aborted) setError(errorText(error));
+				}).finally(() => {
+					if (!controller.signal.aborted) setLoading(false);
+				});
+				return () => controller.abort();
+			}, [version, assignee]);
+			(0, react.useEffect)(() => {
+				const controller = new AbortController();
+				setHistoryError("");
+				setHistory([]);
+				api(`/history?start=${start}&end=${end}&assignee=${encodeURIComponent(assignee)}`, void 0, controller.signal).then((data) => {
+					setHistory(data.tasks);
+					if (data.truncated) setHistoryError(worktimeText.historyFailed);
+				}).catch((error) => {
+					if (!controller.signal.aborted) setHistoryError(`${worktimeText.historyFailed}：${errorText(error)}`);
+				});
+				return () => controller.abort();
+			}, [
+				start,
+				end,
+				version,
+				assignee
+			]);
+			(0, react.useEffect)(() => {
+				const stop = () => {
+					if (!selecting.current) return;
+					selecting.current = false;
+					setDragging(false);
+					if (readOnlyRef.current || !pending.current) return;
+					justReleased.current = true;
+					window.setTimeout(() => {
+						justReleased.current = false;
+					}, 0);
+					setSelectedStory("");
+					setError("");
+					setChoosing(true);
+				};
+				window.addEventListener("pointerup", stop);
+				window.addEventListener("pointercancel", stop);
+				return () => {
+					window.removeEventListener("pointerup", stop);
+					window.removeEventListener("pointercancel", stop);
+				};
+			}, []);
+			const beginSelection = (day) => {
+				selecting.current = true;
+				setDragging(true);
+				setMessage("");
+				setSelection({
+					start: day,
+					end: day
+				});
+			};
+			const pickDay = (day) => {
+				setMessage("");
+				setSelection({
+					start: day,
+					end: day
+				});
+				setSelectedStory("");
+				setError("");
+				setChoosing(true);
+			};
+			const stretchSelection = (day) => {
+				if (selecting.current) setSelection((current) => current ? {
+					...current,
+					end: day
+				} : {
+					start: day,
+					end: day
+				});
+			};
+			const closePicker = () => {
+				setChoosing(false);
+				setSelection(null);
+				setSelectedStory("");
+			};
+			async function saveSelection(itemKey) {
+				if (!range || saving) return;
+				if (units.find((unit) => unit.itemKey === itemKey && unit.start === range[0] && unit.end === range[1])) {
+					setEditingKey(itemKey);
+					closePicker();
+					setMessage(worktimeText.duplicate);
+					return;
+				}
+				setSaving(true);
+				setError("");
+				try {
+					await api("/unit", {
+						id: crypto.randomUUID(),
+						itemKey,
+						start: range[0],
+						end: range[1]
+					});
+					setUnits((await api(`?assignee=${encodeURIComponent(assignee)}`)).units);
+					setEditingKey(itemKey);
+					closePicker();
+					setMessage(worktimeText.saved);
+				} catch (error) {
+					setError(errorText(error));
+				} finally {
+					setSaving(false);
+				}
+			}
+			const knownKeys = new Set(units.flatMap((unit) => unit.tasks.flatMap((task) => task.itemKey ? [task.itemKey] : [])));
+			const remote = history.filter((task) => !knownKeys.has(task.itemKey));
+			const weeks = [];
+			for (let i = 0; i < dates.length; i += 7) weeks.push(dates.slice(i, i + 7));
+			/** macOS-calendar style: clip each unit/task into the week, then stack overlapping bars into lanes. */
+			const buildBars = (weekDates) => {
+				const weekStart = weekDates[0];
+				const weekEnd = weekDates[6];
+				const bars = [];
+				const clip = (s, e) => {
+					if (!s || !e || e < weekStart || s > weekEnd) return null;
+					const i = weekDates.indexOf(s < weekStart ? weekStart : s);
+					const j = weekDates.indexOf(e > weekEnd ? weekEnd : e);
+					return i < 0 || j < 0 ? null : {
+						startCol: i + 1,
+						span: j - i + 1
+					};
+				};
+				for (const unit of units) {
+					const c = clip(unit.start, unit.end);
+					if (!c) continue;
+					bars.push({
+						key: `u-${unit.id}-${weekStart}`,
+						kind: "unit",
+						...c,
+						lane: 0,
+						label: unit.title,
+						tip: `${worktimeText.request} · ${unit.itemKey} · ${unit.start} ~ ${unit.end} · ${datesBetween(unit.start, unit.end).length}${worktimeText.days}`,
+						onClick: () => setEditingKey(unit.itemKey)
+					});
+					for (const [i, task] of unit.tasks.entries()) {
+						const tc = clip(task.start, task.end);
+						if (!tc) continue;
+						bars.push({
+							key: `t-${unit.id}-${i}-${weekStart}`,
+							kind: "task",
+							...tc,
+							lane: 0,
+							unverified: task.status !== "created",
+							label: task.title,
+							tip: task.error || `${worktimeText.task} · ${task.start} ~ ${task.end} · ${task.days}${worktimeText.personDays}${task.itemKey ? ` · ${task.itemKey}` : ""} · ${task.status === "created" ? worktimeText.created : task.status === "pending" ? worktimeText.pending : worktimeText.uncertain}`,
+							onClick: () => setEditingKey(unit.itemKey)
+						});
+					}
+				}
+				for (const task of remote) {
+					const c = clip(task.start, task.end);
+					if (!c) continue;
+					bars.push({
+						key: `r-${task.itemKey}-${weekStart}`,
+						kind: "task",
+						...c,
+						lane: 0,
+						label: task.title,
+						tip: `${worktimeText.task} · ${task.status} · ${task.itemKey} · ${task.start} ~ ${task.end}`,
+						onClick: () => openItem(task.itemKey)
+					});
+				}
+				bars.sort((a, b) => a.startCol - b.startCol || b.span - a.span);
+				const laneEnds = [];
+				for (const bar of bars) {
+					let lane = laneEnds.findIndex((laneEnd) => laneEnd < bar.startCol);
+					if (lane === -1) {
+						lane = laneEnds.length;
+						laneEnds.push(0);
+					}
+					bar.lane = lane;
+					laneEnds[lane] = bar.startCol + bar.span - 1;
+				}
+				return bars;
+			};
+			const editingUnits = editingKey ? sorted(units.filter((unit) => unit.itemKey === editingKey)) : [];
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+				className: worktime_module_css_default.page,
+				children: [
+					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						className: worktime_module_css_default.toolbar,
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: worktime_module_css_default.period,
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("h2", { children: [
+								start.replaceAll("-", "."),
+								" ",
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "—" }),
+								" ",
+								end.replaceAll("-", ".")
+							] }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: worktime_module_css_default.legend,
+								children: [
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { className: worktime_module_css_default.storyDot }),
+									worktimeText.request,
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { className: worktime_module_css_default.taskDot }),
+									worktimeText.task,
+									!readOnly && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("small", { children: worktimeText.dayPickHint })
+								]
+							})]
+						}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: worktime_module_css_default.navigation,
+							children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)(AssigneePicker, {
+									users,
+									value: assignee,
+									onChange: onAssigneeChange,
+									label: null,
+									className: worktime_module_css_default.userPicker,
+									currentUserName: worktimeText.currentUser,
+									ariaLabel: worktimeText.switchUser
+								}),
+								readOnly && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+									className: worktime_module_css_default.readOnlyTag,
+									children: worktimeText.readOnlyView
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									type: "button",
+									"aria-label": worktimeText.previous,
+									onClick: () => setAnchor(addDays(anchor, -7)),
+									children: "‹"
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									type: "button",
+									onClick: () => setAnchor(todayKey()),
+									children: worktimeText.today
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									type: "button",
+									"aria-label": worktimeText.next,
+									onClick: () => setAnchor(addDays(anchor, 7)),
+									children: "›"
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									type: "button",
+									disabled: loading,
+									onClick: () => {
+										setVersion((v) => v + 1);
+										onRefresh();
+									},
+									children: loading ? worktimeText.loading : worktimeText.refresh
+								})
+							]
+						})]
+					}),
+					error && !choosing && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+						role: "alert",
+						className: worktime_module_css_default.error,
+						children: error
+					}),
+					historyError && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+						role: "status",
+						className: worktime_module_css_default.notice,
+						children: historyError
+					}),
+					message && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+						role: "status",
+						className: worktime_module_css_default.notice,
+						children: message
+					}),
+					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("section", {
+						className: worktime_module_css_default.calendarArea,
+						"aria-label": worktimeText.dateSelection,
+						children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: `${worktime_module_css_default.calendar} ${dragging ? worktime_module_css_default.dragging : ""}`,
+							children: [worktimeText.weekdays.map((day) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+								className: worktime_module_css_default.weekday,
+								children: day
+							}, day)), weeks.map((weekDates) => {
+								const bars = buildBars(weekDates);
+								return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: worktime_module_css_default.week,
+									children: [weekDates.map((day, di) => {
+										const selected = range && day >= range[0] && day <= range[1];
+										const isToday = day === todayKey();
+										return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+											className: `${worktime_module_css_default.day} ${di < 2 ? worktime_module_css_default.weekend : ""} ${selected ? worktime_module_css_default.selectedDay : ""}`,
+											"data-date": day,
+											onPointerDown: readOnly ? void 0 : (event) => {
+												const target = event.target;
+												if (event.button !== 0 || target.closest("a,input,textarea,select") || target.closest("button") && !target.closest("[data-pick]")) return;
+												event.preventDefault();
+												beginSelection(day);
+											},
+											onPointerEnter: readOnly ? void 0 : () => stretchSelection(day),
+											children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+												type: "button",
+												"data-pick": "day",
+												className: worktime_module_css_default.dayNumber,
+												"aria-label": day,
+												"aria-pressed": !!selected,
+												"aria-current": isToday ? "date" : void 0,
+												disabled: readOnly,
+												onClick: () => {
+													if (!justReleased.current) pickDay(day);
+												},
+												children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("small", { children: [day.slice(5, 7), "/"] }), Number(day.slice(8))]
+											})
+										}, day);
+									}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+										className: worktime_module_css_default.events,
+										children: bars.map((bar) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+											type: "button",
+											title: bar.tip,
+											onClick: bar.onClick,
+											className: `${worktime_module_css_default.bar} ${bar.kind === "unit" ? worktime_module_css_default.barUnit : bar.unverified ? worktime_module_css_default.barUnverified : worktime_module_css_default.barTask}`,
+											style: {
+												gridColumn: `${bar.startCol} / span ${bar.span}`,
+												gridRow: String(bar.lane + 1)
+											},
+											children: bar.label
+										}, bar.key))
+									})]
+								}, weekDates[0]);
+							})]
+						})
+					}),
+					choosing && range && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Modal, {
+						open: true,
+						title: worktimeText.pickTitle,
+						closeLabel: worktimeText.close,
+						onClose: () => {
+							if (!saving) closePicker();
+						},
+						className: worktime_module_css_default.dialogNarrow,
+						footer: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+							variant: "ghost",
+							disabled: saving,
+							onClick: closePicker,
+							children: worktimeText.cancel
+						}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+							variant: "primary",
+							disabled: !selectedStory || saving,
+							onClick: () => void saveSelection(selectedStory),
+							children: saving ? worktimeText.saving : worktimeText.confirmPick
+						})] }),
+						children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: worktime_module_css_default.form,
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
+								"aria-label": worktimeText.pickTitle,
+								value: selectedStory,
+								onChange: (event) => setSelectedStory(event.target.value),
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+									value: "",
+									children: worktimeText.placeholder
+								}), requirements.map((item) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("option", {
+									value: item.itemKey,
+									children: [
+										item.itemKey,
+										" · ",
+										item.title
+									]
+								}, item.itemKey))]
+							}), error && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+								className: worktime_module_css_default.error,
+								role: "alert",
+								children: error
+							})]
+						})
+					}),
+					editingKey && editingUnits.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(GroupEditor, {
+						itemKey: editingKey,
+						units: editingUnits,
+						onClose: () => setEditingKey(""),
+						onSaved: (notice) => {
+							setVersion((v) => v + 1);
+							onRefresh();
+							if (notice) setMessage(notice);
+						}
+					}, editingKey)
+				]
+			});
+		}
+		/** One requirement is one plan: every date range it owns is allocated together. */
+		function GroupEditor({ itemKey, units, onClose, onSaved }) {
+			const title = units[0]?.title || itemKey;
+			const savedUnits = (0, react.useRef)(units);
+			const [meta, setMeta] = (0, react.useState)(null);
+			const [error, setError] = (0, react.useState)("");
+			const [busy, setBusy] = (0, react.useState)(false);
+			const [cost, setCost] = (0, react.useState)(units[0]?.cost || "");
+			const [team, setTeam] = (0, react.useState)(units[0]?.team || "");
+			const [category, setCategory] = (0, react.useState)(units[0]?.category || "");
+			const [pendingDelete, setPendingDelete] = (0, react.useState)(null);
+			const [confirmRetry, setConfirmRetry] = (0, react.useState)(false);
+			const [ranges, setRanges] = (0, react.useState)(() => units.map((unit) => ({
+				key: unit.id,
+				id: unit.id,
+				revision: unit.revision,
+				start: unit.start,
+				end: unit.end,
+				locked: unitHasCreatedTasks(unit, units)
+			})));
+			const [drafts, setDrafts] = (0, react.useState)(() => Object.fromEntries(stages.map((stage) => {
+				const task = units.filter((unit) => !unitHasCreatedTasks(unit, units)).flatMap((unit) => unit.tasks).find((item) => item.stage === stage);
+				return [stage, {
+					days: task ? String(task.days) : "",
+					title: task?.title || taskTitle(title, stage)
+				}];
+			})));
+			const hasCreated = units.some((unit) => unit.tasks.some((task) => task.status === "created"));
+			const openCount = ranges.filter((range) => !range.locked).length;
+			const retried = units.some((unit) => unit.tasks.some((task) => task.status !== "pending" && task.status !== "created"));
+			const count = (0, react.useMemo)(() => {
+				const valid = ranges.filter((range) => !range.locked && range.start && range.end && range.end >= range.start);
+				try {
+					return valid.length ? unitDates(valid).length : 0;
+				} catch {
+					return 0;
+				}
+			}, [ranges]);
+			const plannedCount = (0, react.useMemo)(() => {
+				const valid = ranges.filter((range) => range.start && range.end && range.end >= range.start);
+				try {
+					return valid.length ? unitDates(valid).length : 0;
+				} catch {
+					return 0;
+				}
+			}, [ranges]);
+			const createdTasks = units.flatMap((unit) => unit.tasks).filter((task) => task.status === "created");
+			const createdDays = createdTasks.reduce((sum, task) => sum + task.days, 0);
+			const total = stages.reduce((sum, stage) => sum + (Number(drafts[stage].days) || 0), 0);
+			const over = total > count + 1e-6;
+			(0, react.useEffect)(() => {
+				const controller = new AbortController();
+				api(`/metadata?itemKey=${encodeURIComponent(itemKey)}`, void 0, controller.signal).then((data) => {
+					setMeta(data);
+					setCost((current) => current || data.suggestedCost);
+					setTeam((current) => current || data.suggestedTeam);
+					setCategory((current) => current || data.categories.find((value) => /bug|BUG|Bug/u.test(title) ? /bug|BUG|Bug/u.test(value) : value === "软件开发") || data.categories[0] || "");
+				}).catch((error) => {
+					if (!controller.signal.aborted) setError(errorText(error));
+				});
+				return () => controller.abort();
+			}, [itemKey, title]);
+			const inputTasks = stages.filter((stage) => Number(drafts[stage].days) > 0).map((stage) => ({
+				stage,
+				days: Number(drafts[stage].days),
+				title: drafts[stage].title
+			}));
+			const changeRange = (key, patch) => setRanges((current) => current.map((range) => range.key === key ? {
+				...range,
+				...patch
+			} : range));
+			/** Read the requirement's stored ranges; the server merges touching ones already. */
+			async function loadGroup() {
+				const data = await api("?assignee=currentUser()");
+				savedUnits.current = data.units.filter((unit) => unit.itemKey === itemKey);
+				return data.units.filter((unit) => unit.itemKey === itemKey).sort((a, b) => a.start < b.start ? -1 : a.start > b.start ? 1 : 0).map((unit) => ({
+					key: unit.id,
+					id: unit.id,
+					revision: unit.revision,
+					start: unit.start,
+					end: unit.end,
+					locked: unitHasCreatedTasks(unit, data.units)
+				}));
+			}
+			/** Persist ranges first so creation always sees the exact saved revisions. */
+			async function persistRanges() {
+				const open = ranges.filter((range) => !range.locked);
+				if (!open.length) throw new Error(worktimeText.rangeEmpty);
+				for (const range of open) {
+					if (!range.start || !range.end) throw new Error(worktimeText.rangeIncomplete);
+					if (range.end < range.start) throw new Error(worktimeText.rangeInvalid);
+					datesBetween(range.start, range.end);
+				}
+				const data = await api("/ranges", {
+					itemKey,
+					units: savedUnits.current.map((unit) => ({
+						id: unit.id,
+						revision: unit.revision
+					})),
+					ranges: ranges.map((range) => ({
+						id: range.id || range.key,
+						start: range.start,
+						end: range.end
+					})),
+					cost,
+					team,
+					category
+				});
+				savedUnits.current = data.units;
+				const next = sorted(data.units).map((unit) => ({
+					key: unit.id,
+					id: unit.id,
+					revision: unit.revision,
+					start: unit.start,
+					end: unit.end,
+					locked: unitHasCreatedTasks(unit, data.units)
+				}));
+				setRanges(next);
+				return next.filter((range) => !range.locked && range.id).map((range) => ({
+					id: range.id,
+					revision: range.revision ?? 0
+				}));
+			}
+			async function saveRanges() {
+				setBusy(true);
+				setError("");
+				try {
+					await persistRanges();
+					onSaved(worktimeText.saved);
+					onClose();
+				} catch (error) {
+					setError(errorText(error));
+				} finally {
+					setBusy(false);
+				}
+			}
+			/** A plan that already created Tasks asks once more before it is removed. */
+			async function askRemove(range) {
+				if (busy) return;
+				if (range.locked && pendingDelete !== range.key) {
+					setPendingDelete(range.key);
+					setError("");
+					return;
+				}
+				setPendingDelete(null);
+				await removeRange(range);
+			}
+			/** Removing a saved range takes effect immediately; unsaved rows just disappear. */
+			async function removeRange(range) {
+				if (busy) return;
+				if (!range.id) {
+					setRanges((current) => current.filter((value) => value.key !== range.key));
+					return;
+				}
+				setBusy(true);
+				setError("");
+				try {
+					await api("/delete", {
+						id: range.id,
+						revision: range.revision ?? 0
+					});
+					setRanges(await loadGroup());
+					onSaved(worktimeText.rangeRemoved);
+				} catch (error) {
+					setError(errorText(error));
+				} finally {
+					setBusy(false);
+				}
+			}
+			async function create() {
+				setBusy(true);
+				setError("");
+				try {
+					const claims = await persistRanges();
+					if (over) throw new Error(`${worktimeText.overAllocate}：${total} > ${count} ${worktimeText.personDays}`);
+					const result = await api("/create", {
+						units: claims,
+						cost,
+						team,
+						category,
+						tasks: inputTasks,
+						confirmRetry
+					});
+					if (result.error) {
+						onSaved();
+						setError(result.error);
+					} else {
+						onSaved(worktimeText.createdMessage);
+						onClose();
+					}
+				} catch (error) {
+					setError(errorText(error));
+				} finally {
+					setBusy(false);
+				}
+			}
+			const renderSelect = (label, value, values, change) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", { children: [label, /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
+				required: true,
+				value,
+				disabled: busy,
+				onChange: (event) => change(event.target.value),
+				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+					value: "",
+					children: worktimeText.placeholder
+				}), values.map((option) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", { children: option }, option))]
+			})] });
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Modal, {
+				open: true,
+				title: `${worktimeText.edit} · ${itemKey}`,
+				description: title,
+				closeLabel: worktimeText.close,
+				onClose: () => {
+					if (!busy) onClose();
+				},
+				className: worktime_module_css_default.dialog,
+				footer: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+					/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+						variant: "ghost",
+						disabled: busy,
+						onClick: onClose,
+						children: worktimeText.close
+					}),
+					/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+						variant: "outline",
+						disabled: busy || !openCount,
+						onClick: () => void saveRanges(),
+						children: busy ? worktimeText.saving : worktimeText.saveRanges
+					}),
+					/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+						variant: "primary",
+						disabled: busy || !openCount || !meta || !cost || !team || !category || !inputTasks.length || over || retried && !confirmRetry,
+						onClick: () => void create(),
+						children: busy ? worktimeText.creating : worktimeText.create
+					})
+				] }),
+				children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					className: worktime_module_css_default.form,
+					children: [
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: worktime_module_css_default.unitSummary,
+							children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: itemKey }),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("strong", { children: [
+									plannedCount,
+									" ",
+									worktimeText.days
+								] }),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+									type: "button",
+									onClick: () => openItem(itemKey),
+									children: [worktimeText.view, " ↗"]
+								})
+							]
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("p", {
+							className: worktime_module_css_default.help,
+							children: [
+								worktimeText.createdAllocation,
+								" ",
+								createdDays,
+								" ",
+								worktimeText.personDays,
+								" · ",
+								worktimeText.currentCapacity,
+								" ",
+								count,
+								" ",
+								worktimeText.days
+							]
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: worktime_module_css_default.stageHeading,
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h3", { children: worktimeText.range }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: ranges.length })]
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+							className: worktime_module_css_default.help,
+							children: worktimeText.rangeHint
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							className: worktime_module_css_default.ranges,
+							children: ranges.map((range, index) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: worktime_module_css_default.rangeRow,
+								children: [
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+										type: "date",
+										"aria-label": `${worktimeText.start}${index + 1}`,
+										value: range.start,
+										disabled: range.locked || busy,
+										onChange: (event) => changeRange(range.key, { start: event.target.value })
+									}),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "—" }),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+										type: "date",
+										"aria-label": `${worktimeText.end}${index + 1}`,
+										min: range.start,
+										value: range.end,
+										disabled: range.locked || busy,
+										onChange: (event) => changeRange(range.key, { end: event.target.value })
+									}),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("small", { children: [
+										daysIn(range.start, range.end),
+										" ",
+										worktimeText.days,
+										range.locked ? ` · ${worktimeText.created}` : ""
+									] }),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+										type: "button",
+										"aria-label": worktimeText.removeRange,
+										disabled: busy,
+										className: pendingDelete === range.key ? worktime_module_css_default.danger : void 0,
+										onClick: () => void askRemove(range),
+										children: pendingDelete === range.key ? worktimeText.confirmDelete : worktimeText.removeRange
+									})
+								]
+							}, range.key))
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+							type: "button",
+							className: worktime_module_css_default.addRange,
+							disabled: busy,
+							onClick: () => setRanges((current) => [...current, {
+								key: crypto.randomUUID(),
+								start: "",
+								end: ""
+							}]),
+							children: worktimeText.addRange
+						}),
+						!meta && !error && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+							role: "status",
+							children: worktimeText.loading
+						}),
+						meta && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: worktime_module_css_default.twoColumns,
+							children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", { children: [worktimeText.project, /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+									readOnly: true,
+									value: meta.project
+								})] }),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", { children: [worktimeText.owner, /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+									readOnly: true,
+									value: meta.assigneeName
+								})] }),
+								renderSelect(worktimeText.cost, cost, meta.costs, setCost),
+								renderSelect(worktimeText.team, team, meta.teams, setTeam),
+								renderSelect(worktimeText.category, category, meta.categories, setCategory)
+							]
+						}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+							className: worktime_module_css_default.help,
+							children: meta.suggestionSource
+						})] }),
+						hasCreated && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: worktime_module_css_default.stageHeading,
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h3", { children: worktimeText.createdAllocation }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: [
+								createdDays,
+								" ",
+								worktimeText.personDays
+							] })]
+						}), createdTasks.map((task, i) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: worktime_module_css_default.result,
+							children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("strong", { children: [
+									worktimeText.stageLabels[task.stage],
+									" · ",
+									task.title
+								] }),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("small", { children: [
+									task.start,
+									" — ",
+									task.end,
+									" · ",
+									task.days,
+									" ",
+									worktimeText.personDays,
+									" · ",
+									worktimeText.created
+								] }),
+								task.itemKey && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+									type: "button",
+									onClick: () => openItem(task.itemKey),
+									children: [task.itemKey, " ↗"]
+								}),
+								task.skipped?.length ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("small", { children: [
+									worktimeText.skippedFields,
+									"：",
+									task.skipped.join("、")
+								] }) : null
+							]
+						}, task.itemKey || i))] }),
+						openCount > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: worktime_module_css_default.stageHeading,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h3", { children: worktimeText.currentStages }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: [
+									worktimeText.total,
+									" ",
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: total }),
+									" / ",
+									count,
+									" ",
+									worktimeText.personDays,
+									total < count - 1e-6 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+										" · ",
+										worktimeText.unallocated,
+										" ",
+										Number((count - total).toFixed(2))
+									] })
+								] })]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+								className: worktime_module_css_default.help,
+								children: worktimeText.splitHint
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+								className: worktime_module_css_default.stages,
+								children: stages.map((stage) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: worktime_module_css_default.stageRow,
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", { children: [worktimeText.stageLabels[stage], /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+										type: "number",
+										min: "0.5",
+										step: "0.5",
+										inputMode: "decimal",
+										placeholder: "0",
+										disabled: busy,
+										"aria-label": `${worktimeText.stageLabels[stage]} ${worktimeText.personDays}`,
+										value: drafts[stage].days,
+										onChange: (event) => setDrafts((current) => ({
+											...current,
+											[stage]: {
+												...current[stage],
+												days: event.target.value
+											}
+										}))
+									})] }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", { children: [worktimeText.taskTitle, /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+										value: drafts[stage].title,
+										disabled: busy,
+										"aria-label": `${worktimeText.stageLabels[stage]} ${worktimeText.taskTitle}`,
+										onChange: (event) => setDrafts((current) => ({
+											...current,
+											[stage]: {
+												...current[stage],
+												title: event.target.value
+											}
+										}))
+									})] })]
+								}, stage))
+							}),
+							over && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("p", {
+								className: worktime_module_css_default.error,
+								role: "alert",
+								children: [
+									worktimeText.overAllocate,
+									"：",
+									total,
+									" > ",
+									count,
+									" ",
+									worktimeText.personDays
+								]
+							})
+						] }),
+						hasCreated && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+							className: worktime_module_css_default.notice,
+							children: worktimeText.locked
+						}),
+						retried && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+							className: worktime_module_css_default.notice,
+							children: worktimeText.retryHint
+						}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+							type: "checkbox",
+							checked: confirmRetry,
+							disabled: busy,
+							onChange: (event) => setConfirmRetry(event.target.checked)
+						}), worktimeText.confirmRetry] })] }),
+						pendingDelete && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+							className: worktime_module_css_default.notice,
+							children: worktimeText.deleteKeepsTasks
+						}),
+						units.flatMap((unit) => unit.tasks).filter((task) => task.status !== "created").map((task, i) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: worktime_module_css_default.result,
+							children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("strong", { children: task.title }),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("small", { children: [
+									task.start,
+									" — ",
+									task.end,
+									" · ",
+									task.days,
+									" ",
+									worktimeText.personDays,
+									" · ",
+									task.status === "pending" ? worktimeText.pending : worktimeText.uncertain
+								] }),
+								task.itemKey && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+									type: "button",
+									onClick: () => openItem(task.itemKey),
+									children: [task.itemKey, " ↗"]
+								}),
+								task.error && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+									className: worktime_module_css_default.error,
+									children: task.error
+								})
+							]
+						}, i)),
+						error && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+							role: "alert",
+							className: worktime_module_css_default.error,
+							children: error
+						})
+					]
+				})
+			});
+		}
+		//#endregion
+		//#region src/client/TomatoBoard.tsx
 		let state = {
 			open: false,
 			loading: false,
@@ -824,6 +2038,7 @@ window.__ModuleLoader__.load({
 			"已挂起"
 		];
 		const TOMATO_FILTER_BLACKLIST_KEY = "taskboard.tomatoFilterBlacklist.v1";
+		const TOMATO_SEARCH_KEY = "taskboard.tomatoSearch.v1";
 		const TOMATO_SESSION_LINKS_KEY = "taskboard.tomatoSessionLinks.v1";
 		const TOMATO_MUTED_ITEMS_KEY = "taskboard.tomatoMutedItems.v1";
 		const TOMATO_LANE_ORDER_KEY = "taskboard.tomatoLaneOrder.v1";
@@ -878,7 +2093,7 @@ window.__ModuleLoader__.load({
 		}
 		function linkedSessionId(itemKey) {
 			const value = readSessionLinks()[itemKey];
-			return typeof value === "string" && value ? SessionId(value) : "";
+			return typeof value === "string" && value ? value : "";
 		}
 		function saveSessionLink(itemKey, sessionId) {
 			const links = readSessionLinks();
@@ -908,6 +2123,19 @@ window.__ModuleLoader__.load({
 			} catch {
 				return /* @__PURE__ */ new Set();
 			}
+		}
+		function readSearch() {
+			try {
+				return window.localStorage.getItem(TOMATO_SEARCH_KEY) ?? "";
+			} catch {
+				return "";
+			}
+		}
+		function saveSearch(value) {
+			try {
+				if (value) window.localStorage.setItem(TOMATO_SEARCH_KEY, value);
+				else window.localStorage.removeItem(TOMATO_SEARCH_KEY);
+			} catch {}
 		}
 		async function refresh(assignee = "currentUser()") {
 			emit({
@@ -1072,7 +2300,7 @@ window.__ModuleLoader__.load({
 			const filterMenuRef = (0, react.useRef)(null);
 			const [page, setPage] = (0, react.useState)("board");
 			const [storyToolbar, setStoryToolbar] = (0, react.useState)(null);
-			const [search, setSearch] = (0, react.useState)("");
+			const [search, setSearch] = (0, react.useState)(readSearch);
 			const [blacklist, setBlacklist] = (0, react.useState)(readFilterBlacklist);
 			const [mutedItems, setMutedItems] = (0, react.useState)(readMutedItems);
 			const [selectedAssignee, setSelectedAssignee] = (0, react.useState)("currentUser()");
@@ -1263,14 +2491,21 @@ window.__ModuleLoader__.load({
 												/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
 													type: "search",
 													value: search,
-													onChange: (event) => setSearch(event.target.value),
+													onChange: (event) => {
+														const value = event.target.value;
+														setSearch(value);
+														saveSearch(value);
+													},
 													placeholder: "搜索标题或 tag…",
 													"aria-label": "搜索标题或 tag"
 												}),
 												search && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 													type: "button",
 													"aria-label": "清空搜索词",
-													onClick: () => setSearch(""),
+													onClick: () => {
+														setSearch("");
+														saveSearch("");
+													},
 													children: "×"
 												})
 											]
@@ -1345,20 +2580,39 @@ window.__ModuleLoader__.load({
 						}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("nav", {
 							className: tomato_board_module_css_default.pageTabs,
 							"aria-label": "番茄工作台页面",
-							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-								type: "button",
-								"aria-current": page === "board" ? "page" : void 0,
-								onClick: () => setPage("board"),
-								children: "事项看板"
-							}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-								type: "button",
-								"aria-current": page === "points" ? "page" : void 0,
-								onClick: () => setPage("points"),
-								children: "迭代投入"
-							})]
+							children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									type: "button",
+									"aria-current": page === "board" ? "page" : void 0,
+									onClick: () => setPage("board"),
+									children: "事项看板"
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									type: "button",
+									"aria-current": page === "worktime" ? "page" : void 0,
+									onClick: () => setPage("worktime"),
+									children: worktimeText.title
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									type: "button",
+									"aria-current": page === "points" ? "page" : void 0,
+									onClick: () => setPage("points"),
+									children: "迭代投入"
+								})
+							]
 						})]
 					}),
-					page === "points" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)(StoryPoints, {
+					page === "worktime" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)(Worktime, {
+						assignee: selectedAssignee,
+						users: filterDirectory.users,
+						onAssigneeChange: (value) => {
+							setSelectedAssignee(value);
+							refresh(value);
+						},
+						onRefresh: () => {
+							refresh(selectedAssignee);
+						}
+					}, selectedAssignee) : page === "points" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)(StoryPoints, {
 						toolbarTarget: setStoryToolbar,
 						onOpenItem: openItem
 					}) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
@@ -1385,7 +2639,7 @@ window.__ModuleLoader__.load({
 						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 							className: tomato_board_module_css_default.board,
 							children: [statuses.map((status) => {
-								const items = filteredItems.filter((item) => item.status === status);
+								const items = filteredItems.filter((item) => item.status === status).sort((left, right) => right.createdAt.localeCompare(left.createdAt));
 								return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("section", {
 									ref: (element) => {
 										if (element) laneElements.current.set(status, element);
@@ -1626,69 +2880,6 @@ window.__ModuleLoader__.load({
 							})]
 						})
 					})
-				})]
-			});
-		}
-		function AssigneePicker({ users, value, onChange }) {
-			const rootRef = (0, react.useRef)(null);
-			const [open, setOpen] = (0, react.useState)(false);
-			const [query, setQuery] = (0, react.useState)("");
-			const options = (0, react.useMemo)(() => [{
-				username: "currentUser()",
-				name: "我负责的"
-			}, ...users.filter((user) => user.username !== "currentUser()")], [users]);
-			const selected = options.find((option) => option.username === value) ?? options[0];
-			const needle = query.trim().toLowerCase();
-			const filtered = needle ? options.filter((option) => `${option.name} ${option.username}`.toLowerCase().includes(needle)) : options;
-			(0, react.useEffect)(() => {
-				if (!open) return;
-				const close = (event) => {
-					if (event.target instanceof Node && !rootRef.current?.contains(event.target)) setOpen(false);
-				};
-				document.addEventListener("pointerdown", close, true);
-				return () => document.removeEventListener("pointerdown", close, true);
-			}, [open]);
-			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-				className: tomato_board_module_css_default.assigneeFilter,
-				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "负责人" }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-					ref: rootRef,
-					className: tomato_board_module_css_default.assigneePicker,
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)(_deepseek_ai_dsh_client_ui_primitives.Button, {
-						variant: "outline",
-						size: "sm",
-						className: tomato_board_module_css_default.assigneeTrigger,
-						"aria-haspopup": "listbox",
-						"aria-expanded": open,
-						onClick: () => {
-							setOpen((current) => !current);
-							setQuery("");
-						},
-						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: selected?.name ?? value }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconChevronDownOutline14, {})]
-					}), open ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-						className: tomato_board_module_css_default.assigneeDropdown,
-						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
-							autoFocus: true,
-							type: "search",
-							value: query,
-							onChange: (event) => setQuery(event.target.value),
-							placeholder: "搜索昵称或用户名…",
-							"aria-label": "搜索负责人"
-						}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-							role: "listbox",
-							"aria-label": "负责人",
-							children: [filtered.map((option) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
-								type: "button",
-								role: "option",
-								"aria-selected": option.username === value,
-								onClick: () => {
-									onChange(option.username);
-									setOpen(false);
-									setQuery("");
-								},
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("strong", { children: option.name }), option.name !== option.username && option.username !== "currentUser()" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("small", { children: option.username }) : null]
-							}, option.username)), filtered.length === 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", { children: "没有匹配的负责人" }) : null]
-						})]
-					}) : null]
 				})]
 			});
 		}

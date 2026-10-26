@@ -1,4 +1,4 @@
-//#region lib/types/invariant.js
+//#region src/invariant.ts
 const name = "tomato-board-invariant";
 function apply() {}
 //#endregion

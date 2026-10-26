@@ -1,12 +1,11 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
-import { Button, IconChevronDownOutline14, IconCloseOutline16, IconRefreshOutline16, Menu, Modal, } from '@deepseek-ai/dsh-client-ui-primitives';
+import { Button, IconChevronDownOutline14, IconCloseOutline16, IconRefreshOutline16, Menu, Modal, Toast, } from '@deepseek-ai/dsh-client-ui-primitives';
 import { SessionId } from '@deepseek-ai/dsh-session/types';
 import css from './tomato-board.module.css';
 import { StoryPoints } from './StoryPoints';
 import { Tag } from './Tag';
 let state = { open: false, loading: false, loaded: false, items: [], error: null, successMessage: null, selectedItem: null, truncated: false };
-let disposeWorkbench = null;
 const listeners = new Set();
 const emit = (patch) => {
     state = { ...state, ...patch };
@@ -27,6 +26,7 @@ const TOMATO_STATUS_ORDER = [
     '已取消', '延期解决', '测试完成', '待开发', '不修复', '已挂起',
 ];
 const TOMATO_FILTER_BLACKLIST_KEY = 'taskboard.tomatoFilterBlacklist.v1';
+const TOMATO_SEARCH_KEY = 'taskboard.tomatoSearch.v1';
 const TOMATO_SESSION_LINKS_KEY = 'taskboard.tomatoSessionLinks.v1';
 const TOMATO_MUTED_ITEMS_KEY = 'taskboard.tomatoMutedItems.v1';
 const TOMATO_LANE_ORDER_KEY = 'taskboard.tomatoLaneOrder.v1';
@@ -104,6 +104,25 @@ function readMutedItems() {
         return new Set();
     }
 }
+function readSearch() {
+    try {
+        return window.localStorage.getItem(TOMATO_SEARCH_KEY) ?? '';
+    }
+    catch {
+        return '';
+    }
+}
+function saveSearch(value) {
+    try {
+        if (value)
+            window.localStorage.setItem(TOMATO_SEARCH_KEY, value);
+        else
+            window.localStorage.removeItem(TOMATO_SEARCH_KEY);
+    }
+    catch {
+        // localStorage may be unavailable in restricted browser contexts; the in-memory search still works.
+    }
+}
 async function refresh(assignee = 'currentUser()') {
     emit({ loading: true, error: null, successMessage: null });
     try {
@@ -113,7 +132,6 @@ async function refresh(assignee = 'currentUser()') {
         if (!response.ok)
             throw new Error(body.error || `请求失败 (${response.status})`);
         emit({ items: body.items ?? [], truncated: body.truncated === true, loaded: true, successMessage: `已刷新 ${body.items?.length ?? 0} 条事项` });
-        setTimeout(() => emit({ successMessage: null }), 2000);
     }
     catch (error) {
         emit({ error: error instanceof Error ? error.message : '番茄事项读取失败' });
@@ -122,12 +140,13 @@ async function refresh(assignee = 'currentUser()') {
         emit({ loading: false });
     }
 }
-function closeWorkbench() {
-    const dispose = disposeWorkbench;
-    disposeWorkbench = null;
+function dismissSuccessMessage() {
+    emit({ successMessage: null });
+}
+function closeWorkbench(ctx) {
     // 关闭时清掉 loaded 和 error：下次打开工作台会重新拉取一次最新数据。
     emit({ open: false, selectedItem: null, loaded: false, error: null, successMessage: null });
-    dispose?.();
+    ctx.layout.selectPanel(null);
 }
 function TomatoBoardAction({ wide, openWorkbench }) {
     return (_jsxs("button", { className: css.sidebarAction, type: "button", title: "\u756A\u8304\u5DE5\u4F5C\u53F0", onClick: openWorkbench, children: [_jsx("span", { className: css.tomatoIcon, "aria-hidden": "true", children: "T" }), wide && _jsx("span", { children: "\u756A\u8304\u5DE5\u4F5C\u53F0" })] }));
@@ -168,7 +187,7 @@ function CreateConversationDialog({ ctx, item }) {
                 throw new Error(`事项上下文写入失败：${prompted.error.message}`);
             saveSessionLink(item.itemKey, createdSessionId);
             ctx.sessions.open(createdSessionId);
-            closeWorkbench();
+            closeWorkbench(ctx);
         }
         catch (reason) {
             setError(reason instanceof Error ? reason.message : 'Harness 对话创建失败');
@@ -191,7 +210,7 @@ function TomatoBoardPanel({ ctx }) {
     const filterMenuRef = useRef(null);
     const [page, setPage] = useState('board');
     const [storyToolbar, setStoryToolbar] = useState(null);
-    const [search, setSearch] = useState('');
+    const [search, setSearch] = useState(readSearch);
     const [blacklist, setBlacklist] = useState(readFilterBlacklist);
     const [mutedItems, setMutedItems] = useState(readMutedItems);
     const [selectedAssignee, setSelectedAssignee] = useState('currentUser()');
@@ -227,7 +246,7 @@ function TomatoBoardPanel({ ctx }) {
                 return;
             if (event.target.closest('[role="dialog"], [role="menu"]'))
                 return;
-            closeWorkbench();
+            closeWorkbench(ctx);
         };
         document.addEventListener('pointerdown', closeOnOutsideNavigation, true);
         return () => document.removeEventListener('pointerdown', closeOnOutsideNavigation, true);
@@ -287,7 +306,7 @@ function TomatoBoardPanel({ ctx }) {
         if (associated) {
             saveSessionLink(item.itemKey, associated);
             ctx.sessions.open(associated);
-            closeWorkbench();
+            closeWorkbench(ctx);
             return;
         }
         emit({ selectedItem: item });
@@ -372,8 +391,11 @@ function TomatoBoardPanel({ ctx }) {
             return next;
         });
     };
-    return (_jsxs("section", { ref: workbenchRef, className: css.workbench, "aria-label": "\u756A\u8304\u5DE5\u4F5C\u53F0", children: [_jsxs("header", { className: css.header, children: [_jsxs("div", { className: css.titleRow, children: [_jsx("h1", { children: "\u756A\u8304\u5DE5\u4F5C\u53F0" }), _jsxs("div", { className: css.actions, children: [page === 'points' && storyToolbar, page === 'board' && _jsxs(_Fragment, { children: [_jsxs("label", { className: css.searchField, children: [_jsx("span", { "aria-hidden": "true", children: "\u2315" }), _jsx("input", { type: "search", value: search, onChange: event => setSearch(event.target.value), placeholder: "\u641C\u7D22\u6807\u9898\u6216 tag\u2026", "aria-label": "\u641C\u7D22\u6807\u9898\u6216 tag" }), search && _jsx("button", { type: "button", "aria-label": "\u6E05\u7A7A\u641C\u7D22\u8BCD", onClick: () => setSearch(''), children: "\u00D7" })] }), _jsxs("details", { ref: filterMenuRef, className: css.filterMenu, children: [_jsxs("summary", { "aria-label": "\u7A7A\u95F4\u3001\u8D1F\u8D23\u4EBA\u3001\u7C7B\u578B\u548C\u72B6\u6001\u7B5B\u9009", title: "\u7A7A\u95F4\u3001\u8D1F\u8D23\u4EBA\u3001\u7C7B\u578B\u548C\u72B6\u6001\u7B5B\u9009", children: [_jsx("span", { "aria-hidden": "true", children: "\u25BD" }), (blacklist.types.size > 0 || blacklist.statuses.size > 0 || blacklist.workspaces.size > 0 || selectedAssignee !== 'currentUser()') && _jsx("i", {})] }), _jsxs("div", { className: css.filterPopover, children: [_jsx(WorkspaceFilterRow, { options: workspaceOptions, hidden: blacklist.workspaces, onToggle: value => toggleBlacklist('workspaces', value), onSetAll: setWorkspaceFilterAll }), _jsx(AssigneePicker, { users: filterDirectory.users, value: selectedAssignee, onChange: value => { setSelectedAssignee(value); void refresh(value); } }), _jsx(FilterRow, { label: "\u7C7B\u578B", options: typeOptions, hidden: blacklist.types, onToggle: value => toggleBlacklist('types', value) }), _jsx(FilterRow, { label: "\u72B6\u6001", options: statusOptions, hidden: blacklist.statuses, onToggle: value => toggleBlacklist('statuses', value) })] })] }), _jsx(Button, { variant: "toolbar", size: "sm", className: css.headerIconButton, icon: _jsx(IconRefreshOutline16, {}), title: "\u5237\u65B0\u756A\u8304\u4E8B\u9879", "aria-label": "\u5237\u65B0\u756A\u8304\u4E8B\u9879", disabled: board.loading, onClick: () => { void refresh(selectedAssignee); setDirectoryVersion(value => value + 1); } })] }), _jsx(Button, { variant: "toolbar", size: "sm", className: css.headerIconButton, icon: _jsx(IconCloseOutline16, {}), title: "\u5173\u95ED\u756A\u8304\u5DE5\u4F5C\u53F0", "aria-label": "\u5173\u95ED\u756A\u8304\u5DE5\u4F5C\u53F0", onClick: closeWorkbench })] })] }), _jsxs("nav", { className: css.pageTabs, "aria-label": "\u756A\u8304\u5DE5\u4F5C\u53F0\u9875\u9762", children: [_jsx("button", { type: "button", "aria-current": page === 'board' ? 'page' : undefined, onClick: () => setPage('board'), children: "\u4E8B\u9879\u770B\u677F" }), _jsx("button", { type: "button", "aria-current": page === 'points' ? 'page' : undefined, onClick: () => setPage('points'), children: "\u8FED\u4EE3\u6295\u5165" })] })] }), page === 'points' ? _jsx(StoryPoints, { toolbarTarget: setStoryToolbar, onOpenItem: openItem }) : _jsxs(_Fragment, { children: [board.successMessage && _jsx("div", { className: css.success, role: "status", children: board.successMessage }), board.error && _jsx("div", { className: css.error, role: "alert", children: board.error }), board.truncated && _jsxs("p", { className: css.notice, role: "status", children: ["\u4E8B\u9879\u6570\u91CF\u5DF2\u8FBE\u914D\u7F6E\u4E0A\u9650\uFF0C\u5F53\u524D\u4EC5\u5C55\u793A\u524D ", board.items.length, " \u6761\u3002"] }), _jsxs("div", { className: css.board, children: [statuses.map(status => {
-                                const items = filteredItems.filter(item => item.status === status);
+    return (_jsxs("section", { ref: workbenchRef, className: css.workbench, "aria-label": "\u756A\u8304\u5DE5\u4F5C\u53F0", children: [_jsxs("header", { className: css.header, children: [_jsxs("div", { className: css.titleRow, children: [_jsx("h1", { children: "\u756A\u8304\u5DE5\u4F5C\u53F0" }), _jsxs("div", { className: css.actions, children: [page === 'points' && storyToolbar, page === 'board' && _jsxs(_Fragment, { children: [_jsxs("label", { className: css.searchField, children: [_jsx("span", { "aria-hidden": "true", children: "\u2315" }), _jsx("input", { type: "search", value: search, onChange: event => { const value = event.target.value; setSearch(value); saveSearch(value); }, placeholder: "\u641C\u7D22\u6807\u9898\u6216 tag\u2026", "aria-label": "\u641C\u7D22\u6807\u9898\u6216 tag" }), search && _jsx("button", { type: "button", "aria-label": "\u6E05\u7A7A\u641C\u7D22\u8BCD", onClick: () => { setSearch(''); saveSearch(''); }, children: "\u00D7" })] }), _jsxs("details", { ref: filterMenuRef, className: css.filterMenu, children: [_jsxs("summary", { "aria-label": "\u7A7A\u95F4\u3001\u8D1F\u8D23\u4EBA\u3001\u7C7B\u578B\u548C\u72B6\u6001\u7B5B\u9009", title: "\u7A7A\u95F4\u3001\u8D1F\u8D23\u4EBA\u3001\u7C7B\u578B\u548C\u72B6\u6001\u7B5B\u9009", children: [_jsx("span", { "aria-hidden": "true", children: "\u25BD" }), (blacklist.types.size > 0 || blacklist.statuses.size > 0 || blacklist.workspaces.size > 0 || selectedAssignee !== 'currentUser()') && _jsx("i", {})] }), _jsxs("div", { className: css.filterPopover, children: [_jsx(WorkspaceFilterRow, { options: workspaceOptions, hidden: blacklist.workspaces, onToggle: value => toggleBlacklist('workspaces', value), onSetAll: setWorkspaceFilterAll }), _jsx(AssigneePicker, { users: filterDirectory.users, value: selectedAssignee, onChange: value => { setSelectedAssignee(value); void refresh(value); } }), _jsx(FilterRow, { label: "\u7C7B\u578B", options: typeOptions, hidden: blacklist.types, onToggle: value => toggleBlacklist('types', value) }), _jsx(FilterRow, { label: "\u72B6\u6001", options: statusOptions, hidden: blacklist.statuses, onToggle: value => toggleBlacklist('statuses', value) })] })] }), _jsx(Button, { variant: "toolbar", size: "sm", className: css.headerIconButton, icon: _jsx(IconRefreshOutline16, {}), title: "\u5237\u65B0\u756A\u8304\u4E8B\u9879", "aria-label": "\u5237\u65B0\u756A\u8304\u4E8B\u9879", disabled: board.loading, onClick: () => { void refresh(selectedAssignee); setDirectoryVersion(value => value + 1); } })] }), _jsx(Button, { variant: "toolbar", size: "sm", className: css.headerIconButton, icon: _jsx(IconCloseOutline16, {}), title: "\u5173\u95ED\u756A\u8304\u5DE5\u4F5C\u53F0", "aria-label": "\u5173\u95ED\u756A\u8304\u5DE5\u4F5C\u53F0", onClick: () => closeWorkbench(ctx) })] })] }), _jsxs("nav", { className: css.pageTabs, "aria-label": "\u756A\u8304\u5DE5\u4F5C\u53F0\u9875\u9762", children: [_jsx("button", { type: "button", "aria-current": page === 'board' ? 'page' : undefined, onClick: () => setPage('board'), children: "\u4E8B\u9879\u770B\u677F" }), _jsx("button", { type: "button", "aria-current": page === 'points' ? 'page' : undefined, onClick: () => setPage('points'), children: "\u8FED\u4EE3\u6295\u5165" })] })] }), page === 'points' ? _jsx(StoryPoints, { toolbarTarget: setStoryToolbar, onOpenItem: openItem }) : _jsxs(_Fragment, { children: [board.successMessage && _jsx(Toast, { text: board.successMessage, anchor: workbenchRef.current, holdMs: 1500, onDone: dismissSuccessMessage }), board.error && _jsx("div", { className: css.error, role: "alert", children: board.error }), board.truncated && _jsxs("p", { className: css.notice, role: "status", children: ["\u4E8B\u9879\u6570\u91CF\u5DF2\u8FBE\u914D\u7F6E\u4E0A\u9650\uFF0C\u5F53\u524D\u4EC5\u5C55\u793A\u524D ", board.items.length, " \u6761\u3002"] }), _jsxs("div", { className: css.board, children: [statuses.map(status => {
+                                const items = filteredItems
+                                    .filter(item => item.status === status)
+                                    // 泳道内卡片按创建时间从新到旧（新创建的排最上面）
+                                    .sort((left, right) => right.createdAt.localeCompare(left.createdAt));
                                 return (_jsxs("section", { ref: element => { if (element)
                                         laneElements.current.set(status, element);
                                     else
@@ -622,13 +644,12 @@ function TomatoConversationShortcut({ ctx, sessionId, useSessions }) {
                         ? transitioning ? '正在流转…' : delegatedToAgent ? 'AI 已接手' : '流转失败'
                         : (_jsxs(_Fragment, { children: [_jsx("span", { className: css.transitionCaption, children: "\u72B6\u6001" }), _jsx("strong", { children: transitionState.currentStatus || '查询中…' }), availableTransitions.length > 0 ? (_jsxs(_Fragment, { children: [_jsx("span", { className: css.transitionDivider, "aria-hidden": "true" }), _jsx("span", { className: css.transitionAction, children: "\u6D41\u8F6C" }), _jsx(IconChevronDownOutline14, { className: css.transitionChevron })] })) : null] })) })) }), _jsx(Button, { variant: "toolbar", size: "sm", title: "\u5728\u756A\u8304\u4E2D\u6253\u5F00\u4E8B\u9879", "aria-label": `在番茄中打开 ${itemKey}`, disabled: !transitionState.tomatoUrl, onClick: () => window.open(transitionState.tomatoUrl, '_blank', 'noopener,noreferrer'), children: "\u756A\u8304 \u2197" })] }));
 }
-export const inject = ['slots', 'sessions', 'workspaces'];
+export const inject = ['slots', 'layout', 'sessions', 'workspaces'];
 export function apply(ctx) {
+    ctx.slots.inject('main', () => ctx.slots.register({ name: 'main', key: 'tomato-board', id: 'tomato-board-panel' }, () => _jsx(TomatoBoardPanel, { ctx: ctx })));
     const openWorkbench = () => {
-        if (disposeWorkbench)
-            return;
-        emit({ open: true });
-        disposeWorkbench = ctx.slots.inject('shell.overlay', () => ctx.slots.register({ name: 'shell.overlay', id: 'tomato-board-panel' }, () => _jsx(TomatoBoardPanel, { ctx: ctx })));
+        emit({ open: true, loaded: false, error: null });
+        ctx.layout.selectPanel('tomato-board');
     };
     ctx.slots.inject('conversation.session.header.actions', () => ctx.slots.register({ name: 'conversation.session.header.actions', id: 'tomato-shortcut', order: 12 }, props => _jsx(TomatoConversationShortcut, { ...props, ctx: ctx })));
     ctx.slots.inject('sidebar.footer.action', () => ctx.slots.register({ name: 'sidebar.footer.action', id: 'tomato-board' }, props => _jsx(TomatoBoardAction, { ...props, openWorkbench: openWorkbench })));
