@@ -32,6 +32,48 @@ function resolveCliExecutable(executable, path = process.env.PATH ?? "", home = 
 function unitHasCreatedTasks(unit, units) {
 	return units.some((owner) => owner.itemKey === unit.itemKey && owner.tasks.some((task) => task.status === "created" && task.start <= unit.end && task.end >= unit.start));
 }
+/** Join touching ranges without changing any Task dates or creation records. */
+function mergeRequirementRanges(units, itemKey, preserveAllocated = false) {
+	const group = units.filter((unit) => unit.itemKey === itemKey).sort((a, b) => a.start.localeCompare(b.start) || a.id.localeCompare(b.id));
+	const merged = [];
+	for (const unit of group) {
+		const previous = merged.at(-1);
+		const locked = preserveAllocated && previous && (unitHasCreatedTasks(unit, units) || unitHasCreatedTasks(previous, units) || unit.tasks.some((task) => task.status !== "pending") || previous.tasks.some((task) => task.status !== "pending"));
+		if (previous && !locked && unit.start <= addDays(previous.end, 1)) merged[merged.length - 1] = {
+			...previous,
+			end: previous.end > unit.end ? previous.end : unit.end,
+			tasks: [...previous.tasks, ...unit.tasks],
+			revision: Math.max(previous.revision, unit.revision) + 1,
+			updatedAt: previous.updatedAt > unit.updatedAt ? previous.updatedAt : unit.updatedAt,
+			assignees: [...new Set([...previous.assignees ?? [], ...unit.assignees ?? []])],
+			cost: previous.cost || unit.cost || "",
+			team: previous.team || unit.team || "",
+			category: previous.category || unit.category || ""
+		};
+		else merged.push(unit);
+	}
+	const survivors = new Map(merged.map((unit) => [unit.id, unit]));
+	return units.flatMap((unit) => unit.itemKey !== itemKey ? [unit] : survivors.has(unit.id) ? [survivors.get(unit.id)] : []);
+}
+/** Change one range, then merge its continuous neighbours; Task dates stay unchanged. */
+function applyRequirementChange(units, change) {
+	if (!change) return units;
+	const active = units.find((unit) => unit.id === change.id);
+	if (!active) return units;
+	return mergeRequirementRanges(units.map((unit) => {
+		if (change.action === "resize") return unit.id === change.id ? {
+			...unit,
+			start: change.start,
+			end: change.end
+		} : unit;
+		if (unit.id !== change.id) return unit;
+		return {
+			...unit,
+			start: addDays(unit.start, change.delta),
+			end: addDays(unit.end, change.delta)
+		};
+	}), active.itemKey);
+}
 /** Format a browser-local calendar date without UTC conversion. */
 function dateKey(date) {
 	return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
@@ -91,6 +133,206 @@ function allocateGroupTasks(dates, tasks) {
 	});
 	if (spent > dates.length + 1e-6) throw new Error(`阶段合计不能大于 ${dates.length} 人天，当前为 ${Number(spent.toFixed(4))} 人天`);
 	return result;
+}
+//#endregion
+//#region src/task-bugs.ts
+const record$1 = (value) => value && typeof value === "object" && !Array.isArray(value) ? value : {};
+const text$1 = (value) => typeof value === "string" ? value : value && typeof value === "object" ? text$1(record$1(value).name) : "";
+const array = (value) => Array.isArray(value) ? value : [];
+const keyPattern$1 = /^[A-Za-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)*-\d+$/u;
+const bugTypes = [
+	"Bug",
+	"测试缺陷",
+	"线上Bug",
+	"升级问题"
+];
+const bugFilter = `类型 in ${JSON.stringify(bugTypes)}`;
+const isBug = (row) => bugTypes.includes(text$1(row.itemType)) || bugTypes.includes(text$1(record$1(row.itemType).key));
+const bug = (row) => ({
+	itemKey: text$1(row.key),
+	title: text$1(row.name),
+	status: text$1(row.status)
+});
+/** All reads and writes use native Team data; no local relationship cache. */
+function createTaskBugService(run, config) {
+	const names = config.bugLinkNames?.length ? config.bugLinkNames : ["relates to", "relates to2"];
+	const countCache = /* @__PURE__ */ new Map();
+	const countReads = /* @__PURE__ */ new Map();
+	function rememberCount(itemKey, count) {
+		if (countCache.size >= 500 && !countCache.has(itemKey)) countCache.delete(countCache.keys().next().value);
+		countCache.set(itemKey, {
+			count,
+			expires: Date.now() + 3e4
+		});
+	}
+	async function task(itemKey) {
+		if (!keyPattern$1.test(itemKey)) throw new Error("无效的 Task 编号");
+		const value = record$1(await run([
+			"team",
+			"item",
+			"view",
+			itemKey
+		]));
+		if (text$1(value.itemType) !== "Task") throw new Error("请选择 Task");
+		if (!text$1(value.objectId)) throw new Error("Task 缺少事项标识");
+		return value;
+	}
+	async function search(iql) {
+		const items = /* @__PURE__ */ new Map();
+		for (let page = 1; page <= 20; page++) {
+			const payload = record$1(await run([
+				"team",
+				"item",
+				"search",
+				"--iql",
+				`${bugFilter} and (${iql})`,
+				"--fields",
+				"key,name,status,itemType",
+				"--size",
+				"50",
+				"--page",
+				String(page)
+			]));
+			if (!Array.isArray(payload.items)) throw new Error("番茄返回的缺陷列表格式异常");
+			for (const row of payload.items.map(record$1).filter(isBug)) {
+				const value = bug(row);
+				if (keyPattern$1.test(value.itemKey)) items.set(value.itemKey, value);
+			}
+			if (payload.items.length < 50 || Number(payload.nextPageIndex) === -1 || Number.isFinite(Number(payload.count)) && page * 50 >= Number(payload.count)) return [...items.values()];
+		}
+		throw new Error("缺陷超过 1000 条，请在番茄中缩小范围");
+	}
+	function linkedQuery(item) {
+		return names.map((name) => `item in linkedItemsOf(${JSON.stringify(`id = ${text$1(item.objectId)}`)}, ${JSON.stringify(name)})`).join(" or ");
+	}
+	async function count(itemKey) {
+		const cached = countCache.get(itemKey);
+		if (cached && cached.expires > Date.now()) return cached.count;
+		const pending = countReads.get(itemKey);
+		if (pending) return pending;
+		const snapshot = countCache.get(itemKey);
+		const read = (async () => {
+			const payload = record$1(await run([
+				"team",
+				"item",
+				"search",
+				"--iql",
+				`${bugFilter} and (${linkedQuery(await task(itemKey))})`,
+				"--size",
+				"1",
+				"--fields",
+				"key"
+			]));
+			const value = Number(payload.count);
+			if (payload.count == null || !Number.isSafeInteger(value) || value < 0) throw new Error("番茄返回的关联 Bug 数量异常");
+			const newer = countCache.get(itemKey);
+			if (newer && newer !== snapshot) return newer.count;
+			rememberCount(itemKey, value);
+			return value;
+		})();
+		countReads.set(itemKey, read);
+		try {
+			return await read;
+		} finally {
+			if (countReads.get(itemKey) === read) countReads.delete(itemKey);
+		}
+	}
+	return {
+		async counts(itemKeys) {
+			if (!Array.isArray(itemKeys) || itemKeys.length > 100 || itemKeys.some((key) => typeof key !== "string" || !keyPattern$1.test(key))) throw new Error("无效的 Task 编号列表（最多 100 个）");
+			const keys = [...new Set(itemKeys)];
+			const counts = {};
+			const failed = [];
+			let index = 0;
+			await Promise.all(Array.from({ length: Math.min(3, keys.length) }, async () => {
+				while (index < keys.length) {
+					const key = keys[index++];
+					try {
+						counts[key] = await count(key);
+					} catch {
+						failed.push(key);
+					}
+				}
+			}));
+			return {
+				counts,
+				failed
+			};
+		},
+		async load(itemKey, query = "") {
+			const value = await task(itemKey);
+			if (query) {
+				if (query.length > 120) throw new Error("搜索内容不能超过 120 字");
+				if (keyPattern$1.test(query)) {
+					const target = record$1(await run([
+						"team",
+						"item",
+						"view",
+						query
+					]));
+					return { items: isBug(target) ? [bug(target)] : [] };
+				}
+				return { items: await search(`标题 ~ ${JSON.stringify(query)}`) };
+			}
+			const ancestor = record$1(value.ancestor);
+			const parent = text$1(ancestor.objectId) ? {
+				itemKey: text$1(ancestor.key),
+				title: text$1(ancestor.name)
+			} : null;
+			const [linked, suggested] = await Promise.all([search(linkedQuery(value)), parent ? search(`ancestors in ${JSON.stringify([text$1(ancestor.objectId)])}`) : Promise.resolve([])]);
+			rememberCount(itemKey, linked.length);
+			return {
+				linked,
+				suggested,
+				parent,
+				canLink: Boolean(config.bugLinkTypeId)
+			};
+		},
+		async link(itemKey, bugKey) {
+			if (!config.bugLinkTypeId) throw new Error("尚未配置番茄事项关联类型");
+			if (!keyPattern$1.test(bugKey)) throw new Error("无效的 Bug 编号");
+			const [source, target, user] = await Promise.all([
+				task(itemKey),
+				run([
+					"team",
+					"item",
+					"view",
+					bugKey
+				]).then(record$1),
+				run([
+					"team",
+					"user",
+					"current"
+				]).then(record$1)
+			]);
+			if (!array(record$1(source.values).assignee).map(record$1).some((owner) => text$1(user.userId) && text$1(owner.objectId ?? owner.value) === text$1(user.userId) || text$1(user.username) && text$1(owner.username) === text$1(user.username))) throw new Error("只能关联自己负责的 Task");
+			if (!isBug(target) || !text$1(target.objectId)) throw new Error("请选择有效的缺陷事项");
+			const existing = await search(linkedQuery(source));
+			if (existing.some((item) => item.itemKey === bugKey)) {
+				rememberCount(itemKey, existing.length);
+				return {
+					bug: bug(target),
+					count: existing.length
+				};
+			}
+			await run([
+				"team",
+				"item",
+				"edit",
+				itemKey,
+				"--values",
+				JSON.stringify({ Relations: { links: [{
+					linkType: config.bugLinkTypeId,
+					destinationItems: [text$1(target.objectId)]
+				}] } })
+			]);
+			rememberCount(itemKey, existing.length + 1);
+			return {
+				bug: bug(target),
+				count: existing.length + 1
+			};
+		}
+	};
 }
 //#endregion
 //#region src/worktime.ts
@@ -231,23 +473,11 @@ function userValue(user) {
 }
 /** One requirement is one plan, so touching or overlapping ranges merge into one unit. */
 function mergeRanges(store, itemKey) {
-	const group = store.units.filter((unit) => unit.itemKey === itemKey).sort((a, b) => a.start < b.start ? -1 : a.start > b.start ? 1 : 0);
-	let previous;
-	for (const unit of group) {
-		if (previous) {
-			if (!(unitHasCreatedTasks(unit, store.units) || unitHasCreatedTasks(previous, store.units) || unit.tasks.some((task) => task.status !== "pending") || previous.tasks.some((task) => task.status !== "pending")) && unit.start <= addDays(previous.end, 1)) {
-				if (unit.end > previous.end) previous.end = unit.end;
-				if (!previous.cost && unit.cost) previous.cost = unit.cost;
-				if (!previous.team && unit.team) previous.team = unit.team;
-				if (!previous.category && unit.category) previous.category = unit.category;
-				previous.revision += 1;
-				previous.updatedAt = (/* @__PURE__ */ new Date()).toISOString();
-				store.units.splice(store.units.indexOf(unit), 1);
-				continue;
-			}
-		}
-		previous = unit;
-	}
+	const original = new Map(store.units.map((unit) => [unit.id, unit]));
+	store.units = mergeRequirementRanges(store.units, itemKey, true).map((unit) => original.get(unit.id) === unit ? unit : {
+		...unit,
+		updatedAt: (/* @__PURE__ */ new Date()).toISOString()
+	});
 	return store.units.find((unit) => unit.itemKey === itemKey);
 }
 /** The unit that now owns a date the caller used to address. */
@@ -330,6 +560,17 @@ function registerWorktime(ctx, deps) {
 			}
 		}), `tomato-board: ${path}`);
 	};
+	const taskBugs = createTaskBugService(deps.run, deps);
+	route("/api/tomato-board/worktime/task-bug-counts", "POST", async (request) => {
+		const input = await body(request);
+		if (!Array.isArray(input.itemKeys)) throw new Error("缺少 Task 编号列表");
+		return taskBugs.counts(input.itemKeys);
+	});
+	route("/api/tomato-board/worktime/task-bugs", "GET", async (_, query) => taskBugs.load(query.get("itemKey") ?? "", query.get("q")?.trim() ?? ""));
+	route("/api/tomato-board/worktime/task-bug", "POST", async (request) => {
+		const input = await body(request);
+		return serial(() => taskBugs.link(String(input.itemKey ?? ""), String(input.bugKey ?? "")));
+	});
 	route("/api/tomato-board/worktime", "GET", async (_, query) => {
 		const store = await load();
 		const assignee = query.get("assignee");
@@ -351,10 +592,11 @@ function registerWorktime(ctx, deps) {
 		if (!ranges.length || new Set(ranges.map((range) => range.id)).size !== ranges.length) throw new Error("请选择有效且不重复的时间段");
 		return serial(async () => {
 			const store = await load();
+			if (store.groupOperations?.some((operation) => operation.itemKey === itemKey)) throw new Error("需求上次移动结果待核对，请先核对番茄");
 			const group = store.units.filter((unit) => unit.itemKey === itemKey);
 			const claims = list(input.units).map(record);
 			if (group.length !== claims.length || group.some((unit) => !claims.some((claim) => claim.id === unit.id && claim.revision === unit.revision))) throw new Error("安排已变化，请刷新后编辑");
-			if (group.some((unit) => !ranges.some((range) => range.id === unit.id))) throw new Error("请先通过删除操作移除已有时间段");
+			if (group.some((unit) => !ranges.some((range) => range.id === unit.id))) throw new Error("需求安排不可删除，请保留全部已有时间段");
 			const { story, workspace, assignees } = await storyContext(deps.run, itemKey);
 			const next = ranges.map((range) => {
 				const existing = store.units.find((unit) => unit.id === range.id);
@@ -388,7 +630,9 @@ function registerWorktime(ctx, deps) {
 		const unit = validateUnit(input);
 		return serial(async () => {
 			const store = await load();
+			if (store.groupOperations?.some((operation) => operation.itemKey === unit.itemKey)) throw new Error("需求上次移动结果待核对，请先核对番茄");
 			const existing = store.units.find((value) => value.id === unit.id);
+			if (existing && existing.itemKey !== unit.itemKey) throw new Error("需求安排不可替换，请新增安排");
 			if (!existing && input.revision !== void 0) throw new Error("安排已发生变化，请刷新后编辑");
 			if (existing && existing.revision !== input.revision) throw new Error("安排已发生变化，请刷新后编辑");
 			if (existing && unitHasCreatedTasks(existing, store.units)) throw new Error("已创建 Task 的时间段不能改动日期；请新增安排以保留历史");
@@ -414,26 +658,146 @@ function registerWorktime(ctx, deps) {
 			return { unit: survivor(store, value.itemKey, value.start) ?? value };
 		});
 	});
-	route("/api/tomato-board/worktime/delete", "POST", async (request) => {
+	route("/api/tomato-board/worktime/delete", "POST", async () => {
+		throw new Error("需求安排不可删除，请对具体 Task 执行删除操作");
+	});
+	/** Verify ownership and the version of a remote Task before writing dates. */
+	async function ownedTask(itemKey, start, end, user) {
+		const raw = record(await deps.run([
+			"team",
+			"item",
+			"view",
+			itemKey
+		]));
+		if (text(raw.itemType) !== "Task") throw new Error("只允许对 Task 同步日期或删除");
+		const values = fieldValues(raw);
+		if (!list(values.assignee).map(record).some((owner) => text(user.userId) && text(owner.objectId ?? owner.value) === text(user.userId) || text(user.username) && text(owner.username) === text(user.username))) throw new Error("只能修改当前登录用户负责的 Task");
+		if (localDate(values.DateSDate) !== start || localDate(values.qiwangwanchengriqi) !== end) throw new Error("Task 日期已变化，请刷新后重试");
+		return values;
+	}
+	async function writeTaskDates(itemKey, start, end) {
+		await deps.run([
+			"team",
+			"item",
+			"edit",
+			itemKey,
+			"--values",
+			JSON.stringify({
+				DateSDate: timestamp(start),
+				qiwangwanchengriqi: timestamp(end)
+			})
+		]);
+		const actual = fieldValues(await deps.run([
+			"team",
+			"item",
+			"view",
+			itemKey
+		]));
+		if (localDate(actual.DateSDate) !== start || localDate(actual.qiwangwanchengriqi) !== end) throw new Error("计划日期回读不一致");
+	}
+	route("/api/tomato-board/worktime/requirement", "POST", async (request) => {
 		const input = await body(request);
-		if (typeof input.id !== "string") throw new Error("缺少操作单元");
+		if (!["move", "resize"].includes(String(input.action))) throw new Error("无效的需求操作");
+		if (input.action === "move" && (!Number.isInteger(input.delta) || Math.abs(Number(input.delta)) > 366)) throw new Error("移动范围最多 366 天");
+		if (input.action === "resize") datesBetween(String(input.start ?? ""), String(input.end ?? ""));
 		return serial(async () => {
 			const store = await load();
-			const unit = store.units.find((value) => value.id === input.id);
-			if (!unit) return {
-				id: input.id,
-				removed: false
+			const group = store.units.filter((unit) => unit.itemKey === input.itemKey && unit.id === input.id);
+			const claims = list(input.units).map(record);
+			if (!group.length || claims.length !== group.length || group.some((unit) => !claims.some((claim) => claim.id === unit.id && claim.revision === unit.revision))) throw new Error("需求安排已变化，请刷新后重试");
+			if (store.groupOperations?.some((operation) => operation.itemKey === input.itemKey)) throw new Error("需求上次移动结果待核对，请先核对番茄");
+			const change = input.action === "move" ? {
+				action: "move",
+				id: String(input.id),
+				delta: Number(input.delta)
+			} : {
+				action: "resize",
+				id: String(input.id),
+				start: String(input.start),
+				end: String(input.end)
 			};
-			if (unit.revision !== input.revision) throw new Error("安排已变化，请刷新后重试");
-			const created = unit.tasks.filter((task) => task.status === "created").length;
-			store.units.splice(store.units.indexOf(unit), 1);
-			mergeRanges(store, unit.itemKey);
+			if (change.action === "resize" && !group.some((unit) => unit.id === change.id)) throw new Error("时间段不存在");
+			const next = applyRequirementChange(group, change).map((unit) => ({
+				...unit,
+				tasks: [...unit.tasks]
+			}));
+			for (const unit of next) datesBetween(unit.start, unit.end);
+			for (const unit of next) {
+				unit.revision += 1;
+				unit.updatedAt = (/* @__PURE__ */ new Date()).toISOString();
+			}
+			store.units = store.units.map((unit) => next.find((value) => value.id === unit.id) ?? unit);
+			store.units = mergeRequirementRanges(store.units, String(input.itemKey));
 			await save(store);
-			return {
-				id: unit.id,
-				removed: true,
-				created
+			return { units: store.units };
+		});
+	});
+	route("/api/tomato-board/worktime/task", "POST", async (request) => {
+		const input = await body(request);
+		const itemKey = String(input.itemKey ?? "");
+		if (!keyPattern.test(itemKey) || !["move", "delete"].includes(String(input.action))) throw new Error("无效的 Task 操作");
+		if (input.action === "delete" && input.confirm !== true) throw new Error("请确认将 Task 及其后代移入回收站");
+		const start = String(input.start ?? "");
+		const end = String(input.end ?? "");
+		if (input.action === "move") datesBetween(start, end);
+		return serial(async () => {
+			const store = await load();
+			if (store.taskOperations?.some((operation) => operation.itemKey === itemKey)) throw new Error("该 Task 上次同步结果待核对，请先在番茄确认，不能重复提交");
+			if (store.groupOperations?.some((operation) => operation.tasks.some((task) => task.itemKey === itemKey))) throw new Error("所属需求上次移动结果待核对，请先核对番茄");
+			const user = record(await deps.run([
+				"team",
+				"user",
+				"current"
+			]));
+			await ownedTask(itemKey, String(input.expectedStart), String(input.expectedEnd), user);
+			const local = store.units.flatMap((unit) => unit.tasks.map((task) => ({
+				unit,
+				task
+			}))).filter((value) => value.task.itemKey === itemKey);
+			const operation = {
+				itemKey,
+				action: String(input.action),
+				...input.action === "move" ? {
+					start,
+					end
+				} : {},
+				startedAt: (/* @__PURE__ */ new Date()).toISOString()
 			};
+			store.taskOperations = [...store.taskOperations ?? [], operation];
+			await save(store);
+			try {
+				if (input.action === "delete") {
+					await deps.run([
+						"team",
+						"item",
+						"delete",
+						itemKey,
+						"--yes"
+					]);
+					for (const { unit, task } of local) unit.tasks = unit.tasks.filter((value) => value !== task);
+				} else {
+					await writeTaskDates(itemKey, start, end);
+					for (const { task } of local) {
+						task.start = start;
+						task.end = end;
+					}
+				}
+				for (const { unit } of local) {
+					unit.revision += 1;
+					unit.updatedAt = (/* @__PURE__ */ new Date()).toISOString();
+				}
+				store.taskOperations = store.taskOperations.filter((value) => value !== operation);
+				await save(store);
+				deps.invalidate();
+				return {
+					itemKey,
+					action: input.action,
+					start,
+					end
+				};
+			} catch (error) {
+				throw new Error(`Task 同步结果待核对，请刷新并在番茄确认：${error instanceof Error ? error.message : "操作失败"}`);
+			}
 		});
 	});
 	route("/api/tomato-board/worktime/create", "POST", async (request) => {
@@ -453,6 +817,7 @@ function registerWorktime(ctx, deps) {
 			const store = await load();
 			const first = store.units.find((value) => value.id === claims[0].id);
 			if (!first) throw new Error("安排不存在，请先保存");
+			if (store.groupOperations?.some((operation) => operation.itemKey === first.itemKey)) throw new Error("需求上次移动结果待核对，请先核对番茄");
 			const batch = claims.map((claim) => {
 				const unit = store.units.find((value) => value.id === claim.id);
 				if (!unit || unit.itemKey !== first.itemKey || unit.revision !== claim.revision) throw new Error("安排已变化，请刷新后重试");
@@ -1123,7 +1488,9 @@ function apply(ctx, config = {}) {
 		...config.worktimeDataFile ? { dataFile: config.worktimeDataFile } : {},
 		invalidate: () => {
 			itemsCache = null;
-		}
+		},
+		bugLinkTypeId: config.bugLinkTypeId ?? ((config.tomatoOrigin ?? "https://osc.gitee.work") === "https://osc.gitee.work" && (config.tomatoTenant ?? "xly-poc") === "xly-poc" ? "c1FJJzOlPe" : ""),
+		...config.bugLinkNames ? { bugLinkNames: config.bugLinkNames } : {}
 	});
 	ctx.effect(() => webServer.register({
 		kind: "exact",

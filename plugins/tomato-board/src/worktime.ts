@@ -3,8 +3,10 @@ import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { randomUUID, createHash } from 'node:crypto'
 import type { Context } from '@deepseek-ai/cordis'
-import { addDays, allocateGroupTasks, datesBetween, unitDates, unitHasCreatedTasks } from './worktime-model.ts'
+import { allocateGroupTasks, applyRequirementChange, datesBetween, mergeRequirementRanges, unitDates, unitHasCreatedTasks } from './worktime-model.ts'
 import type { WorktimeMetadata, WorktimeUnit } from './worktime-model.ts'
+import { createTaskBugService } from './task-bugs.ts'
+import type { BugLinkConfig } from './task-bugs.ts'
 
 type RecordValue = Record<string, unknown>
 interface Request {
@@ -21,7 +23,7 @@ interface Response {
 interface Server {
   register(route: { kind: 'exact'; path: string; handler: (request: Request, response: Response) => Promise<void> }): () => void
 }
-interface Dependencies {
+interface Dependencies extends BugLinkConfig {
   server: Server
   run(args: string[]): Promise<unknown>
   crossSite(request: Request): boolean
@@ -29,7 +31,12 @@ interface Dependencies {
   scope: string
   invalidate(): void
 }
-interface Store { version: 1; units: WorktimeUnit[] }
+interface Store {
+  version: 1
+  units: WorktimeUnit[]
+  taskOperations?: Array<{ itemKey: string; action: string; start?: string; end?: string; startedAt: string }>
+  groupOperations?: Array<{ itemKey: string; startedAt: string; tasks: Array<{ itemKey: string; start: string; end: string; nextStart: string; nextEnd: string }> }>
+}
 const keyPattern = /^[A-Za-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)*-\d+$/u
 const record = (value: unknown): RecordValue => value && typeof value === 'object' && !Array.isArray(value) ? value as RecordValue : {}
 const text = (value: unknown): string => typeof value === 'string' ? value : Array.isArray(value) ? text(value[0]) : value && typeof value === 'object' ? text(record(value).name ?? record(value).label ?? record(value).value) : ''
@@ -110,27 +117,9 @@ function userValue(user: RecordValue): RecordValue {
 
 /** One requirement is one plan, so touching or overlapping ranges merge into one unit. */
 function mergeRanges(store: Store, itemKey: string): WorktimeUnit | undefined {
-  const group = store.units.filter(unit => unit.itemKey === itemKey)
-    .sort((a, b) => (a.start < b.start ? -1 : a.start > b.start ? 1 : 0))
-  let previous: WorktimeUnit | undefined
-  for (const unit of group) {
-    if (previous) {
-      // A range with a created Task keeps its own history and never absorbs its neighbour.
-      const locked = unitHasCreatedTasks(unit, store.units) || unitHasCreatedTasks(previous, store.units)
-        || unit.tasks.some(task => task.status !== 'pending') || previous.tasks.some(task => task.status !== 'pending')
-      if (!locked && unit.start <= addDays(previous.end, 1)) {
-        if (unit.end > previous.end) previous.end = unit.end
-        if (!previous.cost && unit.cost) previous.cost = unit.cost
-        if (!previous.team && unit.team) previous.team = unit.team
-        if (!previous.category && unit.category) previous.category = unit.category
-        previous.revision += 1
-        previous.updatedAt = new Date().toISOString()
-        store.units.splice(store.units.indexOf(unit), 1)
-        continue
-      }
-    }
-    previous = unit
-  }
+  const original = new Map(store.units.map(unit => [unit.id, unit]))
+  store.units = mergeRequirementRanges(store.units, itemKey, true).map(unit => original.get(unit.id) === unit
+    ? unit : { ...unit, updatedAt: new Date().toISOString() })
   return store.units.find(unit => unit.itemKey === itemKey)
 }
 
@@ -183,6 +172,17 @@ export function registerWorktime(ctx: Context, deps: Dependencies): void {
       catch (error) { send(400, { error: error instanceof Error ? error.message : '工时操作失败' }) }
     } }), `tomato-board: ${path}`)
   }
+  const taskBugs = createTaskBugService(deps.run, deps)
+  route('/api/tomato-board/worktime/task-bug-counts', 'POST', async request => {
+    const input = await body(request)
+    if (!Array.isArray(input.itemKeys)) throw new Error('缺少 Task 编号列表')
+    return taskBugs.counts(input.itemKeys as string[])
+  })
+  route('/api/tomato-board/worktime/task-bugs', 'GET', async (_, query) => taskBugs.load(query.get('itemKey') ?? '', query.get('q')?.trim() ?? ''))
+  route('/api/tomato-board/worktime/task-bug', 'POST', async request => {
+    const input = await body(request)
+    return serial(() => taskBugs.link(String(input.itemKey ?? ''), String(input.bugKey ?? '')))
+  })
   route('/api/tomato-board/worktime', 'GET', async (_, query) => {
     const store = await load()
     const assignee = query.get('assignee')
@@ -199,10 +199,11 @@ export function registerWorktime(ctx: Context, deps: Dependencies): void {
     if (!ranges.length || new Set(ranges.map(range => range.id)).size !== ranges.length) throw new Error('请选择有效且不重复的时间段')
     return serial(async () => {
       const store = await load()
+      if (store.groupOperations?.some(operation => operation.itemKey === itemKey)) throw new Error('需求上次移动结果待核对，请先核对番茄')
       const group = store.units.filter(unit => unit.itemKey === itemKey)
       const claims = list(input.units).map(record)
       if (group.length !== claims.length || group.some(unit => !claims.some(claim => claim.id === unit.id && claim.revision === unit.revision))) throw new Error('安排已变化，请刷新后编辑')
-      if (group.some(unit => !ranges.some(range => range.id === unit.id))) throw new Error('请先通过删除操作移除已有时间段')
+      if (group.some(unit => !ranges.some(range => range.id === unit.id))) throw new Error('需求安排不可删除，请保留全部已有时间段')
       const { story, workspace, assignees } = await storyContext(deps.run, itemKey)
       const next = ranges.map(range => {
         const existing = store.units.find(unit => unit.id === range.id)
@@ -229,7 +230,9 @@ export function registerWorktime(ctx: Context, deps: Dependencies): void {
     const unit = validateUnit(input)
     return serial(async () => {
       const store = await load()
+      if (store.groupOperations?.some(operation => operation.itemKey === unit.itemKey)) throw new Error('需求上次移动结果待核对，请先核对番茄')
       const existing = store.units.find(value => value.id === unit.id)
+      if (existing && existing.itemKey !== unit.itemKey) throw new Error('需求安排不可替换，请新增安排')
       if (!existing && input.revision !== undefined) throw new Error('安排已发生变化，请刷新后编辑')
       if (existing && existing.revision !== input.revision) throw new Error('安排已发生变化，请刷新后编辑')
       if (existing && unitHasCreatedTasks(existing, store.units)) throw new Error('已创建 Task 的时间段不能改动日期；请新增安排以保留历史')
@@ -246,20 +249,83 @@ export function registerWorktime(ctx: Context, deps: Dependencies): void {
       return { unit: survivor(store, value.itemKey, value.start) ?? value }
     })
   })
-  route('/api/tomato-board/worktime/delete', 'POST', async request => {
+  route('/api/tomato-board/worktime/delete', 'POST', async () => {
+    throw new Error('需求安排不可删除，请对具体 Task 执行删除操作')
+  })
+  /** Verify ownership and the version of a remote Task before writing dates. */
+  async function ownedTask(itemKey: string, start: string, end: string, user: RecordValue) {
+    const raw = record(await deps.run(['team', 'item', 'view', itemKey]))
+    if (text(raw.itemType) !== 'Task') throw new Error('只允许对 Task 同步日期或删除')
+    const values = fieldValues(raw)
+    if (!list(values.assignee).map(record).some(owner =>
+      (text(user.userId) && text(owner.objectId ?? owner.value) === text(user.userId))
+      || (text(user.username) && text(owner.username) === text(user.username)))) throw new Error('只能修改当前登录用户负责的 Task')
+    if (localDate(values.DateSDate) !== start || localDate(values.qiwangwanchengriqi) !== end) throw new Error('Task 日期已变化，请刷新后重试')
+    return values
+  }
+  async function writeTaskDates(itemKey: string, start: string, end: string) {
+    await deps.run(['team', 'item', 'edit', itemKey, '--values', JSON.stringify({ DateSDate: timestamp(start), qiwangwanchengriqi: timestamp(end) })])
+    const actual = fieldValues(await deps.run(['team', 'item', 'view', itemKey]))
+    if (localDate(actual.DateSDate) !== start || localDate(actual.qiwangwanchengriqi) !== end) throw new Error('计划日期回读不一致')
+  }
+  route('/api/tomato-board/worktime/requirement', 'POST', async request => {
     const input = await body(request)
-    if (typeof input.id !== 'string') throw new Error('缺少操作单元')
+    if (!['move', 'resize'].includes(String(input.action))) throw new Error('无效的需求操作')
+    if (input.action === 'move' && (!Number.isInteger(input.delta) || Math.abs(Number(input.delta)) > 366)) throw new Error('移动范围最多 366 天')
+    if (input.action === 'resize') datesBetween(String(input.start ?? ''), String(input.end ?? ''))
     return serial(async () => {
       const store = await load()
-      const unit = store.units.find(value => value.id === input.id)
-      if (!unit) return { id: input.id, removed: false }
-      if (unit.revision !== input.revision) throw new Error('安排已变化，请刷新后重试')
-      // Deleting the plan never touches Tomato: created Tasks stay and reappear as history.
-      const created = unit.tasks.filter(task => task.status === 'created').length
-      store.units.splice(store.units.indexOf(unit), 1)
-      mergeRanges(store, unit.itemKey)
+      const group = store.units.filter(unit => unit.itemKey === input.itemKey && unit.id === input.id)
+      const claims = list(input.units).map(record)
+      if (!group.length || claims.length !== group.length || group.some(unit => !claims.some(claim => claim.id === unit.id && claim.revision === unit.revision))) throw new Error('需求安排已变化，请刷新后重试')
+      if (store.groupOperations?.some(operation => operation.itemKey === input.itemKey)) throw new Error('需求上次移动结果待核对，请先核对番茄')
+      const change = input.action === 'move'
+        ? { action: 'move' as const, id: String(input.id), delta: Number(input.delta) }
+        : { action: 'resize' as const, id: String(input.id), start: String(input.start), end: String(input.end) }
+      if (change.action === 'resize' && !group.some(unit => unit.id === change.id)) throw new Error('时间段不存在')
+      const next = applyRequirementChange(group, change).map(unit => ({ ...unit, tasks: [...unit.tasks] }))
+      for (const unit of next) datesBetween(unit.start, unit.end)
+      for (const unit of next) { unit.revision += 1; unit.updatedAt = new Date().toISOString() }
+      store.units = store.units.map(unit => next.find(value => value.id === unit.id) ?? unit)
+      store.units = mergeRequirementRanges(store.units, String(input.itemKey))
       await save(store)
-      return { id: unit.id, removed: true, created }
+      return { units: store.units }
+    })
+  })
+  route('/api/tomato-board/worktime/task', 'POST', async request => {
+    const input = await body(request)
+    const itemKey = String(input.itemKey ?? '')
+    if (!keyPattern.test(itemKey) || !['move', 'delete'].includes(String(input.action))) throw new Error('无效的 Task 操作')
+    if (input.action === 'delete' && input.confirm !== true) throw new Error('请确认将 Task 及其后代移入回收站')
+    const start = String(input.start ?? ''); const end = String(input.end ?? '')
+    if (input.action === 'move') datesBetween(start, end)
+    return serial(async () => {
+      const store = await load()
+      if (store.taskOperations?.some(operation => operation.itemKey === itemKey)) throw new Error('该 Task 上次同步结果待核对，请先在番茄确认，不能重复提交')
+      if (store.groupOperations?.some(operation => operation.tasks.some(task => task.itemKey === itemKey))) throw new Error('所属需求上次移动结果待核对，请先核对番茄')
+      const user = record(await deps.run(['team', 'user', 'current']))
+      await ownedTask(itemKey, String(input.expectedStart), String(input.expectedEnd), user)
+      const local = store.units.flatMap(unit => unit.tasks.map(task => ({ unit, task }))).filter(value => value.task.itemKey === itemKey)
+      const operation = { itemKey, action: String(input.action), ...(input.action === 'move' ? { start, end } : {}), startedAt: new Date().toISOString() }
+      store.taskOperations = [...(store.taskOperations ?? []), operation]
+      await save(store)
+      try {
+        if (input.action === 'delete') {
+          await deps.run(['team', 'item', 'delete', itemKey, '--yes'])
+          for (const { unit, task } of local) unit.tasks = unit.tasks.filter(value => value !== task)
+        } else {
+          await writeTaskDates(itemKey, start, end)
+          for (const { task } of local) { task.start = start; task.end = end }
+        }
+        for (const { unit } of local) { unit.revision += 1; unit.updatedAt = new Date().toISOString() }
+        store.taskOperations = store.taskOperations.filter(value => value !== operation)
+        await save(store)
+        deps.invalidate()
+        return { itemKey, action: input.action, start, end }
+      } catch (error) {
+        // Keep the pre-write journal when the remote outcome cannot be established.
+        throw new Error(`Task 同步结果待核对，请刷新并在番茄确认：${error instanceof Error ? error.message : '操作失败'}`)
+      }
     })
   })
   route('/api/tomato-board/worktime/create', 'POST', async request => {
@@ -273,6 +339,7 @@ export function registerWorktime(ctx: Context, deps: Dependencies): void {
       const store = await load()
       const first = store.units.find(value => value.id === claims[0]!.id)
       if (!first) throw new Error('安排不存在，请先保存')
+      if (store.groupOperations?.some(operation => operation.itemKey === first.itemKey)) throw new Error('需求上次移动结果待核对，请先核对番茄')
       // Only the claimed units form this batch: a requirement may be planned in
       // several batches over time, and units that already created Tasks are history.
       const batch = claims.map(claim => {

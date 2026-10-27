@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { Readable } from 'node:stream'
 import { apply } from '../plugins/tomato-board/lib/index.js'
-import { allocateTasks, calendarStart, taskTitle } from '../plugins/tomato-board/src/worktime-model.ts'
+import { allocateTasks, applyRequirementChange, applyTaskChange, calendarDragAllowed, calendarDragRanges, calendarStart, taskTitle } from '../plugins/tomato-board/src/worktime-model.ts'
 import { resolveCliExecutable } from '../plugins/tomato-board/src/cli-path.ts'
 
 test('calendar spans five Saturday-based weeks and allocates fractional stages without losing days', () => {
@@ -35,11 +35,11 @@ test('resolves the CLI without depending on the developer machine PATH', async t
   assert.throws(() => resolveCliExecutable('missing-tomato-cli-test', '', home), /找不到/)
 })
 
-async function setup(t, { failSecond = false, failFirst = false, requiredActualFinish = false, failRead = false } = {}) {
+async function setup(t, { failSecond = false, failFirst = false, requiredActualFinish = false, failRead = false, failEdit = false, failEditAt = 0 } = {}) {
   const dir = await mkdtemp(join(tmpdir(), 'tomato-worktime-'))
   t.after(() => rm(dir, { recursive: true, force: true }))
   const db = join(dir, 'cli.json')
-  await writeFile(db, JSON.stringify({ created: [], failSecond, failFirst, failRead }))
+  await writeFile(db, JSON.stringify({ created: [], failSecond, failFirst, failRead, failEdit, failEditAt }))
   const executable = join(dir, 'gitee')
   await writeFile(executable, `#!${process.execPath}
 import fs from 'node:fs';
@@ -47,10 +47,13 @@ const db=${JSON.stringify(db)}; const state=JSON.parse(fs.readFileSync(db)); con
 const field=(key,name,opts,required=true)=>({key,name,required,data:{customData:opts.map(x=>({label:x,value:x}))},property:{}});
 const story={key:'Story-1',objectId:'story1',name:'高级仪表盘支持订阅',itemType:{name:'Story'},workspace:{key:'Report',name:'Insight'},values:{view_project:['产品项目'],assignee:[{objectId:'owner1',username:'owner',nickname:'负责人',label:'负责人(owner)'}]}};
 let result={};
-if(args[1]==='field') result=[field('view_project','所属项目',['产品项目']),field('Dropdown2','工时成本归属',['主线产品']),field('suoshutuandui','所属团队',['Insight团队']),field('Dropdown_task','任务分类',['软件开发','修复BUG']),field('assignee','负责人',[]),field('qiwangwanchengriqi','计划完成时间',[]),{key:'ActualFinishTime',name:'实际完成时间',required:${requiredActualFinish},property:{range:[1792080000000,1792684800000]}}];
+if(args[1]==='user') result={userId:'owner1',username:'owner'};
+else if(args[1]==='field') result=[field('view_project','所属项目',['产品项目']),field('Dropdown2','工时成本归属',['主线产品']),field('suoshutuandui','所属团队',['Insight团队']),field('Dropdown_task','任务分类',['软件开发','修复BUG']),field('assignee','负责人',[]),field('qiwangwanchengriqi','计划完成时间',[]),{key:'ActualFinishTime',name:'实际完成时间',required:${requiredActualFinish},property:{range:[1792080000000,1792684800000]}}];
 else if(args[2]==='search') result={count:1,items:[{key:'Task-old',values:{Dropdown2:['主线产品'],suoshutuandui:['Insight团队']}}]};
 else if(args[2]==='view') { if(args[3]!=='Story-1'&&state.failRead){state.failRead=false;fs.writeFileSync(db,JSON.stringify(state));process.exit(2)} result=args[3]==='Story-1'?story:state.created.find(x=>x.key===args[3]); }
-else if(args[2]==='create') { state.attempts=(state.attempts||0)+1; fs.writeFileSync(db,JSON.stringify(state)); if(state.failFirst&&state.attempts===1)process.exit(2); if(state.failSecond&&state.created.length===1)process.exit(2); const item={key:'Task-'+(state.created.length+1),name:arg('--title'),ancestors:[{objectId:'story1'}],values:JSON.parse(arg('--values'))};state.created.push(item);fs.writeFileSync(db,JSON.stringify(state));result={itemKey:item.key}; }
+else if(args[2]==='create') { state.attempts=(state.attempts||0)+1; fs.writeFileSync(db,JSON.stringify(state)); if(state.failFirst&&state.attempts===1)process.exit(2); if(state.failSecond&&state.created.length===1)process.exit(2); const item={key:'Task-'+(state.created.length+1),itemType:{name:'Task'},name:arg('--title'),ancestors:[{objectId:'story1'}],values:JSON.parse(arg('--values'))};state.created.push(item);fs.writeFileSync(db,JSON.stringify(state));result={itemKey:item.key}; }
+else if(args[2]==='edit') { state.edits=(state.edits||0)+1;fs.writeFileSync(db,JSON.stringify(state));if(state.failEdit||state.failEditAt===state.edits)process.exit(2);const item=state.created.find(x=>x.key===args[3]);Object.assign(item.values,JSON.parse(arg('--values')));fs.writeFileSync(db,JSON.stringify(state));result={success:true}; }
+else if(args[2]==='delete') { state.deleted=[...(state.deleted||[]),args[3]];state.created=state.created.filter(x=>x.key!==args[3]);fs.writeFileSync(db,JSON.stringify(state));result={success:true}; }
 else process.exit(3);
 console.log(JSON.stringify(result));
 `, { mode: 0o755 })
@@ -79,6 +82,166 @@ const create = revision => ({ id: unit.id, revision, cost: '主线产品', team:
   { stage: 'understand', title: '梳理高级仪表盘订阅需求与现有项目实现', days: 1 },
   { stage: 'develop', title: '实现高级仪表盘订阅功能并完成集成', days: 2 },
 ] })
+
+test('dragging joins continuous ranges across weeks and preserves all Task records and dates', async t => {
+  const { request, dataFile, db } = await setup(t)
+  const task = { itemKey: 'Task-1', start: '2026-10-16', end: '2026-10-17', days: 2, stage: 'develop', title: '开发', status: 'created' }
+  const original = [
+    { ...unit, id: 'unit-leftleft', start: '2026-10-16', end: '2026-10-17', revision: 1, title: '需求', workspace: 'Report', updatedAt: '', tasks: [task] },
+    { ...unit, id: 'unit-middle00', start: '2026-10-20', end: '2026-10-21', revision: 2, title: '需求', workspace: 'Report', updatedAt: '', tasks: [] },
+    { ...unit, id: 'unit-rightrig', start: '2026-10-24', end: '2026-10-25', revision: 1, title: '需求', workspace: 'Report', updatedAt: '', tasks: [{ ...task, itemKey: 'Task-2', status: 'uncertain' }] },
+  ]
+  const change = { action: 'resize', id: 'unit-middle00', start: '2026-10-18', end: '2026-10-23' }
+  const preview = applyRequirementChange(original, change)
+  assert.equal(preview.length, 1)
+  assert.deepEqual([preview[0].start, preview[0].end], ['2026-10-16', '2026-10-25'])
+  assert.deepEqual(preview[0].tasks, [task, original[2].tasks[0]])
+  assert.equal(original.length, 3)
+  assert.equal(original[1].start, '2026-10-20')
+  await writeFile(dataFile, JSON.stringify({ version: 1, units: original }))
+  const saved = await request('/api/tomato-board/worktime/requirement', { ...change, itemKey: 'Story-1', units: [{ id: change.id, revision: 2 }] })
+  assert.equal(saved.status, 200)
+  assert.equal(saved.body.units.length, 1)
+  assert.deepEqual(saved.body.units[0].tasks, preview[0].tasks)
+  assert.deepEqual(JSON.parse(await readFile(dataFile, 'utf8')).units, saved.body.units)
+  assert.equal(JSON.parse(await readFile(db, 'utf8')).edits, undefined)
+})
+
+test('optimistic moves, edge resizing and deletion leave the server snapshot available for rollback', () => {
+  const task = { itemKey: 'Task-1', start: '2026-10-16', end: '2026-10-17', days: 2, stage: 'develop', title: '开发', status: 'created' }
+  const original = [{ ...unit, revision: 1, title: '需求', workspace: 'Report', updatedAt: '', tasks: [task] }]
+  const moved = applyRequirementChange(original, { action: 'move', id: unit.id, delta: 7 })
+  assert.equal(moved[0].start, '2026-10-23')
+  assert.equal(moved[0].tasks[0].end, task.end)
+  const resized = applyRequirementChange(original, { action: 'resize', id: unit.id, start: '2026-10-15', end: '2026-10-20' })
+  assert.equal(resized[0].start, '2026-10-15')
+  assert.equal(resized[0].tasks[0].start, task.start)
+  assert.deepEqual(applyTaskChange(original[0].tasks, { itemKey: task.itemKey, action: 'delete' }), [])
+  const stretched = applyTaskChange(original[0].tasks, { itemKey: task.itemKey, action: 'move', start: '2026-10-15', end: '2026-10-20' })
+  assert.equal(stretched[0].end, '2026-10-20')
+  assert.equal(stretched[0].days, 2)
+  assert.equal(original[0].start, unit.start)
+  assert.equal(original[0].tasks[0], task)
+  assert.equal(applyTaskChange(original[0].tasks, null)[0].start, '2026-10-16')
+})
+
+test('date-range previews include the entire range across weeks and keep the opposite resize edge fixed', () => {
+  const range = { start: '2026-10-26', end: '2026-10-28' }
+  assert.deepEqual(calendarDragRanges([range], range, range.end, 'end', '2026-11-05'), [{ start: range.start, end: '2026-11-05' }])
+  assert.deepEqual(calendarDragRanges([range], range, range.start, 'start', '2026-10-19'), [{ start: '2026-10-19', end: range.end }])
+  assert.deepEqual(calendarDragRanges([range], range, '2026-10-27', 'move', '2026-11-03'), [{ start: '2026-11-02', end: '2026-11-04' }])
+  assert.deepEqual(calendarDragRanges([range], range, range.start, 'start', '2026-11-05'), [range])
+  assert.equal(calendarDragAllowed(range, 'end', '2026-10-25'), false)
+  assert.equal(calendarDragAllowed(range, 'start', '2026-10-29'), false)
+  assert.equal(calendarDragAllowed(range, 'end', range.start), true)
+  assert.equal(calendarDragAllowed(range, 'start', range.end), true)
+  assert.deepEqual(calendarDragRanges([range], range, range.end, 'end', '2026-10-25'), [range])
+  const separated = [range, { start: '2026-11-02', end: '2026-11-03' }]
+  assert.deepEqual(calendarDragRanges(separated, range, range.start, 'move', '2026-10-27'), [
+    { start: '2026-10-27', end: '2026-10-29' }, { start: '2026-11-03', end: '2026-11-04' },
+  ])
+})
+
+test('moves and resizes a single requirement range without changing Task dates or making remote edits', async t => {
+  const { request, dataFile, db } = await setup(t)
+  await request('/api/tomato-board/worktime/unit', unit)
+  await request('/api/tomato-board/worktime/create', create(1))
+  const result = await request('/api/tomato-board/worktime/requirement', {
+    itemKey: unit.itemKey, id: unit.id, action: 'move', delta: 7, units: [{ id: unit.id, revision: 2 }],
+  })
+  assert.equal(result.status, 200)
+  const moved = result.body.units[0]
+  assert.equal(moved.start, '2026-10-23')
+  assert.equal(moved.end, '2026-10-25')
+  assert.deepEqual(moved.tasks.map(task => task.start), ['2026-10-16', '2026-10-17'])
+  const remote = JSON.parse(await readFile(db, 'utf8'))
+  assert.equal(new Date(remote.created[1].values.DateSDate + 8 * 3600000).toISOString().slice(0, 10), '2026-10-17')
+  const resized = await request('/api/tomato-board/worktime/requirement', {
+    itemKey: unit.itemKey, id: unit.id, action: 'resize', start: '2026-10-22', end: '2026-10-27', units: [{ id: unit.id, revision: moved.revision }],
+  })
+  assert.equal(resized.status, 200)
+  const saved = JSON.parse(await readFile(dataFile, 'utf8'))
+  assert.equal(saved.units[0].start, '2026-10-22')
+  assert.equal(saved.units[0].end, '2026-10-27')
+  assert.deepEqual(saved.units[0].tasks, moved.tasks)
+  assert.equal(JSON.parse(await readFile(db, 'utf8')).edits, undefined)
+})
+
+test('moving one range leaves sibling ranges and all their Tasks unchanged, even when remote edits are unavailable', async t => {
+  const { request, dataFile, db } = await setup(t, { failEdit: true })
+  await request('/api/tomato-board/worktime/unit', unit)
+  await request('/api/tomato-board/worktime/create', create(1))
+  const second = { ...unit, id: 'unit-only-second', start: '2026-11-02', end: '2026-11-03' }
+  await request('/api/tomato-board/worktime/unit', second)
+  const before = JSON.parse(await readFile(dataFile, 'utf8')).units
+  const result = await request('/api/tomato-board/worktime/requirement', {
+    itemKey: unit.itemKey, id: second.id, action: 'move', delta: 7, units: [{ id: second.id, revision: 1 }],
+  })
+  assert.equal(result.status, 200)
+  const saved = JSON.parse(await readFile(dataFile, 'utf8'))
+  assert.deepEqual(saved.units[0], before[0])
+  assert.equal(saved.units[1].start, '2026-11-09')
+  assert.equal(saved.units[1].end, '2026-11-10')
+  assert.equal(saved.units[1].revision, 2)
+  assert.equal(JSON.parse(await readFile(db, 'utf8')).edits, undefined)
+  const stale = await request('/api/tomato-board/worktime/requirement', {
+    itemKey: unit.itemKey, id: second.id, action: 'move', delta: 7, units: [{ id: second.id, revision: 1 }],
+  })
+  assert.equal(stale.status, 400)
+})
+
+test('moves a Task in Tomato without changing requirement dates, workload or actual dates, then recycles the Task only', async t => {
+  const { request, dataFile, db } = await setup(t)
+  await request('/api/tomato-board/worktime/unit', unit)
+  await request('/api/tomato-board/worktime/create', create(1))
+  const before = JSON.parse(await readFile(db, 'utf8')).created[0].values
+  const moved = await request('/api/tomato-board/worktime/task', { itemKey: 'Task-1', action: 'move',
+    expectedStart: unit.start, expectedEnd: unit.start, start: '2026-11-02', end: '2026-11-02' })
+  assert.equal(moved.status, 200)
+  const store = JSON.parse(await readFile(dataFile, 'utf8'))
+  assert.equal(store.units[0].start, unit.start)
+  assert.equal(store.units[0].end, unit.end)
+  assert.equal(store.units[0].tasks[0].start, '2026-11-02')
+  assert.deepEqual(store.taskOperations, [])
+  const after = JSON.parse(await readFile(db, 'utf8')).created[0].values
+  assert.notEqual(after.DateSDate, before.DateSDate)
+  for (const key of ['planStoryPoint', 'StartDate', 'ActualFinishTime', 'StoryPoint1']) assert.equal(after[key], before[key])
+  const removed = await request('/api/tomato-board/worktime/task', { itemKey: 'Task-1', action: 'delete', confirm: true,
+    expectedStart: '2026-11-02', expectedEnd: '2026-11-02' })
+  assert.equal(removed.status, 200)
+  const persisted = JSON.parse(await readFile(dataFile, 'utf8'))
+  assert.equal(persisted.units.length, 1)
+  assert.deepEqual(persisted.units[0].tasks.map(task => task.itemKey), ['Task-2'])
+  assert.deepEqual(JSON.parse(await readFile(db, 'utf8')).deleted, ['Task-1'])
+})
+
+test('Task actions reject requirements, stale dates, missing deletion confirmation, other owners and cross-site requests', async t => {
+  const { request, db } = await setup(t)
+  await request('/api/tomato-board/worktime/unit', unit)
+  await request('/api/tomato-board/worktime/create', create(1))
+  const input = { itemKey: 'Task-1', action: 'delete', confirm: true, expectedStart: unit.start, expectedEnd: unit.start }
+  assert.equal((await request('/api/tomato-board/worktime/task', { ...input, itemKey: 'Story-1' })).status, 400)
+  assert.equal((await request('/api/tomato-board/worktime/task', { ...input, confirm: false })).status, 400)
+  assert.equal((await request('/api/tomato-board/worktime/task', { ...input, expectedEnd: unit.end })).status, 400)
+  assert.equal((await request('/api/tomato-board/worktime/task', input, { 'sec-fetch-site': 'cross-site' })).status, 403)
+  const state = JSON.parse(await readFile(db, 'utf8'))
+  state.created[0].values.assignee = [{ value: 'another-owner', username: 'someone-else' }]
+  await writeFile(db, JSON.stringify(state))
+  assert.equal((await request('/api/tomato-board/worktime/task', input)).status, 400)
+  assert.equal(JSON.parse(await readFile(db, 'utf8')).created.length, 2)
+})
+
+test('an uncertain remote Task edit retains its journal and refuses an automatic repeated write', async t => {
+  const { request, db, dataFile } = await setup(t, { failEdit: true })
+  await request('/api/tomato-board/worktime/unit', unit)
+  await request('/api/tomato-board/worktime/create', create(1))
+  const input = { itemKey: 'Task-1', action: 'move', expectedStart: unit.start, expectedEnd: unit.start, start: '2026-11-02', end: '2026-11-02' }
+  assert.equal((await request('/api/tomato-board/worktime/task', input)).status, 400)
+  assert.equal(JSON.parse(await readFile(dataFile, 'utf8')).taskOperations[0].itemKey, 'Task-1')
+  const repeated = await request('/api/tomato-board/worktime/task', input)
+  assert.match(repeated.body.error, /上次同步结果待核对/)
+  assert.equal(JSON.parse(await readFile(db, 'utf8')).edits, 1)
+})
 
 test('real CLI process persists a unit, verifies two child Tasks, prevents duplicates, and survives plugin remount', async t => {
   const fixture = await setup(t)
@@ -177,7 +340,7 @@ test('allocates one requirement plan across every date range, skipping unallocat
   assert.equal(JSON.parse(await readFile(db, 'utf8')).created[1].values.StoryPoint1, 1)
 })
 
-test('requires half-day granularity, keeps revisions in step across ranges and reports the kept Tasks when a created plan is deleted', async t => {
+test('requires half-day granularity and refuses deletion of a requirement with created Tasks', async t => {
   const { request, dataFile } = await setup(t)
   await request('/api/tomato-board/worktime/unit', { id: 'unit-aaaaaaaa', itemKey: 'Story-1', start: '2026-10-16', end: '2026-10-16' })
   const tiny = await request('/api/tomato-board/worktime/create', {
@@ -193,19 +356,26 @@ test('requires half-day granularity, keeps revisions in step across ranges and r
   assert.equal(created.status, 200)
   assert.equal(created.body.units[0].tasks[0].days, 0.5)
   const removed = await request('/api/tomato-board/worktime/delete', { id: 'unit-aaaaaaaa', revision: 2 })
-  assert.equal(removed.status, 200)
-  assert.equal(removed.body.created, 1)
-  assert.equal(JSON.parse(await readFile(dataFile, 'utf8')).units.length, 0)
+  assert.equal(removed.status, 400)
+  assert.match(removed.body.error, /需求安排不可删除/)
+  assert.equal(JSON.parse(await readFile(dataFile, 'utf8')).units.length, 1)
 })
 
-test('deletes an unallocated range and refuses a group whose ranges changed underneath', async t => {
+test('refuses deletion of an unallocated requirement and rejects stale creation claims', async t => {
   const { request, dataFile } = await setup(t)
   await request('/api/tomato-board/worktime/unit', { id: 'unit-aaaaaaaa', itemKey: 'Story-1', start: '2026-10-16', end: '2026-10-16' })
   await request('/api/tomato-board/worktime/unit', { id: 'unit-bbbbbbbb', itemKey: 'Story-1', start: '2026-10-20', end: '2026-10-20' })
-  assert.equal((await request('/api/tomato-board/worktime/delete', { id: 'unit-bbbbbbbb', revision: 1 })).status, 200)
-  assert.equal(JSON.parse(await readFile(dataFile, 'utf8')).units.length, 1)
+  assert.equal((await request('/api/tomato-board/worktime/delete', { id: 'unit-bbbbbbbb', revision: 1 })).status, 400)
+  assert.equal(JSON.parse(await readFile(dataFile, 'utf8')).units.length, 2)
+  assert.equal((await request('/api/tomato-board/worktime/unit', { ...unit, id: 'unit-aaaaaaaa', itemKey: 'Story-2', revision: 1 })).status, 400)
+  const missingRange = await request('/api/tomato-board/worktime/ranges', {
+    itemKey: 'Story-1', units: [{ id: 'unit-aaaaaaaa', revision: 1 }, { id: 'unit-bbbbbbbb', revision: 1 }],
+    ranges: [{ id: 'unit-aaaaaaaa', start: '2026-10-16', end: '2026-10-16' }],
+  })
+  assert.equal(missingRange.status, 400)
+  assert.match(missingRange.body.error, /需求安排不可删除/)
   const stale = await request('/api/tomato-board/worktime/create', {
-    units: [{ id: 'unit-aaaaaaaa', revision: 1 }, { id: 'unit-bbbbbbbb', revision: 1 }],
+    units: [{ id: 'unit-aaaaaaaa', revision: 1 }, { id: 'unit-bbbbbbbb', revision: 99 }],
     cost: '主线产品', team: 'Insight团队', category: '软件开发',
     tasks: [{ stage: 'develop', title: '实现高级仪表盘订阅功能并完成集成', days: 1 }],
   })
@@ -235,7 +405,7 @@ test('merges touching ranges of one requirement and keeps a plan that already ha
   assert.deepEqual(store.units.map(unit => [unit.start, unit.end]), [['2026-10-16', '2026-10-19'], ['2026-10-20', '2026-10-21']])
 })
 
-test('deleting a range between two touching ones merges them', async t => {
+test('merges a touching range while preserving a separate range across a date gap', async t => {
   const { request, dataFile } = await setup(t)
   await request('/api/tomato-board/worktime/unit', { id: 'unit-aaaaaaaa', itemKey: 'Story-1', start: '2026-10-16', end: '2026-10-16' })
   await request('/api/tomato-board/worktime/unit', { id: 'unit-bbbbbbbb', itemKey: 'Story-1', start: '2026-10-21', end: '2026-10-21' })

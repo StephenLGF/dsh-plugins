@@ -36,6 +36,66 @@ export function unitHasCreatedTasks(unit: WorktimeUnit, units: WorktimeUnit[]): 
     task.status === 'created' && task.start <= unit.end && task.end >= unit.start))
 }
 
+export type WorktimeTaskChange = { itemKey: string; action: 'delete' }
+  | { itemKey: string; action: 'move'; start: string; end: string }
+
+/** Render an in-flight change without modifying the last server snapshot. */
+export function applyTaskChange<T extends { itemKey?: string; start: string; end: string }>(tasks: T[], change: WorktimeTaskChange | null): T[] {
+  if (!change) return tasks
+  return tasks.flatMap(task => task.itemKey !== change.itemKey ? [task]
+    : change.action === 'delete' ? [] : [{ ...task, start: change.start, end: change.end }])
+}
+
+export type WorktimeRequirementChange = { action: 'move'; id: string; delta: number }
+  | { action: 'resize'; id: string; start: string; end: string }
+
+/** Join touching ranges without changing any Task dates or creation records. */
+export function mergeRequirementRanges(units: WorktimeUnit[], itemKey: string, preserveAllocated = false): WorktimeUnit[] {
+  const group = units.filter(unit => unit.itemKey === itemKey).sort((a, b) => a.start.localeCompare(b.start) || a.id.localeCompare(b.id))
+  const merged: WorktimeUnit[] = []
+  for (const unit of group) {
+    const previous = merged.at(-1)
+    const locked = preserveAllocated && previous && (unitHasCreatedTasks(unit, units) || unitHasCreatedTasks(previous, units)
+      || unit.tasks.some(task => task.status !== 'pending') || previous.tasks.some(task => task.status !== 'pending'))
+    if (previous && !locked && unit.start <= addDays(previous.end, 1)) {
+      merged[merged.length - 1] = { ...previous, end: previous.end > unit.end ? previous.end : unit.end,
+        tasks: [...previous.tasks, ...unit.tasks], revision: Math.max(previous.revision, unit.revision) + 1,
+        updatedAt: previous.updatedAt > unit.updatedAt ? previous.updatedAt : unit.updatedAt,
+        assignees: [...new Set([...(previous.assignees ?? []), ...(unit.assignees ?? [])])],
+        cost: previous.cost || unit.cost || '', team: previous.team || unit.team || '', category: previous.category || unit.category || '' }
+    } else merged.push(unit)
+  }
+  const survivors = new Map(merged.map(unit => [unit.id, unit]))
+  return units.flatMap(unit => unit.itemKey !== itemKey ? [unit] : survivors.has(unit.id) ? [survivors.get(unit.id)!] : [])
+}
+
+/** Change one range, then merge its continuous neighbours; Task dates stay unchanged. */
+export function applyRequirementChange(units: WorktimeUnit[], change: WorktimeRequirementChange | null): WorktimeUnit[] {
+  if (!change) return units
+  const active = units.find(unit => unit.id === change.id)
+  if (!active) return units
+  const next = units.map(unit => {
+    if (change.action === 'resize') return unit.id === change.id ? { ...unit, start: change.start, end: change.end } : unit
+    if (unit.id !== change.id) return unit
+    return { ...unit, start: addDays(unit.start, change.delta), end: addDays(unit.end, change.delta) }
+  })
+  return mergeRequirementRanges(next, active.itemKey)
+}
+
+/** Use calendar dates across week boundaries for both the drag preview and its saved result. */
+export function calendarDragAllowed(active: { start: string; end: string }, edge: 'move' | 'start' | 'end', target: string): boolean {
+  return edge === 'move' || (edge === 'start' ? target <= active.end : target >= active.start)
+}
+
+export function calendarDragRanges(ranges: Array<{ start: string; end: string }>, active: { start: string; end: string }, anchor: string,
+  edge: 'move' | 'start' | 'end', target: string): Array<{ start: string; end: string }> {
+  if (!calendarDragAllowed(active, edge, target)) return [{ start: active.start, end: active.end }]
+  if (edge === 'start') return [{ start: target, end: active.end }]
+  if (edge === 'end') return [{ start: active.start, end: target }]
+  const delta = Math.round((Date.parse(`${target}T12:00:00Z`) - Date.parse(`${anchor}T12:00:00Z`)) / 86400000)
+  return ranges.map(range => ({ start: addDays(range.start, delta), end: addDays(range.end, delta) }))
+}
+
 /** Creation metadata is discovered from the story and current Task screen. */
 export interface WorktimeMetadata {
   project: string

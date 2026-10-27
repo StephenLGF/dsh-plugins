@@ -52,6 +52,8 @@ interface Config {
   excludedStatuses?: string[]
   priorityNames?: Record<string, string>
   worktimeDataFile?: string
+  bugLinkTypeId?: string
+  bugLinkNames?: string[]
 }
 
 let itemsCache: { key: string; expiresAt: number; value: unknown } | null = null
@@ -404,6 +406,10 @@ export function apply(ctx: Context, config: Config = {}): void {
     server: webServer, run: args => runJson(config, args), crossSite: isCrossSite,
     scope: JSON.stringify([config.profile || process.env.TOMATO_PROFILE || 'osc', config.tomatoOrigin ?? 'https://osc.gitee.work', config.tomatoTenant ?? 'xly-poc']),
     ...(config.worktimeDataFile ? { dataFile: config.worktimeDataFile } : {}), invalidate: () => { itemsCache = null },
+    // This native Relates ID belongs to the bundled osc/xly-poc tenant only.
+    bugLinkTypeId: config.bugLinkTypeId ?? ((config.tomatoOrigin ?? 'https://osc.gitee.work') === 'https://osc.gitee.work'
+      && (config.tomatoTenant ?? 'xly-poc') === 'xly-poc' ? 'c1FJJzOlPe' : ''),
+    ...(config.bugLinkNames ? { bugLinkNames: config.bugLinkNames } : {}),
   })
   ctx.effect(() => webServer.register({
     kind: 'exact', path: '/api/tomato-board/sprints',
