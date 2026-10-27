@@ -8,7 +8,7 @@ import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 import {
-  Button, IconChevronDownOutline14, IconCloseOutline16, IconRefreshOutline16, Menu, Modal, Toast,
+  Button, IconChevronDownOutline14, IconCloseOutline16, IconCopyOutline16, IconRefreshOutline16, Menu, Modal, Toast, writeClipboard,
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { MenuEntry } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
@@ -19,6 +19,7 @@ import { Worktime } from './Worktime.tsx'
 import { AssigneePicker } from './AssigneePicker.tsx'
 import { worktimeText } from './worktime-locale.ts'
 import { Tag } from './Tag'
+import { readBoardCache, writeBoardCache } from './board-cache.ts'
 
 export interface TomatoItem {
   itemKey: string
@@ -69,9 +70,15 @@ interface BoardState {
   successMessage: string | null
   selectedItem: TomatoItem | null
   truncated: boolean
+  assignee: string
+  showingCache: boolean
 }
 
-let state: BoardState = { open: false, loading: false, loaded: false, items: [], error: null, successMessage: null, selectedItem: null, truncated: false }
+const initialCache = readBoardCache('currentUser()')
+let state: BoardState = { open: false, loading: false, loaded: false, items: initialCache?.items ?? [], error: null, successMessage: null, selectedItem: null,
+  truncated: initialCache?.truncated ?? false, assignee: 'currentUser()', showingCache: initialCache !== null }
+let refreshSequence = 0
+let refreshController: AbortController | null = null
 const listeners = new Set<() => void>()
 const emit = (patch: Partial<BoardState>) => {
   state = { ...state, ...patch }
@@ -195,17 +202,29 @@ function saveSearch(value: string) {
 }
 
 async function refresh(assignee = 'currentUser()') {
-  emit({ loading: true, error: null, successMessage: null })
+  const sequence = ++refreshSequence
+  refreshController?.abort()
+  const controller = new AbortController()
+  refreshController = controller
+  const cached = readBoardCache(assignee)
+  const changedOwner = state.assignee !== assignee
+  emit({ loading: true, error: null, successMessage: null, assignee, selectedItem: null,
+    showingCache: changedOwner ? cached !== null : state.items.length > 0 || cached !== null,
+    ...(changedOwner || !state.items.length ? { items: cached?.items ?? [], truncated: cached?.truncated ?? false, showingCache: cached !== null } : {}),
+  })
   try {
     const query = new URLSearchParams({ assignee })
-    const response = await fetch(`/api/tomato-board/items?${query}`, { headers: { accept: 'application/json' } })
+    const response = await fetch(`/api/tomato-board/items?${query}`, { signal: controller.signal, headers: { accept: 'application/json' } })
     const body = await response.json() as { items?: TomatoItem[]; truncated?: boolean; error?: string }
     if (!response.ok) throw new Error(body.error || `请求失败 (${response.status})`)
-    emit({ items: body.items ?? [], truncated: body.truncated === true, loaded: true, successMessage: `已刷新 ${body.items?.length ?? 0} 条事项` })
+    if (sequence !== refreshSequence || controller.signal.aborted) return
+    if (!Array.isArray(body.items)) throw new Error('番茄事项返回格式异常')
+    writeBoardCache(assignee, { items: body.items, truncated: body.truncated === true })
+    emit({ items: body.items, truncated: body.truncated === true, loaded: true, showingCache: false, successMessage: `已刷新 ${body.items.length} 条事项` })
   } catch (error) {
-    emit({ error: error instanceof Error ? error.message : '番茄事项读取失败' })
+    if (sequence === refreshSequence && !controller.signal.aborted) emit({ error: error instanceof Error ? error.message : '番茄事项读取失败' })
   } finally {
-    emit({ loading: false })
+    if (sequence === refreshSequence) { emit({ loading: false }); refreshController = null }
   }
 }
 
@@ -214,8 +233,10 @@ function dismissSuccessMessage() {
 }
 
 function closeWorkbench(ctx: Context) {
+  refreshSequence += 1
+  refreshController?.abort(); refreshController = null
   // 关闭时清掉 loaded 和 error：下次打开工作台会重新拉取一次最新数据。
-  emit({ open: false, selectedItem: null, loaded: false, error: null, successMessage: null })
+  emit({ open: false, loading: false, selectedItem: null, loaded: false, error: null, successMessage: null })
   ctx.layout.selectPanel(null)
 }
 
@@ -340,7 +361,8 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
   const [search, setSearch] = useState(readSearch)
   const [blacklist, setBlacklist] = useState(readFilterBlacklist)
   const [mutedItems, setMutedItems] = useState(readMutedItems)
-  const [selectedAssignee, setSelectedAssignee] = useState('currentUser()')
+  const [copyNotice, setCopyNotice] = useState<{ id: number; text: string } | null>(null)
+  const [selectedAssignee, setSelectedAssignee] = useState(() => state.assignee)
   const [filterDirectory, setFilterDirectory] = useState<FilterDirectory>({ users: [], workspaces: [] })
   const [directoryVersion, setDirectoryVersion] = useState(0)
   const [laneOrder, setLaneOrder] = useState(readLaneOrder)
@@ -357,8 +379,8 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
   useEffect(() => {
     // 用 loaded 而不是 items.length 判断：成功返回空列表时也算加载完成，
     // 否则 loading 变回 false 会再次命中本 effect，形成无限请求循环。
-    if (board.open && !board.loaded && !board.loading && !board.error) void refresh()
-  }, [board.error, board.loaded, board.loading, board.open])
+    if (board.open && !board.loaded && !board.loading && !board.error) void refresh(selectedAssignee)
+  }, [board.error, board.loaded, board.loading, board.open, selectedAssignee])
   useEffect(() => {
     if (!board.open) return
     void fetch('/api/tomato-board/filters', { headers: { accept: 'application/json' } })
@@ -372,6 +394,10 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
       if (!(event.target instanceof Element)) return
       if (workbenchRef.current?.contains(event.target)) return
       if (event.target.closest('[role="dialog"], [role="menu"]')) return
+      // Modal masks are siblings of the dialog in a body portal. The document
+      // capture listener runs before their close handler, so keep the workbench
+      // open for the whole modal layer, including its mask and outer padding.
+      if (event.target.closest('[role="presentation"]')?.querySelector('[role="dialog"][aria-modal="true"]')) return
       closeWorkbench(ctx)
     }
     document.addEventListener('pointerdown', closeOnOutsideNavigation, true)
@@ -581,7 +607,10 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
         holdMs={1500}
         onDone={dismissSuccessMessage}
       />}
+      {copyNotice && <Toast key={copyNotice.id} text={copyNotice.text} anchor={workbenchRef.current} holdMs={1800} onDone={() => setCopyNotice(null)} />}
       {board.error && <div className={css.error} role="alert">{board.error}</div>}
+      {board.showingCache && <p className={css.notice} role="status">{board.loading ? '正在显示上次缓存，后台更新中…' : '当前显示上次缓存，刷新成功后会自动更新。'}</p>}
+      {board.loading && board.items.length === 0 && <p className={css.empty} role="status">正在读取事项…</p>}
       {board.truncated && <p className={css.notice} role="status">事项数量已达配置上限，当前仅展示前 {board.items.length} 条。</p>}
       <div className={css.board}>
         {statuses.map(status => {
@@ -647,7 +676,19 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
                     }}
                   >
                     <div className={css.cardTopline}>
-                      <span className={css.key}>{item.itemKey}</span>
+                      <div className={css.cardIdentity}>
+                        <span className={css.key}>{item.itemKey}</span>
+                        <Button className={css.copyButton} variant="ghost" size="sm" title="复制事项编号" aria-label={`复制事项编号 ${item.itemKey}`}
+                          onClick={async event => {
+                            event.stopPropagation()
+                            const copied = await writeClipboard(item.itemKey)
+                            dismissSuccessMessage()
+                            setCopyNotice(current => ({ id: (current?.id ?? 0) + 1, text: copied ? `已复制 ${item.itemKey}` : '复制失败，请手动复制事项编号' }))
+                          }}
+                          onKeyDown={event => event.stopPropagation()}>
+                          <IconCopyOutline16 size={14} />
+                        </Button>
+                      </div>
                       <div className={css.cardButtons}>
                         <Button
                           className={css.muteButton}
