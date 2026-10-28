@@ -1,6 +1,0 @@
-- insert:
-    - id: pr-assistant
-      name: '@stephen1620/dsh-pr-assistant'
-      config:
-        executable: gitee
-        profile: osc

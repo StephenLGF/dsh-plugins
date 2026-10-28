@@ -3,7 +3,7 @@ import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { randomUUID, createHash } from 'node:crypto'
 import type { Context } from '@deepseek-ai/cordis'
-import { allocateGroupTasks, applyRequirementChange, datesBetween, mergeRequirementRanges, unitDates, unitHasCreatedTasks } from './worktime-model.ts'
+import { allocateGroupTasks, applyRequirementChange, datesBetween, mergeRequirementRanges, plannedTaskSlots, unitDates, unitHasCreatedTasks } from './worktime-model.ts'
 import type { WorktimeMetadata, WorktimeUnit } from './worktime-model.ts'
 import { createTaskBugService } from './task-bugs.ts'
 import type { BugLinkConfig } from './task-bugs.ts'
@@ -34,6 +34,8 @@ interface Dependencies extends BugLinkConfig {
 interface Store {
   version: 1
   units: WorktimeUnit[]
+  /** Removed ranges keep Task journals without scheduling the requirement. */
+  archivedUnits?: WorktimeUnit[]
   taskOperations?: Array<{ itemKey: string; action: string; start?: string; end?: string; startedAt: string }>
   groupOperations?: Array<{ itemKey: string; startedAt: string; tasks: Array<{ itemKey: string; start: string; end: string; nextStart: string; nextEnd: string }> }>
 }
@@ -48,6 +50,11 @@ const localDate = (value: unknown): string => {
   return new Date(value + 8 * 3600_000).toISOString().slice(0, 10)
 }
 const timestamp = (value: string) => Date.parse(`${value}T00:00:00+08:00`)
+
+function freezeAllocations(store: Store, itemKey: string): void {
+  const group = [...store.units, ...(store.archivedUnits ?? [])].filter(unit => unit.itemKey === itemKey)
+  for (const [task, slots] of plannedTaskSlots(unitDates(group), group.flatMap(unit => unit.tasks))) task.allocationSlots = slots
+}
 
 async function body(request: Request): Promise<RecordValue> {
   if (!request[Symbol.asyncIterator]) throw new Error('请求不支持 JSON 正文')
@@ -140,7 +147,7 @@ export function registerWorktime(ctx: Context, deps: Dependencies): void {
       throw error
     }
     const value = JSON.parse(raw) as Store
-    if (value.version !== 1 || !Array.isArray(value.units)) throw new Error('历史工时数据格式异常，已保留原文件')
+    if (value.version !== 1 || !Array.isArray(value.units) || (value.archivedUnits !== undefined && !Array.isArray(value.archivedUnits))) throw new Error('历史工时数据格式异常，已保留原文件')
     return value
   }
   const save = async (store: Store) => {
@@ -189,21 +196,28 @@ export function registerWorktime(ctx: Context, deps: Dependencies): void {
     if (!assignee) return store
     if (assignee !== 'currentUser()' && !/^[A-Za-z0-9_.@-]{1,128}$/u.test(assignee)) throw new Error('无效的负责人')
     // Local plans belong to the current login; another user is read-only and shows only remote tasks.
-    return assignee === 'currentUser()' ? store : { ...store, units: [] }
+    return assignee === 'currentUser()' ? store : { ...store, units: [], archivedUnits: [] }
   })
   route('/api/tomato-board/worktime/metadata', 'GET', async (_, query) => (await metadata(deps.run, query.get('itemKey') ?? '')).data)
   route('/api/tomato-board/worktime/ranges', 'POST', async request => {
     const input = await body(request)
     const itemKey = String(input.itemKey ?? '')
     const ranges = list(input.ranges).map(value => validateUnit({ ...record(value), itemKey }))
-    if (!ranges.length || new Set(ranges.map(range => range.id)).size !== ranges.length) throw new Error('请选择有效且不重复的时间段')
+    if (!keyPattern.test(itemKey) || !Array.isArray(input.ranges) || new Set(ranges.map(range => range.id)).size !== ranges.length) throw new Error('请选择有效且不重复的时间段')
     return serial(async () => {
       const store = await load()
       if (store.groupOperations?.some(operation => operation.itemKey === itemKey)) throw new Error('需求上次移动结果待核对，请先核对番茄')
       const group = store.units.filter(unit => unit.itemKey === itemKey)
       const claims = list(input.units).map(record)
       if (group.length !== claims.length || group.some(unit => !claims.some(claim => claim.id === unit.id && claim.revision === unit.revision))) throw new Error('安排已变化，请刷新后编辑')
-      if (group.some(unit => !ranges.some(range => range.id === unit.id))) throw new Error('需求安排不可删除，请保留全部已有时间段')
+      const removed = group.filter(unit => !ranges.some(range => range.id === unit.id))
+      freezeAllocations(store, itemKey)
+      if (removed.some(unit => unit.tasks.length)) store.archivedUnits = [...(store.archivedUnits ?? []), ...removed.filter(unit => unit.tasks.length)]
+      if (!ranges.length) {
+        store.units = store.units.filter(unit => unit.itemKey !== itemKey)
+        await save(store)
+        return { units: [] }
+      }
       const { story, workspace, assignees } = await storyContext(deps.run, itemKey)
       const next = ranges.map(range => {
         const existing = store.units.find(unit => unit.id === range.id)
@@ -232,6 +246,7 @@ export function registerWorktime(ctx: Context, deps: Dependencies): void {
       const store = await load()
       if (store.groupOperations?.some(operation => operation.itemKey === unit.itemKey)) throw new Error('需求上次移动结果待核对，请先核对番茄')
       const existing = store.units.find(value => value.id === unit.id)
+      freezeAllocations(store, unit.itemKey)
       if (existing && existing.itemKey !== unit.itemKey) throw new Error('需求安排不可替换，请新增安排')
       if (!existing && input.revision !== undefined) throw new Error('安排已发生变化，请刷新后编辑')
       if (existing && existing.revision !== input.revision) throw new Error('安排已发生变化，请刷新后编辑')
@@ -276,6 +291,7 @@ export function registerWorktime(ctx: Context, deps: Dependencies): void {
     return serial(async () => {
       const store = await load()
       const group = store.units.filter(unit => unit.itemKey === input.itemKey && unit.id === input.id)
+      freezeAllocations(store, String(input.itemKey))
       const claims = list(input.units).map(record)
       if (!group.length || claims.length !== group.length || group.some(unit => !claims.some(claim => claim.id === unit.id && claim.revision === unit.revision))) throw new Error('需求安排已变化，请刷新后重试')
       if (store.groupOperations?.some(operation => operation.itemKey === input.itemKey)) throw new Error('需求上次移动结果待核对，请先核对番茄')
@@ -305,7 +321,8 @@ export function registerWorktime(ctx: Context, deps: Dependencies): void {
       if (store.groupOperations?.some(operation => operation.tasks.some(task => task.itemKey === itemKey))) throw new Error('所属需求上次移动结果待核对，请先核对番茄')
       const user = record(await deps.run(['team', 'user', 'current']))
       await ownedTask(itemKey, String(input.expectedStart), String(input.expectedEnd), user)
-      const local = store.units.flatMap(unit => unit.tasks.map(task => ({ unit, task }))).filter(value => value.task.itemKey === itemKey)
+      const local = [...store.units, ...(store.archivedUnits ?? [])].flatMap(unit => unit.tasks.map(task => ({ unit, task }))).filter(value => value.task.itemKey === itemKey)
+      for (const key of new Set(local.map(({ unit }) => unit.itemKey))) freezeAllocations(store, key)
       const operation = { itemKey, action: String(input.action), ...(input.action === 'move' ? { start, end } : {}), startedAt: new Date().toISOString() }
       store.taskOperations = [...(store.taskOperations ?? []), operation]
       await save(store)
@@ -315,7 +332,8 @@ export function registerWorktime(ctx: Context, deps: Dependencies): void {
           for (const { unit, task } of local) unit.tasks = unit.tasks.filter(value => value !== task)
         } else {
           await writeTaskDates(itemKey, start, end)
-          for (const { task } of local) { task.start = start; task.end = end }
+          for (const { task } of local) { task.start = start; task.end = end; delete task.allocationSlots }
+          for (const key of new Set(local.map(({ unit }) => unit.itemKey))) freezeAllocations(store, key)
         }
         for (const { unit } of local) { unit.revision += 1; unit.updatedAt = new Date().toISOString() }
         store.taskOperations = store.taskOperations.filter(value => value !== operation)
@@ -340,15 +358,14 @@ export function registerWorktime(ctx: Context, deps: Dependencies): void {
       const first = store.units.find(value => value.id === claims[0]!.id)
       if (!first) throw new Error('安排不存在，请先保存')
       if (store.groupOperations?.some(operation => operation.itemKey === first.itemKey)) throw new Error('需求上次移动结果待核对，请先核对番茄')
-      // Only the claimed units form this batch: a requirement may be planned in
-      // several batches over time, and units that already created Tasks are history.
+      // Claims select date capacity for this batch; confirmed Tasks consume slots
+      // but remain intact when a range gains capacity and is allocated again.
       const batch = claims.map(claim => {
         const unit = store.units.find(value => value.id === claim.id)
         if (!unit || unit.itemKey !== first.itemKey || unit.revision !== claim.revision) throw new Error('安排已变化，请刷新后重试')
-        if (unitHasCreatedTasks(unit, store.units)) throw new Error('该时间段已创建 Task，请新增时间段后再安排')
         return unit
       })
-      const unresolved = store.units.filter(unit => unit.itemKey === first.itemKey).flatMap(unit =>
+      const unresolved = [...store.units, ...(store.archivedUnits ?? [])].filter(unit => unit.itemKey === first.itemKey).flatMap(unit =>
         unit.tasks.filter(task => (task.status === 'uncertain' || task.status === 'creating')
           && (batch.includes(unit) || batch.some(range => task.start <= range.end && task.end >= range.start))))
       if (unresolved.some(task => task.itemKey)) throw new Error('已有 Task 编号但创建结果待核对，请先核对番茄记录，不能直接重复创建')
@@ -359,7 +376,9 @@ export function registerWorktime(ctx: Context, deps: Dependencies): void {
       const drafts = list(input.tasks).map(record).map(task => ({
         stage: String(task.stage ?? ''), title: String(task.title ?? ''), days: Number(task.days),
       })).filter(task => task.days !== 0)
-      const tasks = allocateGroupTasks(dates, drafts)
+      const existing = [...group, ...(store.archivedUnits ?? []).filter(unit => unit.itemKey === first.itemKey)].flatMap(unit => unit.tasks)
+      freezeAllocations(store, first.itemKey)
+      const tasks = allocateGroupTasks(dates, drafts, existing, unitDates([...group, ...(store.archivedUnits ?? []).filter(unit => unit.itemKey === first.itemKey)]))
       const meta = await metadata(deps.run, first.itemKey)
       const { options, data, context, definitions } = meta
       const optionValue = (key: string, label: unknown) => {
@@ -412,7 +431,12 @@ export function registerWorktime(ctx: Context, deps: Dependencies): void {
         return { task, values, skipped }
       })
       // Each task belongs to the date unit its first day falls into.
-      for (const unit of batch) unit.tasks = []
+      for (const unit of batch) unit.tasks = unit.tasks.filter(task => task.status === 'created')
+      // Explicitly confirmed missing Tasks can be retried; confirmed creations
+      // and records with real item keys are never discarded or recreated.
+      if (input.confirmRetry === true) for (const unit of store.archivedUnits ?? []) {
+        unit.tasks = unit.tasks.filter(task => !unresolved.includes(task) || Boolean(task.itemKey))
+      }
       for (const task of tasks) (batch.find(unit => unit.start <= task.start && task.start <= unit.end) ?? batch[0]!).tasks.push(task)
       for (const unit of batch) {
         unit.project = context.project; unit.team = String(input.team); unit.cost = String(input.cost); unit.category = String(input.category)

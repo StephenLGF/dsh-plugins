@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { Readable } from 'node:stream'
 import { apply } from '../plugins/tomato-board/lib/index.js'
-import { allocateTasks, applyRequirementChange, applyTaskChange, calendarDragAllowed, calendarDragRanges, calendarStart, taskTitle } from '../plugins/tomato-board/src/worktime-model.ts'
+import { allocateTasks, allocateGroupTasks, availableWorktimeSlots, applyRequirementChange, applyTaskChange, calendarDragAllowed, calendarDragRanges, calendarStart, taskTitle } from '../plugins/tomato-board/src/worktime-model.ts'
 import { resolveCliExecutable } from '../plugins/tomato-board/src/cli-path.ts'
 
 test('calendar spans five Saturday-based weeks and allocates fractional stages without losing days', () => {
@@ -83,6 +83,69 @@ const create = revision => ({ id: unit.id, revision, cost: '主线产品', team:
   { stage: 'develop', title: '实现高级仪表盘订阅功能并完成集成', days: 2 },
 ] })
 
+test('additional allocation uses remaining half days and preserves existing Task slots', () => {
+  const [existing] = allocateTasks('2026-10-16', '2026-10-16', [{ stage: 'understand', title: '理解需求', days: .5 }])
+  existing.status = 'created'; existing.itemKey = 'Task-1'
+  const snapshot = structuredClone(existing)
+  const dates = ['2026-10-16', '2026-10-17']
+  assert.equal(availableWorktimeSlots(dates, [existing]).length / 2, 1.5)
+  const next = allocateGroupTasks(dates, [{ stage: 'design', title: '补充方案', days: .5 }, { stage: 'develop', title: '追加开发', days: 1 }], [existing])
+  assert.deepEqual(next.map(task => [task.start, task.end]), [['2026-10-16', '2026-10-16'], ['2026-10-17', '2026-10-17']])
+  assert.deepEqual(existing, snapshot)
+  assert.throws(() => allocateGroupTasks(dates, [{ stage: 'develop', title: '超出剩余容量', days: 2 }], [existing]), /剩余 1.5/)
+})
+
+test('extending an allocated range permits another batch without modifying or recreating existing Tasks', async t => {
+  const { request, dataFile, db } = await setup(t)
+  await request('/api/tomato-board/worktime/unit', unit)
+  await request('/api/tomato-board/worktime/create', create(1))
+  const original = JSON.parse(await readFile(dataFile, 'utf8')).units[0]
+  const extended = await request('/api/tomato-board/worktime/requirement', {
+    itemKey: unit.itemKey, id: unit.id, action: 'resize', start: unit.start, end: '2026-10-20', units: [{ id: unit.id, revision: original.revision }],
+  })
+  assert.equal(extended.status, 200)
+  const saved = await request('/api/tomato-board/worktime/ranges', {
+    itemKey: unit.itemKey, units: extended.body.units.map(value => ({ id: value.id, revision: value.revision })),
+    ranges: [{ id: unit.id, start: unit.start, end: '2026-10-20' }],
+  })
+  assert.equal(saved.status, 200)
+  const added = await request('/api/tomato-board/worktime/create', {
+    ...create(saved.body.units[0].revision), tasks: [{ stage: 'develop', title: '补充开发内容', days: 1.5 }, { stage: 'verify', title: '补充联调验证', days: .5 }],
+  })
+  assert.equal(added.status, 200)
+  const after = JSON.parse(await readFile(dataFile, 'utf8')).units[0]
+  assert.deepEqual(after.tasks.slice(0, 2), original.tasks)
+  assert.deepEqual(after.tasks.slice(2).map(task => [task.start, task.end, task.days]), [['2026-10-19', '2026-10-20', 1.5], ['2026-10-20', '2026-10-20', .5]])
+  assert.equal(JSON.parse(await readFile(db, 'utf8')).created.length, 4)
+  const full = await request('/api/tomato-board/worktime/create', { ...create(after.revision), tasks: [{ stage: 'verify', title: '没有剩余容量', days: .5 }] })
+  assert.equal(full.status, 400)
+  assert.match(full.body.error, /没有剩余人天/)
+  assert.equal(JSON.parse(await readFile(db, 'utf8')).created.length, 4)
+})
+
+test('extending across a gap freezes legacy Task allocations and allocates only newly available dates', async t => {
+  const { request, dataFile } = await setup(t)
+  const left = { ...unit, id: 'unit-gapleft00', start: '2026-10-16', end: '2026-10-16' }
+  const right = { ...unit, id: 'unit-gapright0', start: '2026-10-20', end: '2026-10-20' }
+  await request('/api/tomato-board/worktime/unit', left)
+  await request('/api/tomato-board/worktime/unit', right)
+  await request('/api/tomato-board/worktime/create', { ...create(1), id: undefined, units: [{ id: left.id, revision: 1 }, { id: right.id, revision: 1 }], tasks: [{ stage: 'develop', title: '跨日期段开发', days: 2 }] })
+  const store = JSON.parse(await readFile(dataFile, 'utf8'))
+  delete store.units[0].tasks[0].allocationSlots
+  await writeFile(dataFile, JSON.stringify(store))
+  const extended = await request('/api/tomato-board/worktime/requirement', {
+    itemKey: unit.itemKey, id: left.id, action: 'resize', start: left.start, end: '2026-10-19', units: [{ id: left.id, revision: store.units[0].revision }],
+  })
+  assert.equal(extended.status, 200)
+  const merged = extended.body.units[0]
+  assert.equal(extended.body.units.length, 1)
+  assert.deepEqual(merged.tasks[0].allocationSlots, ['2026-10-16', '2026-10-16', '2026-10-20', '2026-10-20'])
+  const added = await request('/api/tomato-board/worktime/create', { ...create(merged.revision), id: merged.id, tasks: [{ stage: 'verify', title: '利用新增空档验证', days: 1 }] })
+  assert.equal(added.status, 200)
+  assert.equal(added.body.unit.tasks[1].start, '2026-10-17')
+  assert.equal(added.body.unit.tasks[0].itemKey, merged.tasks[0].itemKey)
+})
+
 test('dragging joins continuous ranges across weeks and preserves all Task records and dates', async t => {
   const { request, dataFile, db } = await setup(t)
   const task = { itemKey: 'Task-1', start: '2026-10-16', end: '2026-10-17', days: 2, stage: 'develop', title: '开发', status: 'created' }
@@ -102,7 +165,7 @@ test('dragging joins continuous ranges across weeks and preserves all Task recor
   const saved = await request('/api/tomato-board/worktime/requirement', { ...change, itemKey: 'Story-1', units: [{ id: change.id, revision: 2 }] })
   assert.equal(saved.status, 200)
   assert.equal(saved.body.units.length, 1)
-  assert.deepEqual(saved.body.units[0].tasks, preview[0].tasks)
+  assert.deepEqual(saved.body.units[0].tasks.map(({ allocationSlots, ...task }) => task), preview[0].tasks)
   assert.deepEqual(JSON.parse(await readFile(dataFile, 'utf8')).units, saved.body.units)
   assert.equal(JSON.parse(await readFile(db, 'utf8')).edits, undefined)
 })
@@ -361,7 +424,7 @@ test('requires half-day granularity and refuses deletion of a requirement with c
   assert.equal(JSON.parse(await readFile(dataFile, 'utf8')).units.length, 1)
 })
 
-test('refuses deletion of an unallocated requirement and rejects stale creation claims', async t => {
+test('removes a local range without deleting the requirement and rejects stale creation claims', async t => {
   const { request, dataFile } = await setup(t)
   await request('/api/tomato-board/worktime/unit', { id: 'unit-aaaaaaaa', itemKey: 'Story-1', start: '2026-10-16', end: '2026-10-16' })
   await request('/api/tomato-board/worktime/unit', { id: 'unit-bbbbbbbb', itemKey: 'Story-1', start: '2026-10-20', end: '2026-10-20' })
@@ -372,8 +435,9 @@ test('refuses deletion of an unallocated requirement and rejects stale creation 
     itemKey: 'Story-1', units: [{ id: 'unit-aaaaaaaa', revision: 1 }, { id: 'unit-bbbbbbbb', revision: 1 }],
     ranges: [{ id: 'unit-aaaaaaaa', start: '2026-10-16', end: '2026-10-16' }],
   })
-  assert.equal(missingRange.status, 400)
-  assert.match(missingRange.body.error, /需求安排不可删除/)
+  assert.equal(missingRange.status, 200)
+  assert.equal(missingRange.body.units.length, 1)
+  assert.equal(missingRange.body.units[0].id, 'unit-aaaaaaaa')
   const stale = await request('/api/tomato-board/worktime/create', {
     units: [{ id: 'unit-aaaaaaaa', revision: 1 }, { id: 'unit-bbbbbbbb', revision: 99 }],
     cost: '主线产品', team: 'Insight团队', category: '软件开发',
@@ -381,6 +445,49 @@ test('refuses deletion of an unallocated requirement and rejects stale creation 
   })
   assert.equal(stale.status, 400)
   assert.match(stale.body.error, /刷新/)
+})
+
+test('removing the last allocated range preserves remote Tasks and archives their creation records', async t => {
+  const { request, dataFile, db } = await setup(t)
+  await request('/api/tomato-board/worktime/unit', unit)
+  await request('/api/tomato-board/worktime/create', create(1))
+  const before = JSON.parse(await readFile(dataFile, 'utf8'))
+  const remote = JSON.parse(await readFile(db, 'utf8'))
+  const removed = await request('/api/tomato-board/worktime/ranges', {
+    itemKey: unit.itemKey, units: before.units.map(value => ({ id: value.id, revision: value.revision })), ranges: [],
+  })
+  assert.equal(removed.status, 200)
+  assert.deepEqual(removed.body.units, [])
+  const after = JSON.parse(await readFile(dataFile, 'utf8'))
+  assert.deepEqual(after.units, [])
+  assert.deepEqual(after.archivedUnits, before.units)
+  assert.deepEqual(JSON.parse(await readFile(db, 'utf8')), remote)
+  const task = after.archivedUnits[0].tasks[0]
+  const moved = await request('/api/tomato-board/worktime/task', {
+    itemKey: task.itemKey, action: 'move', expectedStart: task.start, expectedEnd: task.end, start: '2026-10-25', end: '2026-10-25',
+  })
+  assert.equal(moved.status, 200)
+  assert.equal(JSON.parse(await readFile(dataFile, 'utf8')).archivedUnits[0].tasks[0].start, '2026-10-25')
+})
+
+test('removing an uncertain range does not allow its remote Task to be duplicated', async t => {
+  const { request, dataFile, db } = await setup(t, { failRead: true })
+  await request('/api/tomato-board/worktime/unit', unit)
+  await request('/api/tomato-board/worktime/create', create(1))
+  const before = JSON.parse(await readFile(dataFile, 'utf8'))
+  assert.equal(before.units[0].tasks[0].status, 'uncertain')
+  assert.ok(before.units[0].tasks[0].itemKey)
+  const removed = await request('/api/tomato-board/worktime/ranges', {
+    itemKey: unit.itemKey, units: before.units.map(value => ({ id: value.id, revision: value.revision })), ranges: [],
+  })
+  assert.equal(removed.status, 200)
+  const next = await request('/api/tomato-board/worktime/unit', { ...unit, id: 'unit-newrange00' })
+  assert.equal(next.status, 200)
+  const attempts = JSON.parse(await readFile(db, 'utf8')).attempts
+  const retried = await request('/api/tomato-board/worktime/create', { ...create(next.body.unit.revision), id: next.body.unit.id, confirmRetry: true })
+  assert.equal(retried.status, 400)
+  assert.match(retried.body.error, /已有 Task 编号/)
+  assert.equal(JSON.parse(await readFile(db, 'utf8')).attempts, attempts)
 })
 
 test('merges touching ranges of one requirement and keeps a plan that already has Tasks apart', async t => {

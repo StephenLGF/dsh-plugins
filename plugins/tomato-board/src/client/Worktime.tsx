@@ -3,10 +3,11 @@ import type { DragEvent } from 'react'
 import { Modal, Button, Toast } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { TomatoItem } from './TomatoBoard'
 import type { WorktimeMetadata, WorktimeUnit, WorktimeTaskChange, WorktimeRequirementChange } from '../worktime-model.ts'
-import { addDays, applyRequirementChange, applyTaskChange, calendarDragAllowed, calendarDragRanges, calendarStart, dateKey, datesBetween, taskTitle, unitDates, unitHasCreatedTasks } from '../worktime-model.ts'
+import { addDays, applyRequirementChange, applyTaskChange, calendarDragAllowed, calendarDragRanges, calendarStart, dateKey, datesBetween, availableWorktimeSlots, taskTitle, unitDates, unitHasCreatedTasks } from '../worktime-model.ts'
 import { worktimeText as t } from './worktime-locale.ts'
 import { AssigneePicker } from './AssigneePicker.tsx'
 import { TaskBugs } from './TaskBugs.tsx'
+import { TomatoLinkButton } from './TomatoLinkButton.tsx'
 import css from './worktime.module.css'
 
 type HistoryTask = { itemKey: string; title: string; status: string; start: string; end: string; days: number }
@@ -29,7 +30,6 @@ async function api<T>(path: string, input?: unknown, signal?: AbortSignal): Prom
   if (!response.ok) throw new Error(/缺少操作单元|未知路由|Not Found/u.test(String(data.error ?? '')) ? t.hostStale : data.error || `${t.readFailed} (${response.status})`)
   return data as T
 }
-const openItem = (itemKey: string) => window.open(`/api/tomato-board/open/${encodeURIComponent(itemKey)}`, '_blank', 'noopener,noreferrer')
 const todayKey = () => dateKey(new Date())
 const sorted = (units: WorktimeUnit[]) => [...units].sort((a, b) => (a.start < b.start ? -1 : a.start > b.start ? 1 : 0))
 const daysIn = (start: string, end: string) => { try { return datesBetween(start, end).length } catch { return 0 } }
@@ -46,6 +46,7 @@ export function Worktime({ assignee, users, onAssigneeChange, onRefresh }: { ass
   const [items, setItems] = useState<TomatoItem[]>([])
   const [anchor, setAnchor] = useState(todayKey)
   const [units, setUnits] = useState<WorktimeUnit[]>([])
+  const [archivedUnits, setArchivedUnits] = useState<WorktimeUnit[]>([])
   const [history, setHistory] = useState<HistoryTask[]>([])
   const [requirementChange, setRequirementChange] = useState<WorktimeRequirementChange | null>(null)
   const [taskChange, setTaskChange] = useState<WorktimeTaskChange | null>(null)
@@ -123,8 +124,8 @@ export function Worktime({ assignee, users, onAssigneeChange, onRefresh }: { ass
     setLoading(true)
     const query = encodeURIComponent(assignee)
     void Promise.all([
-      api<{ units: WorktimeUnit[] }>(`?assignee=${query}`, undefined, controller.signal).then(data => {
-        if (!controller.signal.aborted && !mutationPending.current && epoch === readEpoch.current) setUnits(data.units)
+      api<{ units: WorktimeUnit[]; archivedUnits?: WorktimeUnit[] }>(`?assignee=${query}`, undefined, controller.signal).then(data => {
+        if (!controller.signal.aborted && !mutationPending.current && epoch === readEpoch.current) { setUnits(data.units); setArchivedUnits(data.archivedUnits ?? []) }
       }),
       fetch(`/api/tomato-board/items?assignee=${query}`, { signal: controller.signal, headers: { accept: 'application/json' } }).then(async response => {
         const data = await response.json() as { items?: TomatoItem[]; error?: string }
@@ -173,8 +174,8 @@ export function Worktime({ assignee, users, onAssigneeChange, onRefresh }: { ass
     try {
       await api('/unit', { id: crypto.randomUUID(), itemKey, start: range[0], end: range[1] })
       // A touching range is merged server-side, so the absorbed unit is gone: re-read the list.
-      const fresh = await api<{ units: WorktimeUnit[] }>(`?assignee=${encodeURIComponent(assignee)}`)
-      setUnits(fresh.units)
+      const fresh = await api<{ units: WorktimeUnit[]; archivedUnits?: WorktimeUnit[] }>(`?assignee=${encodeURIComponent(assignee)}`)
+      setUnits(fresh.units); setArchivedUnits(fresh.archivedUnits ?? [])
       setEditingKey(itemKey); closePicker(); setMessage(t.saved)
     } catch (error) { setError(errorText(error)) } finally { setSaving(false) }
   }
@@ -382,12 +383,13 @@ export function Worktime({ assignee, users, onAssigneeChange, onRefresh }: { ass
       </div>
     </Modal>}
     {editingTask && <TaskEditor key={editingTask.itemKey} task={editingTask} readOnly={readOnly} busy={saving} onClose={() => setEditingTask(null)} onMutate={mutateTask} onNotify={notify} onBugCountChange={updateBugCount} />}
-    {editingKey && editingUnits.length > 0 && <GroupEditor key={editingKey} itemKey={editingKey} units={editingUnits} onClose={() => setEditingKey('')} onSaved={notice => { setVersion(v => v + 1); onRefresh(); if (notice) setMessage(notice) }} />}
+    {editingKey && editingUnits.length > 0 && <GroupEditor key={editingKey} itemKey={editingKey} units={editingUnits} archivedUnits={archivedUnits} onClose={() => setEditingKey('')} onSaved={notice => { setVersion(v => v + 1); onRefresh(); if (notice) setMessage(notice) }} />}
   </div>
 }
 
 /** One requirement is one plan: every date range it owns is allocated together. */
-function GroupEditor({ itemKey, units, onClose, onSaved }: { itemKey: string; units: WorktimeUnit[]; onClose: () => void; onSaved: (notice?: string) => void }) {
+function GroupEditor({ itemKey, units, archivedUnits, onClose, onSaved }: { itemKey: string; units: WorktimeUnit[]; archivedUnits: WorktimeUnit[]; onClose: () => void; onSaved: (notice?: string) => void }) {
+  const historyUnits = [...units, ...archivedUnits.filter(unit => unit.itemKey === itemKey)]
   const title = units[0]?.title || itemKey
   const savedUnits = useRef(units)
   const [meta, setMeta] = useState<WorktimeMetadata | null>(null)
@@ -398,26 +400,28 @@ function GroupEditor({ itemKey, units, onClose, onSaved }: { itemKey: string; un
   const [category, setCategory] = useState(units[0]?.category || '')
   const [confirmRetry, setConfirmRetry] = useState(false)
   const [ranges, setRanges] = useState<RangeDraft[]>(() => units.map(unit => ({ key: unit.id, id: unit.id, revision: unit.revision, start: unit.start, end: unit.end, locked: unitHasCreatedTasks(unit, units) })))
-  // Prefill from the editable batch only: created ranges keep their own history.
+  // Prefill unsent drafts only; confirmed Tasks are shown separately.
   const [drafts, setDrafts] = useState(() => Object.fromEntries(stages.map(stage => {
-    const task = units.filter(unit => !unitHasCreatedTasks(unit, units))
-      .flatMap(unit => unit.tasks).find(item => item.stage === stage)
+    const task = units.flatMap(unit => unit.tasks).find(item => item.stage === stage && item.status !== 'created' && !item.itemKey)
     return [stage, { days: task ? String(task.days) : '', title: task?.title || taskTitle(title, stage) }]
   })) as Record<Stage, { days: string; title: string }>)
-  // A range that already created Tasks is history; every other range stays editable,
-  // so a requirement can be planned again in a later batch.
-  const hasCreated = units.some(unit => unit.tasks.some(task => task.status === 'created'))
-  const openCount = ranges.filter(range => !range.locked).length
-  const retried = units.some(unit => unit.tasks.some(task => task.status !== 'pending' && task.status !== 'created'))
+  // Existing Tasks keep their dates and consume capacity; extra slots form the next batch.
+  const hasCreated = historyUnits.some(unit => unit.tasks.some(task => task.status === 'created'))
+  const rangeCount = ranges.length
+  const rangesChanged = ranges.length !== savedUnits.current.length || ranges.some(range => {
+    const original = savedUnits.current.find(unit => unit.id === range.id)
+    return !original || original.start !== range.start || original.end !== range.end
+  })
+  const retried = historyUnits.some(unit => unit.tasks.some(task => task.status !== 'pending' && task.status !== 'created'))
   const count = useMemo(() => {
-    const valid = ranges.filter(range => !range.locked && range.start && range.end && range.end >= range.start)
-    try { return valid.length ? unitDates(valid).length : 0 } catch { return 0 }
-  }, [ranges])
+    const valid = ranges.filter(range => range.start && range.end && range.end >= range.start)
+    try { return valid.length ? availableWorktimeSlots(unitDates(valid), historyUnits.flatMap(unit => unit.tasks), unitDates(historyUnits)).length / 2 : 0 } catch { return 0 }
+  }, [ranges, units, archivedUnits, itemKey])
   const plannedCount = useMemo(() => {
     const valid = ranges.filter(range => range.start && range.end && range.end >= range.start)
     try { return valid.length ? unitDates(valid).length : 0 } catch { return 0 }
   }, [ranges])
-  const createdTasks = units.flatMap(unit => unit.tasks).filter(task => task.status === 'created')
+  const createdTasks = historyUnits.flatMap(unit => unit.tasks).filter(task => task.status === 'created')
   const createdDays = createdTasks.reduce((sum, task) => sum + task.days, 0)
   const total = stages.reduce((sum, stage) => sum + (Number(drafts[stage].days) || 0), 0)
   const over = total > count + 1e-6
@@ -433,9 +437,8 @@ function GroupEditor({ itemKey, units, onClose, onSaved }: { itemKey: string; un
   const changeRange = (key: string, patch: Partial<RangeDraft>) => setRanges(current => current.map(range => range.key === key ? { ...range, ...patch } : range))
   /** Persist ranges first so creation always sees the exact saved revisions. */
   async function persistRanges(): Promise<Array<{ id: string; revision: number }>> {
-    const open = ranges.filter(range => !range.locked)
-    if (!open.length) throw new Error(t.rangeEmpty)
-    for (const range of open) {
+    if (!ranges.length && !rangesChanged) throw new Error(t.rangeEmpty)
+    for (const range of ranges) {
       if (!range.start || !range.end) throw new Error(t.rangeIncomplete)
       if (range.end < range.start) throw new Error(t.rangeInvalid)
       datesBetween(range.start, range.end)
@@ -449,7 +452,7 @@ function GroupEditor({ itemKey, units, onClose, onSaved }: { itemKey: string; un
     const next = sorted(data.units).map(unit => ({ key: unit.id, id: unit.id, revision: unit.revision,
       start: unit.start, end: unit.end, locked: unitHasCreatedTasks(unit, data.units) }))
     setRanges(next)
-    return next.filter(range => !range.locked && range.id).map(range => ({ id: range.id!, revision: range.revision ?? 0 }))
+    return next.filter(range => range.id).map(range => ({ id: range.id!, revision: range.revision ?? 0 }))
   }
   async function saveRanges() {
     setBusy(true); setError('')
@@ -466,10 +469,10 @@ function GroupEditor({ itemKey, units, onClose, onSaved }: { itemKey: string; un
   }
   const renderSelect = (label: string, value: string, values: string[], change: (value: string) => void) => <label>{label}<select required value={value} disabled={busy} onChange={event => change(event.target.value)}><option value="">{t.placeholder}</option>{values.map(option => <option key={option}>{option}</option>)}</select></label>
   return <Modal open title={`${t.edit} · ${itemKey}`} description={title} closeLabel={t.close} onClose={() => { if (!busy) onClose() }} className={css.dialog!}
-    footer={<><Button variant="ghost" disabled={busy} onClick={onClose}>{t.close}</Button><Button variant="outline" disabled={busy || !openCount} onClick={() => void saveRanges()}>{busy ? t.saving : t.saveRanges}</Button><Button variant="primary" disabled={busy || !openCount || !meta || !cost || !team || !category || !inputTasks.length || over || (retried && !confirmRetry)} onClick={() => void create()}>{busy ? t.creating : t.create}</Button></>}>
+    footer={<><Button variant="ghost" disabled={busy} onClick={onClose}>{t.close}</Button><Button variant="outline" disabled={busy || (!rangeCount && !rangesChanged)} onClick={() => void saveRanges()}>{busy ? t.saving : t.saveRanges}</Button><Button variant="primary" disabled={busy || !rangeCount || count <= 0 || !meta || !cost || !team || !category || !inputTasks.length || over || (retried && !confirmRetry)} onClick={() => void create()}>{busy ? t.creating : t.create}</Button></>}>
     <div className={css.form}>
-      <div className={css.unitSummary}><span>{itemKey}</span><strong>{plannedCount} {t.days}</strong><button type="button" onClick={() => openItem(itemKey)}>{t.view} ↗</button></div>
-      <p className={css.help}>{t.createdAllocation} {createdDays} {t.personDays} · {t.currentCapacity} {count} {t.days}</p>
+      <div className={css.unitSummary}><span>{itemKey}</span><strong>{plannedCount} {t.days}</strong><TomatoLinkButton itemKey={itemKey} /></div>
+      <p className={css.help}>{t.createdAllocation} {createdDays} {t.personDays} · {t.currentCapacity} {count} {t.personDays}</p>
       <div className={css.stageHeading}><h3>{t.range}</h3><span>{ranges.length}</span></div>
       <p className={css.help}>{t.rangeHint}</p>
       <div className={css.ranges}>{ranges.map((range, index) => <div className={css.rangeRow} key={range.key}>
@@ -477,14 +480,15 @@ function GroupEditor({ itemKey, units, onClose, onSaved }: { itemKey: string; un
         <span>—</span>
         <input type="date" aria-label={`${t.end}${index + 1}`} min={range.start} value={range.end} disabled={range.locked || busy} onChange={event => changeRange(range.key, { end: event.target.value })} />
         <small>{daysIn(range.start, range.end)} {t.days}{range.locked ? ` · ${t.created}` : ''}</small>
+        <button type="button" disabled={busy} aria-label={`${t.deleteRange} ${index + 1}`} title={t.rangeDeleteHint} onClick={() => setRanges(current => current.filter(value => value.key !== range.key))}>{t.deleteRange}</button>
       </div>)}</div>
       <button type="button" className={css.addRange} disabled={busy} onClick={() => setRanges(current => [...current, { key: crypto.randomUUID(), start: '', end: '' }])}>{t.addRange}</button>
       {!meta && !error && <p role="status">{t.loading}</p>}
       {meta && <><div className={css.twoColumns}><label>{t.project}<input readOnly value={meta.project} /></label><label>{t.owner}<input readOnly value={meta.assigneeName} /></label>{renderSelect(t.cost, cost, meta.costs, setCost)}{renderSelect(t.team, team, meta.teams, setTeam)}{renderSelect(t.category, category, meta.categories, setCategory)}</div><p className={css.help}>{meta.suggestionSource}</p></>}
       {hasCreated && <><div className={css.stageHeading}><h3>{t.createdAllocation}</h3><span>{createdDays} {t.personDays}</span></div>
-        {createdTasks.map((task, i) => <div className={css.result} key={task.itemKey || i}><strong>{t.stageLabels[task.stage as Stage]} · {task.title}</strong><small>{task.start} — {task.end} · {task.days} {t.personDays} · {t.created}</small>{task.itemKey && <button type="button" onClick={() => openItem(task.itemKey!)}>{task.itemKey} ↗</button>}{task.skipped?.length ? <small>{t.skippedFields}：{task.skipped.join('、')}</small> : null}</div>)}
+        {createdTasks.map((task, i) => <div className={css.result} key={task.itemKey || i}><strong>{t.stageLabels[task.stage as Stage]} · {task.title}</strong><small>{task.start} — {task.end} · {task.days} {t.personDays} · {t.created}</small>{task.itemKey && <div className={css.itemLink}><span>{task.itemKey}</span><TomatoLinkButton itemKey={task.itemKey} /></div>}{task.skipped?.length ? <small>{t.skippedFields}：{task.skipped.join('、')}</small> : null}</div>)}
       </>}
-      {openCount > 0 && <><div className={css.stageHeading}><h3>{t.currentStages}</h3><span>{t.total} <b>{total}</b> / {count} {t.personDays}{total < count - 1e-6 && <> · {t.unallocated} {Number((count - total).toFixed(2))}</>}</span></div>
+      {rangeCount > 0 && <><div className={css.stageHeading}><h3>{t.currentStages}</h3><span>{t.total} <b>{total}</b> / {count} {t.personDays}{total < count - 1e-6 && <> · {t.unallocated} {Number((count - total).toFixed(2))}</>}</span></div>
       <p className={css.help}>{t.splitHint}</p>
       <div className={css.stages}>{stages.map(stage => <div key={stage} className={css.stageRow}>
         <label>{t.stageLabels[stage]}<input type="number" min="0.5" step="0.5" inputMode="decimal" placeholder="0" disabled={busy} aria-label={`${t.stageLabels[stage]} ${t.personDays}`} value={drafts[stage].days} onChange={event => setDrafts(current => ({ ...current, [stage]: { ...current[stage], days: event.target.value } }))} /></label>
@@ -494,7 +498,7 @@ function GroupEditor({ itemKey, units, onClose, onSaved }: { itemKey: string; un
       </>}
       {hasCreated && <p className={css.notice}>{t.locked}</p>}
       {retried && <><p className={css.notice}>{t.retryHint}</p><label><input type="checkbox" checked={confirmRetry} disabled={busy} onChange={event => setConfirmRetry(event.target.checked)} />{t.confirmRetry}</label></>}
-      {units.flatMap(unit => unit.tasks).filter(task => task.status !== 'created').map((task, i) => <div className={css.result} key={i}><strong>{task.title}</strong><small>{task.start} — {task.end} · {task.days} {t.personDays} · {task.status === 'pending' ? t.pending : t.uncertain}</small>{task.itemKey && <button type="button" onClick={() => openItem(task.itemKey!)}>{task.itemKey} ↗</button>}{task.error && <p className={css.error}>{task.error}</p>}</div>)}
+      {historyUnits.flatMap(unit => unit.tasks).filter(task => task.status !== 'created').map((task, i) => <div className={css.result} key={i}><strong>{task.title}</strong><small>{task.start} — {task.end} · {task.days} {t.personDays} · {task.status === 'pending' ? t.pending : t.uncertain}</small>{task.itemKey && <div className={css.itemLink}><span>{task.itemKey}</span><TomatoLinkButton itemKey={task.itemKey} /></div>}{task.error && <p className={css.error}>{task.error}</p>}</div>)}
       {error && <p role="alert" className={css.error}>{error}</p>}
     </div>
   </Modal>
@@ -521,12 +525,12 @@ function TaskEditor({ task, readOnly, busy: calendarBusy, onClose, onMutate, onN
   }
   return <Modal open title={`${t.task} · ${task.itemKey}`} description={task.title} closeLabel={t.close} onClose={() => { if (!busy) onClose() }} className={css.taskDialog!}
     footer={<><Button variant="ghost" disabled={busy} onClick={onClose}>{t.close}</Button>{!readOnly && <><Button variant="outline" disabled={busy} onClick={() => void submit('delete')}>{confirmDelete ? t.confirmDelete : t.deleteTask}</Button><Button variant="primary" disabled={busy || !daysIn(start, end) || (start === task.start && end === task.end)} onClick={() => void submit('move')}>{busy ? t.saving : t.saveTaskDates}</Button></>}</>}>
-    <div className={css.form}><div className={css.unitSummary}><span>{task.days} {t.personDays}{statusLabel && ` · ${statusLabel}`}</span><Button size="sm" variant="ghost" onClick={() => openItem(task.itemKey)}>{t.view} ↗</Button></div>
+    <div className={css.form}><div className={css.unitSummary}><span>{task.days} {t.personDays}{statusLabel && ` · ${statusLabel}`}</span><TomatoLinkButton itemKey={task.itemKey} /></div>
       <div className={css.twoColumns}>
       <label>{t.start}<input type="date" value={start} disabled={readOnly || busy} onChange={event => setStart(event.target.value)} /></label>
       <label>{t.end}<input type="date" min={start} value={end} disabled={readOnly || busy} onChange={event => setEnd(event.target.value)} /></label>
       </div>
-      <TaskBugs itemKey={task.itemKey} readOnly={readOnly} disabled={calendarBusy} request={api} onBusyChange={setLinking} onOpen={openItem} onNotify={onNotify} onCountChange={onBugCountChange} />
+      <TaskBugs itemKey={task.itemKey} readOnly={readOnly} disabled={calendarBusy} request={api} onBusyChange={setLinking} onNotify={onNotify} onCountChange={onBugCountChange} />
       {confirmDelete && <p className={css.notice}>{t.taskDeleteHint}</p>}{error && <p role="alert" className={css.error}>{error}</p>}
     </div>
   </Modal>

@@ -13,8 +13,10 @@ import {
 import type { MenuEntry } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
+import { TomatoLinkButton } from './TomatoLinkButton.tsx'
 import css from './tomato-board.module.css'
-import { StoryPoints } from './StoryPoints'
+import { PrAssistant } from './PrAssistant.tsx'
+import { TeamManagement } from './TeamManagement.tsx'
 import { Worktime } from './Worktime.tsx'
 import { AssigneePicker } from './AssigneePicker.tsx'
 import { worktimeText } from './worktime-locale.ts'
@@ -356,8 +358,9 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
   const board = useSyncExternalStore(subscribe, snapshot, snapshot)
   const workbenchRef = useRef<HTMLElement>(null)
   const filterMenuRef = useRef<HTMLDetailsElement>(null)
-  const [page, setPage] = useState<'board' | 'points' | 'worktime'>('board')
-  const [storyToolbar, setStoryToolbar] = useState<React.ReactNode>(null)
+  const [page, setPage] = useState<'board' | 'team' | 'worktime' | 'pr'>('board')
+  const [visitedTabs, setVisitedTabs] = useState({ pr: false, team: false })
+  const [teamToolbar, setTeamToolbar] = useState<React.ReactNode>(null)
   const [search, setSearch] = useState(readSearch)
   const [blacklist, setBlacklist] = useState(readFilterBlacklist)
   const [mutedItems, setMutedItems] = useState(readMutedItems)
@@ -548,7 +551,7 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
         <div className={css.titleRow}>
           <h1>番茄工作台</h1>
           <div className={css.actions}>
-            {page === 'points' && storyToolbar}
+            {page === 'team' && teamToolbar}
             {page === 'board' && <><label className={css.searchField}>
               <span aria-hidden="true">⌕</span>
               <input
@@ -558,7 +561,6 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
                 placeholder="搜索标题或 tag…"
                 aria-label="搜索标题或 tag"
               />
-              {search && <button type="button" aria-label="清空搜索词" onClick={() => { setSearch(''); saveSearch('') }}>×</button>}
             </label>
             <details ref={filterMenuRef} className={css.filterMenu}>
               <summary aria-label="空间、负责人、类型和状态筛选" title="空间、负责人、类型和状态筛选">
@@ -597,10 +599,13 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
         <nav className={css.pageTabs} aria-label="番茄工作台页面">
           <button type="button" aria-current={page === 'board' ? 'page' : undefined} onClick={() => setPage('board')}>事项看板</button>
           <button type="button" aria-current={page === 'worktime' ? 'page' : undefined} onClick={() => setPage('worktime')}>{worktimeText.title}</button>
-          <button type="button" aria-current={page === 'points' ? 'page' : undefined} onClick={() => setPage('points')}>迭代投入</button>
+          <button type="button" aria-current={page === 'pr' ? 'page' : undefined} onClick={() => { setVisitedTabs(current => ({ ...current, pr: true })); setPage('pr') }}>PR 助手</button>
+          <button type="button" aria-current={page === 'team' ? 'page' : undefined} onClick={() => { setVisitedTabs(current => ({ ...current, team: true })); setPage('team') }}>团队管理</button>
         </nav>
       </header>
-      {page === 'worktime' ? <Worktime key={selectedAssignee} assignee={selectedAssignee} users={filterDirectory.users} onAssigneeChange={value => { setSelectedAssignee(value); void refresh(value) }} onRefresh={() => { void refresh(selectedAssignee) }} /> : page === 'points' ? <StoryPoints toolbarTarget={setStoryToolbar} onOpenItem={openItem} /> : <>
+      {visitedTabs.pr && <div className={css.tabPanel} hidden={page !== 'pr'}><PrAssistant active={page === 'pr'} ctx={ctx} close={() => closeWorkbench(ctx)} /></div>}
+      {visitedTabs.team && <div className={css.tabPanel} hidden={page !== 'team'}><TeamManagement active={page === 'team'} toolbarTarget={setTeamToolbar} onOpenItem={openItem} /></div>}
+      {page === 'worktime' ? <Worktime key={selectedAssignee} assignee={selectedAssignee} users={filterDirectory.users} onAssigneeChange={value => { setSelectedAssignee(value); void refresh(value) }} onRefresh={() => { void refresh(selectedAssignee) }} /> : page === 'board' ? <>
       {board.successMessage && <Toast
         text={board.successMessage}
         anchor={workbenchRef.current}
@@ -705,20 +710,7 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
                         >
                           ●
                         </Button>
-                        <Button
-                          className={css.tomatoLink}
-                          variant="ghost"
-                          size="sm"
-                          title="在番茄中打开事项"
-                          aria-label={`在番茄中打开 ${item.itemKey}`}
-                          onClick={event => {
-                            event.stopPropagation()
-                            window.open(item.tomatoUrl, '_blank', 'noopener,noreferrer')
-                          }}
-                          onKeyDown={event => event.stopPropagation()}
-                        >
-                          ↗
-                        </Button>
+                        <TomatoLinkButton itemKey={item.itemKey} />
                       </div>
                     </div>
                     <strong>{item.title}</strong>
@@ -738,7 +730,7 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
           <div className={css.empty}>当前没有可显示的番茄事项</div>
         )}
       </div>
-      </>}
+      </> : null}
       {board.selectedItem ? <CreateConversationDialog ctx={ctx} item={board.selectedItem} /> : null}
     </section>
   )
@@ -1014,21 +1006,12 @@ function TomatoConversationShortcut({ ctx, sessionId, useSessions }: PropsRuntim
           </Button>
         )}
       />
-      <Button
-        variant="toolbar"
-        size="sm"
-        title="在番茄中打开事项"
-        aria-label={`在番茄中打开 ${itemKey}`}
-        disabled={!transitionState.tomatoUrl}
-        onClick={() => window.open(transitionState.tomatoUrl, '_blank', 'noopener,noreferrer')}
-      >
-        番茄 ↗
-      </Button>
+      <TomatoLinkButton itemKey={itemKey} disabled={!transitionState.tomatoUrl} />
     </>
   )
 }
 
-export const inject = ['slots', 'layout', 'sessions', 'workspaces']
+export const inject = ['slots', 'layout', 'sessions', 'workspaces', 'remote', 'remote.session']
 
 export function apply(ctx: Context): void {
   ctx.slots.inject('main', () => ctx.slots.register(

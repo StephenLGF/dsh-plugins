@@ -1,0 +1,6 @@
+/* Beat page-level button defaults so every surface keeps the same geometry. */
+.button.button { box-sizing: border-box; flex: none; display: inline-flex; align-items: center; justify-content: center; width: 28px; min-width: 28px; height: 28px; min-height: 28px; padding: 0; border: 1px solid var(--dsw-alias-border-l2); border-radius: 6px; background: transparent; color: var(--dsw-alias-label-secondary); cursor: pointer; vertical-align: middle; }
+.button.button:hover:not(:disabled) { color: var(--dsw-alias-state-business-primary); background: var(--dsw-alias-interactive-bg-hover); }
+.button.button:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 2px; }
+.button.button:disabled { cursor: not-allowed; opacity: .4; }
+.button svg { display: block; flex: none; }

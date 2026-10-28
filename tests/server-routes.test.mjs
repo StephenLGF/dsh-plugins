@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { apply as applyPrAssistant } from '../plugins/pr-assistant/lib/index.js'
 import { apply as applyTomatoBoard } from '../plugins/tomato-board/lib/index.js'
 
 function loadRoutes(apply, config = {}) {
@@ -13,6 +12,16 @@ function loadRoutes(apply, config = {}) {
   apply(ctx, config)
   return routes
 }
+
+test('the workboard owns every PR endpoint without a standalone plugin or duplicate route', () => {
+  const routes = loadRoutes(applyTomatoBoard)
+  const pr = routes.filter(route => route.path.startsWith('/api/tomato-board/pr/'))
+  assert.equal(pr.length, 7)
+  assert.equal(new Set(routes.map(route => route.path)).size, routes.length)
+  assert.ok(pr.some(route => route.path.endsWith('/conflict/push')))
+  assert.ok(pr.some(route => route.path.endsWith('/review/comment')))
+  assert.equal(routes.some(route => route.path.startsWith('/api/pr-assistant')), false)
+})
 
 async function invoke(route, request) {
   let body = ''
@@ -37,13 +46,13 @@ test('tomato transition rejects cross-site mutation before invoking the CLI', as
 })
 
 test('PR routes reject relative repository paths', async () => {
-  const route = loadRoutes(applyPrAssistant).find(item => item.path === '/api/pr-assistant/repository')
-  const result = await invoke(route, { method: 'GET', url: '/api/pr-assistant/repository?path=relative/repo' })
+  const route = loadRoutes(applyTomatoBoard).find(item => item.path === '/api/tomato-board/pr/repository')
+  const result = await invoke(route, { method: 'GET', url: '/api/tomato-board/pr/repository?path=relative/repo' })
   assert.equal(result.status, 400)
 })
 
 test('read routes reject unsupported methods', async () => {
-  const route = loadRoutes(applyPrAssistant).find(item => item.path === '/api/pr-assistant/repository')
-  const result = await invoke(route, { method: 'POST', url: '/api/pr-assistant/repository?path=/tmp/repo' })
+  const route = loadRoutes(applyTomatoBoard).find(item => item.path === '/api/tomato-board/pr/repository')
+  const result = await invoke(route, { method: 'POST', url: '/api/tomato-board/pr/repository?path=/tmp/repo' })
   assert.equal(result.status, 405)
 })

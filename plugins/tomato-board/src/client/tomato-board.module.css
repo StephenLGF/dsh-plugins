@@ -260,12 +260,6 @@
   font: inherit;
 }
 
-.searchField button {
-  min-height: 24px;
-  padding: 0 5px;
-  border: 0;
-}
-
 .filterMenu {
   position: relative;
 }
@@ -480,8 +474,7 @@
 .cardIdentity { min-width: 0; display: flex; align-items: center; gap: 4px; }
 .cardIdentity .copyButton { flex: none; width: 22px; min-width: 22px; height: 22px; padding: 0; display: inline-grid; place-items: center; border-radius: 5px; color: var(--dsw-alias-label-secondary); }
 
-.muteButton,
-.tomatoLink {
+.muteButton {
   width: 28px;
   min-width: 28px;
   height: 28px;
@@ -537,3 +530,6 @@
   }
 
 }
+
+.tabPanel { display: flex; flex: 1; min-width: 0; min-height: 0; overflow: hidden; }
+.tabPanel[hidden] { display: none; }

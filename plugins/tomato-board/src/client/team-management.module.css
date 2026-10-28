@@ -32,4 +32,8 @@
 .item[role='button'] { cursor: pointer; border-radius: 8px; }
 .item[role='button']:hover { background: var(--dsw-alias-interactive-bg-hover); }
 .item[role='button']:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 2px; }
-.item .tomatoLink { flex: none; width: 28px; height: 28px; padding: 0; border: 0; background: transparent; }
+.metricToolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; color: var(--dsw-alias-label-secondary); font-size: 12px; }
+.metricToolbar > div { display: inline-flex; gap: 3px; padding: 3px; border: 1px solid var(--dsw-alias-border-l2); border-radius: 8px; }
+.metricToolbar button { padding: 5px 10px; border: 0; border-radius: 5px; background: transparent; color: inherit; font: inherit; cursor: pointer; }
+.metricToolbar button[aria-pressed='true'] { color: var(--dsw-alias-state-business-primary); background: var(--dsw-alias-interactive-bg-hover); }
+.secondaryMetric { display: block; margin-top: 6px; font-size: 12px; color: var(--dsw-alias-label-secondary); }

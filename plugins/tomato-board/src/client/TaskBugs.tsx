@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { TaskBug } from '../task-bugs.ts'
+import { TomatoLinkButton } from './TomatoLinkButton.tsx'
 import css from './worktime.module.css'
 
 interface BugData { linked: TaskBug[]; suggested: TaskBug[]; parent: { itemKey: string; title: string } | null; canLink: boolean }
 type Request = <T>(path: string, input?: unknown, signal?: AbortSignal) => Promise<T>
-export function TaskBugs({ itemKey, readOnly, disabled, request, onBusyChange, onOpen, onNotify, onCountChange }: {
+export function TaskBugs({ itemKey, readOnly, disabled, request, onBusyChange, onNotify, onCountChange }: {
   itemKey: string; readOnly: boolean; disabled: boolean; request: Request
-  onBusyChange: (busy: boolean) => void; onOpen: (key: string) => void; onNotify: (text: string, error?: boolean) => void
+  onBusyChange: (busy: boolean) => void; onNotify: (text: string, error?: boolean) => void
   onCountChange: (itemKey: string, count: number) => void
 }) {
   const [data, setData] = useState<BugData | null>(null)
@@ -63,8 +64,9 @@ export function TaskBugs({ itemKey, readOnly, disabled, request, onBusyChange, o
   const candidates = (submitted ? results : data?.suggested ?? []).filter(bug => !linkedKeys.has(bug.itemKey))
   function row(bug: TaskBug, candidate = false) {
     return <li key={bug.itemKey} className={css.bugRow}>
-      <button type="button" className={css.bugTitle} onClick={() => onOpen(bug.itemKey)}><span>{bug.title}</span><small>{bug.itemKey} ↗</small></button>
+      <div className={css.bugTitle}><span>{bug.title}</span><small>{bug.itemKey}</small></div>
       <span className={css.bugStatus}>{linking === bug.itemKey ? '关联中…' : bug.status || '未知状态'}</span>
+      <TomatoLinkButton itemKey={bug.itemKey} />
       {candidate && !readOnly && <Button size="sm" variant="outline" disabled={disabled || loading || Boolean(linking) || !data?.canLink} onClick={() => void link(bug)}>关联</Button>}
     </li>
   }
@@ -86,7 +88,7 @@ export function TaskBugs({ itemKey, readOnly, disabled, request, onBusyChange, o
       {!readOnly && data && <section className={css.bugPanel} aria-label="可关联缺陷">
         <div className={css.bugPanelHeading}>
           <h4>{submitted ? '搜索结果' : '父需求下的缺陷'} <small>{searching ? '…' : candidates.length}</small></h4>
-          {!submitted && data.parent && <button type="button" className={css.bugParent} title={data.parent.title} onClick={() => onOpen(data.parent!.itemKey)}>{data.parent.itemKey} ↗</button>}
+          {!submitted && data.parent && <span className={css.bugParent} title={data.parent.title}>{data.parent.itemKey}<TomatoLinkButton itemKey={data.parent.itemKey} /></span>}
           {submitted && <Button size="sm" variant="ghost" onClick={() => { setSubmitted(''); setQuery('') }}>返回</Button>}
         </div>
         {searching ? <p className={css.bugEmpty}>正在搜索…</p> : candidates.length ? <ul className={css.bugList}>{candidates.map(bug => row(bug, true))}</ul> : <p className={css.bugEmpty}>{submitted ? '未找到可关联的 Bug' : '暂无可关联的缺陷'}</p>}

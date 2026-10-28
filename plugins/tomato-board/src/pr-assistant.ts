@@ -3,19 +3,20 @@ import { realpath } from 'node:fs/promises'
 import { isAbsolute, relative } from 'node:path'
 import { promisify } from 'node:util'
 import { randomUUID } from 'node:crypto'
+import { resolveCliExecutable } from './cli-path.ts'
 import type { Context } from '@deepseek-ai/cordis'
 
 const execFileAsync = promisify(execFile)
-const ROUTE = '/api/pr-assistant/repository'
-const DETAIL_ROUTE = '/api/pr-assistant/pull-request'
-const COMMIT_ROUTE = '/api/pr-assistant/commit'
-const CONFLICT_PREFLIGHT_ROUTE = '/api/pr-assistant/conflict/preflight'
-const CONFLICT_STATUS_ROUTE = '/api/pr-assistant/conflict/status'
-const CONFLICT_PUSH_ROUTE = '/api/pr-assistant/conflict/push'
-const REVIEW_COMMENT_ROUTE = '/api/pr-assistant/review/comment'
+const ROUTE = '/api/tomato-board/pr/repository'
+const DETAIL_ROUTE = '/api/tomato-board/pr/pull-request'
+const COMMIT_ROUTE = '/api/tomato-board/pr/commit'
+const CONFLICT_PREFLIGHT_ROUTE = '/api/tomato-board/pr/conflict/preflight'
+const CONFLICT_STATUS_ROUTE = '/api/tomato-board/pr/conflict/status'
+const CONFLICT_PUSH_ROUTE = '/api/tomato-board/pr/conflict/push'
+const REVIEW_COMMENT_ROUTE = '/api/tomato-board/pr/review/comment'
 const MAX_REVIEW_COMMENT_LENGTH = 20_000
 
-interface Config {
+export interface PrAssistantConfig {
   executable?: string
   profile?: string
   githubToken?: string
@@ -119,8 +120,8 @@ function parseCliJson(stdout: string): unknown {
   return JSON.parse(withoutAnsi.slice(start))
 }
 
-async function loadGiteePullRequests(path: string, config: Config) {
-  const executable = config.executable || 'gitee'
+async function loadGiteePullRequests(path: string, config: PrAssistantConfig) {
+  const executable = resolveCliExecutable(config.executable || 'gitee')
   const profile = config.profile || 'osc'
   const result = await execFileAsync(executable, [
     'code', 'pr', 'list',
@@ -163,12 +164,12 @@ function normalizeGiteeFile(value: unknown): ChangedFile | null {
   }
 }
 
-async function loadGiteeCommits(path: string, number: number, config: Config): Promise<PullRequestCommit[] | null> {
+async function loadGiteeCommits(path: string, number: number, config: PrAssistantConfig): Promise<PullRequestCommit[] | null> {
   try {
     const remote = await git(path, ['remote', 'get-url', 'origin'])
     const pathname = new URL(remote.replace(/^git@([^:]+):/u, 'https://$1/')).pathname.replace(/^\//u, '').replace(/\.git$/u, '')
     const project = encodeURIComponent(pathname)
-    const result = await execFileAsync(config.executable || 'gitee', [
+    const result = await execFileAsync(resolveCliExecutable(config.executable || 'gitee'), [
       'api', 'GET', `/open/code/api/v8/projects/${project}/merge_requests/${number}/commits`,
       '--profile', config.profile || 'osc', '-o', 'json',
     ], { cwd: path, timeout: 30_000, maxBuffer: 16 * 1024 * 1024 })
@@ -189,8 +190,8 @@ async function loadGiteeCommits(path: string, number: number, config: Config): P
   }
 }
 
-async function loadGiteePullRequest(path: string, number: number, config: Config) {
-  const executable = config.executable || 'gitee'
+async function loadGiteePullRequest(path: string, number: number, config: PrAssistantConfig) {
+  const executable = resolveCliExecutable(config.executable || 'gitee')
   const profile = config.profile || 'osc'
   const common = { cwd: path, timeout: 30_000, maxBuffer: 32 * 1024 * 1024 }
   const [detailResult, diffResult, commits] = await Promise.all([
@@ -227,7 +228,7 @@ async function loadGiteePullRequest(path: string, number: number, config: Config
   }
 }
 
-async function loadGithubPullRequest(identity: ReturnType<typeof parseRemote>, number: number, config: Config) {
+async function loadGithubPullRequest(identity: ReturnType<typeof parseRemote>, number: number, config: PrAssistantConfig) {
   const base = `https://api.github.com/repos/${encodeURIComponent(identity.owner)}/${encodeURIComponent(identity.repository)}`
   const [detailValue, filesValue, commitsValue] = await Promise.all([
     requestJson(`${base}/pulls/${number}`, config.githubToken, 'github'),
@@ -286,7 +287,7 @@ async function loadGithubPullRequest(identity: ReturnType<typeof parseRemote>, n
   }
 }
 
-async function loadPullRequest(path: string, number: number, config: Config) {
+async function loadPullRequest(path: string, number: number, config: PrAssistantConfig) {
   const remote = await git(path, ['remote', 'get-url', 'origin'])
   const identity = parseRemote(remote)
   return identity.provider === 'gitee'
@@ -294,13 +295,13 @@ async function loadPullRequest(path: string, number: number, config: Config) {
     : loadGithubPullRequest(identity, number, config)
 }
 
-async function loadCommit(path: string, sha: string, config: Config) {
+async function loadCommit(path: string, sha: string, config: PrAssistantConfig) {
   const remote = await git(path, ['remote', 'get-url', 'origin'])
   const identity = parseRemote(remote)
   if (identity.provider === 'gitee') {
     const pathname = new URL(remote.replace(/^git@([^:]+):/u, 'https://$1/')).pathname.replace(/^\//u, '').replace(/\.git$/u, '')
     const project = encodeURIComponent(pathname)
-    const result = await execFileAsync(config.executable || 'gitee', [
+    const result = await execFileAsync(resolveCliExecutable(config.executable || 'gitee'), [
       'api', 'GET', `/open/code/api/v8/projects/${project}/repository/commits/${encodeURIComponent(sha)}/diff`,
       '--profile', config.profile || 'osc', '-o', 'json',
     ], { cwd: path, timeout: 30_000, maxBuffer: 32 * 1024 * 1024 })
@@ -347,7 +348,7 @@ function requireBranchName(value: string, label: string) {
   return value
 }
 
-async function canonicalRepository(path: string, config: Config) {
+async function canonicalRepository(path: string, config: PrAssistantConfig) {
   const resolved = await validateRepositoryPath(path, config)
   const root = await realpath(await git(resolved, ['rev-parse', '--show-toplevel']))
   if (root !== resolved) throw new ClientInputError('请选择 Git 仓库根目录，不能使用仓库子目录')
@@ -435,7 +436,7 @@ async function requestJsonPages(endpoint: string, token: string | undefined, pro
   return items
 }
 
-async function validateRepositoryPath(path: string, config: Config) {
+async function validateRepositoryPath(path: string, config: PrAssistantConfig) {
   if (!isAbsolute(path)) throw new ClientInputError('仓库路径必须是绝对路径')
   const resolved = await realpath(path)
   if (!config.allowedRoots?.length) return resolved
@@ -460,7 +461,7 @@ async function loadPullRequests(endpoint: string, token: string | undefined, pro
   return { items, truncated: true }
 }
 
-async function loadRepository(path: string, config: Config) {
+async function loadRepository(path: string, config: PrAssistantConfig) {
   const [root, remote] = await Promise.all([
     git(path, ['rev-parse', '--show-toplevel']),
     git(path, ['remote', 'get-url', 'origin']),
@@ -502,12 +503,12 @@ async function loadRepository(path: string, config: Config) {
   }
 }
 
-async function publishReviewComment(path: string, number: number, body: string, config: Config) {
+async function publishReviewComment(path: string, number: number, body: string, config: PrAssistantConfig) {
   const remote = await git(path, ['remote', 'get-url', 'origin'])
   const identity = parseRemote(remote)
   await loadPullRequest(path, number, config)
   if (identity.provider === 'gitee') {
-    const result = await execFileAsync(config.executable || 'gitee', [
+    const result = await execFileAsync(resolveCliExecutable(config.executable || 'gitee'), [
       'code', 'pr', 'comment', String(number),
       '--body', body,
       '--repo', `${identity.owner}/${identity.repository}`,
@@ -580,10 +581,7 @@ async function conflictStatus(operation: ConflictOperation) {
   }
 }
 
-export const name = 'pr-assistant'
-export const inject = ['webServer']
-
-export function apply(ctx: Context, config: Config = {}): void {
+export function registerPrAssistant(ctx: Context, config: PrAssistantConfig = {}): void {
   const webServer = ctx.get('webServer') as unknown as WebServer
   ctx.effect(() => webServer.register({
     kind: 'exact',

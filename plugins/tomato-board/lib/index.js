@@ -3,8 +3,8 @@ import process$1 from "node:process";
 import { promisify } from "node:util";
 import { accessSync, constants } from "node:fs";
 import { homedir } from "node:os";
-import { delimiter, dirname, isAbsolute, join } from "node:path";
-import { mkdir, open, readFile, rename, unlink, writeFile } from "node:fs/promises";
+import { delimiter, dirname, isAbsolute, join, relative } from "node:path";
+import { mkdir, open, readFile, realpath, rename, unlink, writeFile } from "node:fs/promises";
 import { createHash, randomUUID } from "node:crypto";
 //#region src/cli-path.ts
 /** Resolve a CLI for GUI processes whose inherited PATH omits user bin folders. */
@@ -25,6 +25,882 @@ function resolveCliExecutable(executable, path = process.env.PATH ?? "", home = 
 		} catch {}
 	}
 	throw new Error(`找不到 ${executable} 可执行文件，请在番茄工作台插件配置 executable 中填写绝对路径`);
+}
+//#endregion
+//#region src/team-metrics.ts
+function teamDate(value) {
+	if (typeof value !== "string" && typeof value !== "number") return "";
+	if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/u.test(value)) {
+		const time = Date.parse(`${value}T00:00:00Z`);
+		return Number.isFinite(time) && new Date(time).toISOString().slice(0, 10) === value ? value : "";
+	}
+	const time = typeof value === "number" ? value : Date.parse(value);
+	return Number.isFinite(time) ? new Date(time + 8 * 36e5).toISOString().slice(0, 10) : "";
+}
+function teamPeriod(start, end) {
+	const period = {
+		start: teamDate(start),
+		end: teamDate(end)
+	};
+	if (!period.start || !period.end || period.end < period.start) throw new Error("迭代缺少有效起止日期，请先在番茄中补全");
+	return period;
+}
+const amount = (raw) => {
+	if (typeof raw !== "number" && typeof raw !== "string" || raw === "" || typeof raw === "string" && !raw.trim()) return null;
+	const value = Number(raw);
+	return Number.isFinite(value) && value >= 0 ? value : null;
+};
+const days = (start, end) => Math.round((Date.parse(`${end}T00:00:00Z`) - Date.parse(`${start}T00:00:00Z`)) / 864e5) + 1;
+/** Story estimates and Task effort have different units and must stay separate. */
+function teamItemMetrics(itemType, fields, inSprint, period) {
+	const start = teamDate(fields.DateSDate);
+	const end = teamDate(fields.qiwangwanchengriqi);
+	const hasDates = Boolean(start && end && end >= start);
+	const overlaps = hasDates && start <= period.end && end >= period.start;
+	if (itemType === "Task") {
+		if (!overlaps) return null;
+		const plannedDays = amount(fields.planStoryPoint);
+		const overlapDays = days(start < period.start ? period.start : start, end > period.end ? period.end : end);
+		return {
+			storyPoints: null,
+			plannedDays,
+			periodDays: plannedDays === null ? null : Number((plannedDays * overlapDays / days(start, end)).toFixed(4)),
+			plannedStart: start,
+			plannedEnd: end
+		};
+	}
+	if (!["Story", "EnablerStory"].includes(itemType) || (hasDates ? !overlaps : !inSprint)) return null;
+	return {
+		storyPoints: amount(fields.StoryPoint),
+		plannedDays: null,
+		periodDays: null,
+		plannedStart: start,
+		plannedEnd: end
+	};
+}
+//#endregion
+//#region src/pr-assistant.ts
+const execFileAsync$1 = promisify(execFile);
+const ROUTE$1 = "/api/tomato-board/pr/repository";
+const DETAIL_ROUTE = "/api/tomato-board/pr/pull-request";
+const COMMIT_ROUTE = "/api/tomato-board/pr/commit";
+const CONFLICT_PREFLIGHT_ROUTE = "/api/tomato-board/pr/conflict/preflight";
+const CONFLICT_STATUS_ROUTE = "/api/tomato-board/pr/conflict/status";
+const CONFLICT_PUSH_ROUTE = "/api/tomato-board/pr/conflict/push";
+const REVIEW_COMMENT_ROUTE = "/api/tomato-board/pr/review/comment";
+const MAX_REVIEW_COMMENT_LENGTH = 2e4;
+var ClientInputError = class extends Error {};
+const conflictOperations = /* @__PURE__ */ new Map();
+function normalizeGiteeConflictStatus(detail) {
+	if (detail.has_conflict === true || detail.has_conflicts === true || detail.conflicts === true) return "conflicting";
+	if (detail.has_conflict === false || detail.has_conflicts === false || detail.conflicts === false) return "mergeable";
+	const status = String(detail.merge_status || detail.detailed_merge_status || "").toLowerCase();
+	if ([
+		"cannot_be_merged",
+		"conflict",
+		"conflicts"
+	].includes(status)) return "conflicting";
+	if ([
+		"can_be_merged",
+		"mergeable",
+		"can_be_merged_recheck"
+	].includes(status)) return "mergeable";
+	return "unknown";
+}
+function normalizeGithubConflictStatus(detail) {
+	if (detail.mergeable === true) return "mergeable";
+	if (detail.mergeable === false) return "conflicting";
+	return "unknown";
+}
+function sendJson$1(response, status, body) {
+	response.statusCode = status;
+	response.setHeader("content-type", "application/json; charset=utf-8");
+	response.setHeader("cache-control", "no-store");
+	response.end(JSON.stringify(body));
+}
+function parseRemote(remote) {
+	const normalized = remote.trim().replace(/^git@([^:]+):/u, "https://$1/").replace(/\.git$/u, "");
+	const url = new URL(normalized);
+	const segments = url.pathname.replace(/^\//u, "").split("/").filter(Boolean);
+	const repository = segments.at(-1);
+	const owner = segments.at(-2);
+	const provider = url.hostname === "github.com" ? "github" : url.hostname.includes("gitee") ? "gitee" : null;
+	if (!provider || !owner || !repository) throw new Error(`暂不支持该 Git 远端：${url.hostname}`);
+	return {
+		provider,
+		owner,
+		repository,
+		url: `https://${url.hostname}/${owner}/${repository}`
+	};
+}
+function parseCliJson(stdout) {
+	const withoutAnsi = stdout.replace(/\u001b\[[0-9;?]*[ -/]*[@-~]/gu, "").trim();
+	const start = withoutAnsi.search(/[\[{]/u);
+	if (start < 0) throw new Error("Gitee CLI 未返回 JSON");
+	return JSON.parse(withoutAnsi.slice(start));
+}
+async function loadGiteePullRequests(path, config) {
+	const result = await execFileAsync$1(resolveCliExecutable(config.executable || "gitee"), [
+		"code",
+		"pr",
+		"list",
+		"--states",
+		"opened",
+		"--states",
+		"drafted",
+		"--limit",
+		"100",
+		"--json",
+		"--profile",
+		config.profile || "osc"
+	], {
+		cwd: path,
+		timeout: 3e4,
+		maxBuffer: 16 * 1024 * 1024
+	});
+	const payload = parseCliJson(result.stdout || result.stderr);
+	const record = payload && typeof payload === "object" ? payload : {};
+	const items = Array.isArray(record.data) ? record.data : Array.isArray(payload) ? payload : [];
+	const meta = record.meta && typeof record.meta === "object" ? record.meta : {};
+	const total = Number(meta.total_count);
+	return {
+		items,
+		total: Number.isFinite(total) ? total : items.length,
+		truncated: items.length < total
+	};
+}
+function countDiffLines(diff) {
+	let additions = 0;
+	let deletions = 0;
+	for (const line of diff.split("\n")) {
+		if (line.startsWith("+") && !line.startsWith("+++")) additions += 1;
+		if (line.startsWith("-") && !line.startsWith("---")) deletions += 1;
+	}
+	return {
+		additions,
+		deletions
+	};
+}
+function normalizeGiteeFile(value) {
+	if (!value || typeof value !== "object") return null;
+	const file = value;
+	const path = String(file.new_path || file.old_path || "");
+	if (!path) return null;
+	const counts = countDiffLines(String(file.diff || ""));
+	return {
+		path,
+		previousPath: String(file.old_path || path),
+		...counts,
+		status: file.new_file === true ? "added" : file.deleted_file === true ? "deleted" : file.renamed_file === true ? "renamed" : "modified",
+		diff: String(file.diff || "")
+	};
+}
+async function loadGiteeCommits(path, number, config) {
+	try {
+		const remote = await git(path, [
+			"remote",
+			"get-url",
+			"origin"
+		]);
+		const pathname = new URL(remote.replace(/^git@([^:]+):/u, "https://$1/")).pathname.replace(/^\//u, "").replace(/\.git$/u, "");
+		const project = encodeURIComponent(pathname);
+		const result = await execFileAsync$1(resolveCliExecutable(config.executable || "gitee"), [
+			"api",
+			"GET",
+			`/open/code/api/v8/projects/${project}/merge_requests/${number}/commits`,
+			"--profile",
+			config.profile || "osc",
+			"-o",
+			"json"
+		], {
+			cwd: path,
+			timeout: 3e4,
+			maxBuffer: 16 * 1024 * 1024
+		});
+		const payload = parseCliJson(result.stdout || result.stderr);
+		if (!Array.isArray(payload)) return null;
+		return payload.map((value) => {
+			const commit = value && typeof value === "object" ? value : {};
+			return {
+				sha: String(commit.id || ""),
+				title: String(commit.title || commit.message || "").split("\n")[0] || "",
+				author: String(commit.author_name || ""),
+				committedAt: String(commit.created_at || commit.committed_date || ""),
+				url: ""
+			};
+		});
+	} catch {
+		return null;
+	}
+}
+async function loadGiteePullRequest(path, number, config) {
+	const executable = resolveCliExecutable(config.executable || "gitee");
+	const profile = config.profile || "osc";
+	const common = {
+		cwd: path,
+		timeout: 3e4,
+		maxBuffer: 32 * 1024 * 1024
+	};
+	const [detailResult, diffResult, commits] = await Promise.all([
+		execFileAsync$1(executable, [
+			"code",
+			"pr",
+			"view",
+			String(number),
+			"--json",
+			"--profile",
+			profile
+		], common),
+		execFileAsync$1(executable, [
+			"code",
+			"pr",
+			"diff",
+			String(number),
+			"--json",
+			"--profile",
+			profile
+		], common),
+		loadGiteeCommits(path, number, config)
+	]);
+	const detailValue = parseCliJson(detailResult.stdout || detailResult.stderr);
+	const detail = detailValue && typeof detailValue === "object" ? detailValue : {};
+	const diffValue = parseCliJson(diffResult.stdout || diffResult.stderr);
+	const files = (Array.isArray(diffValue) ? diffValue : []).map(normalizeGiteeFile).filter((file) => file !== null);
+	const authorValue = detail.author;
+	const author = authorValue && typeof authorValue === "object" ? authorValue : {};
+	const additions = files.reduce((sum, file) => sum + file.additions, 0);
+	const deletions = files.reduce((sum, file) => sum + file.deletions, 0);
+	const conflictStatus = normalizeGiteeConflictStatus(detail);
+	return {
+		number,
+		title: String(detail.title || ""),
+		description: String(detail.description || ""),
+		author: String(author.name || author.user_name || ""),
+		sourceBranch: String(detail.source_branch || ""),
+		targetBranch: String(detail.target_branch || ""),
+		url: String(detail.web_url || detail.html_url || ""),
+		updatedAt: String(detail.updated_at || ""),
+		commitCount: commits?.length ?? null,
+		commits: commits ?? [],
+		additions,
+		deletions,
+		changedFiles: files.length,
+		conflictStatus,
+		mergeStatus: String(detail.merge_status || detail.detailed_merge_status || ""),
+		files
+	};
+}
+async function loadGithubPullRequest(identity, number, config) {
+	const base = `https://api.github.com/repos/${encodeURIComponent(identity.owner)}/${encodeURIComponent(identity.repository)}`;
+	const [detailValue, filesValue, commitsValue] = await Promise.all([
+		requestJson(`${base}/pulls/${number}`, config.githubToken, "github"),
+		requestJsonPages(`${base}/pulls/${number}/files?per_page=100`, config.githubToken, "github", 30),
+		requestJsonPages(`${base}/pulls/${number}/commits?per_page=100`, config.githubToken, "github", 50)
+	]);
+	const detail = detailValue && typeof detailValue === "object" ? detailValue : {};
+	const authorValue = detail.user;
+	const author = authorValue && typeof authorValue === "object" ? authorValue : {};
+	const headValue = detail.head;
+	const head = headValue && typeof headValue === "object" ? headValue : {};
+	const baseValue = detail.base;
+	const target = baseValue && typeof baseValue === "object" ? baseValue : {};
+	const files = (Array.isArray(filesValue) ? filesValue : []).map((value) => {
+		const file = value && typeof value === "object" ? value : {};
+		return {
+			path: String(file.filename || ""),
+			previousPath: String(file.previous_filename || file.filename || ""),
+			additions: Number(file.additions || 0),
+			deletions: Number(file.deletions || 0),
+			status: [
+				"added",
+				"deleted",
+				"renamed"
+			].includes(String(file.status)) ? file.status : "modified",
+			diff: String(file.patch || "")
+		};
+	});
+	const commits = (Array.isArray(commitsValue) ? commitsValue : []).map((value) => {
+		const item = value && typeof value === "object" ? value : {};
+		const commitValue = item.commit && typeof item.commit === "object" ? item.commit : {};
+		const authorValue = commitValue.author && typeof commitValue.author === "object" ? commitValue.author : {};
+		const accountValue = item.author && typeof item.author === "object" ? item.author : {};
+		return {
+			sha: String(item.sha || ""),
+			title: String(commitValue.message || "").split("\n")[0] || "",
+			author: String(accountValue.login || authorValue.name || ""),
+			committedAt: String(authorValue.date || ""),
+			url: String(item.html_url || "")
+		};
+	});
+	const conflictStatus = normalizeGithubConflictStatus(detail);
+	return {
+		number,
+		title: String(detail.title || ""),
+		description: String(detail.body || ""),
+		author: String(author.login || ""),
+		sourceBranch: String(head.ref || ""),
+		targetBranch: String(target.ref || ""),
+		url: String(detail.html_url || ""),
+		updatedAt: String(detail.updated_at || ""),
+		commitCount: Number(detail.commits || 0),
+		commits,
+		additions: Number(detail.additions || 0),
+		deletions: Number(detail.deletions || 0),
+		changedFiles: Number(detail.changed_files || files.length),
+		conflictStatus,
+		mergeStatus: String(detail.mergeable_state || ""),
+		files
+	};
+}
+async function loadPullRequest(path, number, config) {
+	const identity = parseRemote(await git(path, [
+		"remote",
+		"get-url",
+		"origin"
+	]));
+	return identity.provider === "gitee" ? loadGiteePullRequest(path, number, config) : loadGithubPullRequest(identity, number, config);
+}
+async function loadCommit(path, sha, config) {
+	const remote = await git(path, [
+		"remote",
+		"get-url",
+		"origin"
+	]);
+	const identity = parseRemote(remote);
+	if (identity.provider === "gitee") {
+		const pathname = new URL(remote.replace(/^git@([^:]+):/u, "https://$1/")).pathname.replace(/^\//u, "").replace(/\.git$/u, "");
+		const project = encodeURIComponent(pathname);
+		const result = await execFileAsync$1(resolveCliExecutable(config.executable || "gitee"), [
+			"api",
+			"GET",
+			`/open/code/api/v8/projects/${project}/repository/commits/${encodeURIComponent(sha)}/diff`,
+			"--profile",
+			config.profile || "osc",
+			"-o",
+			"json"
+		], {
+			cwd: path,
+			timeout: 3e4,
+			maxBuffer: 32 * 1024 * 1024
+		});
+		const payload = parseCliJson(result.stdout || result.stderr);
+		return { files: (Array.isArray(payload) ? payload : []).map(normalizeGiteeFile).filter((file) => file !== null) };
+	}
+	const value = await requestJson(`https://api.github.com/repos/${encodeURIComponent(identity.owner)}/${encodeURIComponent(identity.repository)}/commits/${encodeURIComponent(sha)}`, config.githubToken, "github");
+	const record = value && typeof value === "object" ? value : {};
+	return { files: (Array.isArray(record.files) ? record.files : []).map((value) => {
+		const file = value && typeof value === "object" ? value : {};
+		return {
+			path: String(file.filename || ""),
+			previousPath: String(file.previous_filename || file.filename || ""),
+			additions: Number(file.additions || 0),
+			deletions: Number(file.deletions || 0),
+			status: [
+				"added",
+				"deleted",
+				"renamed"
+			].includes(String(file.status)) ? file.status : "modified",
+			diff: String(file.patch || "")
+		};
+	}) };
+}
+async function git(cwd, args) {
+	return (await execFileAsync$1("git", [
+		"-C",
+		cwd,
+		...args
+	], {
+		timeout: 3e4,
+		maxBuffer: 16 * 1024 * 1024
+	})).stdout.trim();
+}
+async function gitExit(cwd, args) {
+	try {
+		return {
+			ok: true,
+			output: await git(cwd, args)
+		};
+	} catch (error) {
+		const value = error;
+		return {
+			ok: false,
+			output: String(value.stdout || value.stderr || "").trim()
+		};
+	}
+}
+function requireBranchName(value, label) {
+	if (!value || value.startsWith("-") || value.length > 255) throw new ClientInputError(`${label}无效`);
+	return value;
+}
+async function canonicalRepository(path, config) {
+	const resolved = await validateRepositoryPath(path, config);
+	const root = await realpath(await git(resolved, ["rev-parse", "--show-toplevel"]));
+	if (root !== resolved) throw new ClientInputError("请选择 Git 仓库根目录，不能使用仓库子目录");
+	return root;
+}
+async function readJsonBody(request) {
+	if (String(request.headers["content-type"] || "").split(";", 1)[0]?.trim().toLowerCase() !== "application/json") throw new ClientInputError("Content-Type 必须为 application/json");
+	const chunks = [];
+	let size = 0;
+	await new Promise((resolve, reject) => {
+		request.on("data", (chunk) => {
+			size += chunk.byteLength;
+			if (size > 64 * 1024) reject(new ClientInputError("请求体过大"));
+			else chunks.push(chunk);
+		});
+		request.on("end", () => resolve());
+		request.on("error", (error) => reject(error || /* @__PURE__ */ new Error("请求读取失败")));
+	});
+	try {
+		const value = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+		if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error();
+		return value;
+	} catch (error) {
+		if (error instanceof ClientInputError) throw error;
+		throw new ClientInputError("请求体必须是 JSON 对象");
+	}
+}
+function assertMutationRequest(request) {
+	if (request.method !== "POST") throw new ClientInputError("Method not allowed");
+	if (request.headers["x-pr-assistant-action"] !== "1") throw new ClientInputError("缺少操作确认标头");
+	const site = request.headers["sec-fetch-site"];
+	if (site && site !== "same-origin" && site !== "none") throw new ClientInputError("拒绝跨站请求");
+	const origin = request.headers.origin;
+	const host = request.headers.host;
+	if (origin && host && new URL(String(origin)).host !== String(host)) throw new ClientInputError("拒绝跨站请求");
+}
+async function branchSha(path, branch) {
+	requireBranchName(branch, "分支名");
+	if (!(await gitExit(path, [
+		"check-ref-format",
+		"--branch",
+		branch
+	])).ok) throw new ClientInputError("PR 分支名无效");
+	return git(path, [
+		"rev-parse",
+		"--verify",
+		`refs/remotes/origin/${branch}^{commit}`
+	]);
+}
+async function refreshBranches(path, sourceBranch, targetBranch) {
+	requireBranchName(sourceBranch, "源分支");
+	requireBranchName(targetBranch, "目标分支");
+	for (const branch of new Set([sourceBranch, targetBranch])) if (!(await gitExit(path, [
+		"check-ref-format",
+		"--branch",
+		branch
+	])).ok) throw new ClientInputError(`PR 分支名无效：${branch}`);
+	await git(path, [
+		"fetch",
+		"--no-tags",
+		"origin",
+		`+refs/heads/${sourceBranch}:refs/remotes/origin/${sourceBranch}`,
+		`+refs/heads/${targetBranch}:refs/remotes/origin/${targetBranch}`
+	]);
+	return {
+		sourceSha: await branchSha(path, sourceBranch),
+		targetSha: await branchSha(path, targetBranch)
+	};
+}
+async function requestJson(url, token, provider) {
+	const headers = {
+		accept: "application/json",
+		"user-agent": "dsh-pr-assistant"
+	};
+	if (token) headers.authorization = provider === "github" ? `Bearer ${token}` : `token ${token}`;
+	const response = await fetch(url, {
+		headers,
+		signal: AbortSignal.timeout(15e3)
+	});
+	const body = await response.json();
+	if (!response.ok) {
+		const message = body && typeof body === "object" && "message" in body ? String(body.message) : `HTTP ${response.status}`;
+		throw new Error(message);
+	}
+	return body;
+}
+async function requestJsonPages(endpoint, token, provider, maxPages) {
+	const items = [];
+	for (let page = 1; page <= maxPages; page += 1) {
+		const body = await requestJson(`${endpoint}${endpoint.includes("?") ? "&" : "?"}page=${page}`, token, provider);
+		if (!Array.isArray(body)) throw new Error("代码平台返回了无法识别的分页数据");
+		items.push(...body);
+		if (body.length < 100) break;
+	}
+	return items;
+}
+async function validateRepositoryPath(path, config) {
+	if (!isAbsolute(path)) throw new ClientInputError("仓库路径必须是绝对路径");
+	const resolved = await realpath(path);
+	if (!config.allowedRoots?.length) return resolved;
+	if (!(await Promise.all(config.allowedRoots.map((root) => realpath(root)))).some((root) => {
+		const child = relative(root, resolved);
+		return child === "" || !child.startsWith("..") && !isAbsolute(child);
+	})) throw new ClientInputError("仓库路径不在 allowedRoots 允许范围内");
+	return resolved;
+}
+async function loadPullRequests(endpoint, token, provider) {
+	const items = [];
+	for (let page = 1; page <= 50; page += 1) {
+		const body = await requestJson(`${endpoint}${endpoint.includes("?") ? "&" : "?"}page=${page}`, token, provider);
+		if (!Array.isArray(body)) throw new Error("代码平台返回了无法识别的 PR 数据");
+		items.push(...body);
+		if (body.length < 100) return {
+			items,
+			truncated: false
+		};
+	}
+	return {
+		items,
+		truncated: true
+	};
+}
+async function loadRepository(path, config) {
+	const [root, remote] = await Promise.all([git(path, ["rev-parse", "--show-toplevel"]), git(path, [
+		"remote",
+		"get-url",
+		"origin"
+	])]);
+	const identity = parseRemote(remote);
+	const loaded = identity.provider === "gitee" ? await loadGiteePullRequests(path, config) : await loadPullRequests(`https://api.github.com/repos/${encodeURIComponent(identity.owner)}/${encodeURIComponent(identity.repository)}/pulls?state=open&per_page=100`, config.githubToken, identity.provider).then((result) => ({
+		...result,
+		total: result.items.length
+	}));
+	const { items, truncated } = loaded;
+	return {
+		...identity,
+		root,
+		openCount: loaded.total,
+		truncated,
+		pullRequests: items.map((value) => {
+			const item = value && typeof value === "object" ? value : {};
+			const authorValue = item.user ?? item.author;
+			const author = authorValue && typeof authorValue === "object" ? authorValue : {};
+			const headValue = item.head;
+			const head = headValue && typeof headValue === "object" ? headValue : {};
+			const baseValue = item.base;
+			const base = baseValue && typeof baseValue === "object" ? baseValue : {};
+			return {
+				number: Number(item.number || item.iid || item.id || 0),
+				title: String(item.title ?? ""),
+				author: String(author.login ?? author.name ?? ""),
+				updatedAt: String(item.updated_at ?? ""),
+				url: String(item.html_url || item.web_url || item.url || ""),
+				draft: item.draft === true || item.state === "drafted",
+				conflictStatus: identity.provider === "gitee" ? normalizeGiteeConflictStatus(item) : "unknown",
+				sourceBranch: String(item.source_branch || head.ref || ""),
+				targetBranch: String(item.target_branch || base.ref || "")
+			};
+		})
+	};
+}
+async function publishReviewComment(path, number, body, config) {
+	const identity = parseRemote(await git(path, [
+		"remote",
+		"get-url",
+		"origin"
+	]));
+	await loadPullRequest(path, number, config);
+	if (identity.provider === "gitee") {
+		const result = await execFileAsync$1(resolveCliExecutable(config.executable || "gitee"), [
+			"code",
+			"pr",
+			"comment",
+			String(number),
+			"--body",
+			body,
+			"--repo",
+			`${identity.owner}/${identity.repository}`,
+			"--profile",
+			config.profile || "osc"
+		], {
+			cwd: path,
+			timeout: 3e4,
+			maxBuffer: 4 * 1024 * 1024
+		});
+		return {
+			provider: identity.provider,
+			output: String(result.stdout || result.stderr).trim()
+		};
+	}
+	if (!config.githubToken) throw new ClientInputError("GitHub PR 评论需要配置 githubToken，当前无法授权发布");
+	const endpoint = `https://api.github.com/repos/${encodeURIComponent(identity.owner)}/${encodeURIComponent(identity.repository)}/issues/${number}/comments`;
+	const response = await fetch(endpoint, {
+		method: "POST",
+		headers: {
+			accept: "application/vnd.github+json",
+			authorization: `Bearer ${config.githubToken}`,
+			"content-type": "application/json",
+			"user-agent": "dsh-pr-assistant",
+			"x-github-api-version": "2022-11-28"
+		},
+		body: JSON.stringify({ body }),
+		signal: AbortSignal.timeout(15e3)
+	});
+	const value = await response.json();
+	if (!response.ok) {
+		if (response.status === 401 || response.status === 403) throw new ClientInputError("GitHub 评论无法授权：githubToken 无效或缺少 Issues/Pull requests 评论写权限");
+		throw new ClientInputError(`GitHub 评论发布失败：${String(value.message || `HTTP ${response.status}`)}`);
+	}
+	return {
+		provider: identity.provider,
+		url: String(value.html_url || "")
+	};
+}
+async function conflictStatus(operation) {
+	const currentBranch = await git(operation.path, ["branch", "--show-current"]);
+	const headSha = await git(operation.path, ["rev-parse", "HEAD"]);
+	const porcelain = await git(operation.path, ["status", "--porcelain=v1"]);
+	const unresolved = (await gitExit(operation.path, [
+		"diff",
+		"--name-only",
+		"--diff-filter=U"
+	])).output.split("\n").filter(Boolean);
+	const sourceAncestor = (await gitExit(operation.path, [
+		"merge-base",
+		"--is-ancestor",
+		operation.sourceSha,
+		headSha
+	])).ok;
+	const targetMerged = (await gitExit(operation.path, [
+		"merge-base",
+		"--is-ancestor",
+		operation.targetSha,
+		headSha
+	])).ok;
+	const changed = await git(operation.path, [
+		"diff",
+		"--name-status",
+		`${operation.sourceSha}..${headSha}`
+	]);
+	const diff = await git(operation.path, [
+		"diff",
+		"--no-ext-diff",
+		"--unified=3",
+		`${operation.sourceSha}..${headSha}`
+	]);
+	const commits = await git(operation.path, [
+		"log",
+		"--format=%H%x09%s",
+		`${operation.sourceSha}..${headSha}`
+	]);
+	const clean = porcelain === "";
+	const hasCommit = headSha !== operation.sourceSha && sourceAncestor;
+	const pushReady = currentBranch === operation.sourceBranch && clean && unresolved.length === 0 && hasCommit && targetMerged;
+	return {
+		operationId: operation.id,
+		number: operation.number,
+		sourceBranch: operation.sourceBranch,
+		targetBranch: operation.targetBranch,
+		sourceSha: operation.sourceSha,
+		targetSha: operation.targetSha,
+		currentBranch,
+		headSha,
+		clean,
+		unresolved,
+		sourceAncestor,
+		targetMerged,
+		hasCommit,
+		pushReady,
+		changedFiles: changed ? changed.split("\n").map((line) => {
+			const [status, ...parts] = line.split("	");
+			return {
+				status,
+				path: parts.at(-1) || ""
+			};
+		}) : [],
+		commits: commits ? commits.split("\n").map((line) => {
+			const [sha, ...title] = line.split("	");
+			return {
+				sha,
+				title: title.join("	")
+			};
+		}) : [],
+		diff: diff.slice(0, 512 * 1024),
+		diffTruncated: diff.length > 512 * 1024
+	};
+}
+function registerPrAssistant(ctx, config = {}) {
+	const webServer = ctx.get("webServer");
+	ctx.effect(() => webServer.register({
+		kind: "exact",
+		path: ROUTE$1,
+		async handler(request, response) {
+			if (request.method !== "GET") return sendJson$1(response, 405, { error: "Method not allowed" });
+			const requestedPath = new URL(request.url ?? ROUTE$1, "http://localhost").searchParams.get("path")?.trim();
+			if (!requestedPath) return sendJson$1(response, 400, { error: "缺少仓库路径" });
+			try {
+				sendJson$1(response, 200, await loadRepository(await validateRepositoryPath(requestedPath, config), config));
+			} catch (error) {
+				sendJson$1(response, error instanceof ClientInputError ? 400 : 502, { error: error instanceof Error ? error.message : "PR 读取失败" });
+			}
+		}
+	}), "pr-assistant: repository route");
+	ctx.effect(() => webServer.register({
+		kind: "exact",
+		path: DETAIL_ROUTE,
+		async handler(request, response) {
+			if (request.method !== "GET") return sendJson$1(response, 405, { error: "Method not allowed" });
+			const url = new URL(request.url ?? DETAIL_ROUTE, "http://localhost");
+			const requestedPath = url.searchParams.get("path")?.trim();
+			const number = Number(url.searchParams.get("number"));
+			if (!requestedPath || !Number.isInteger(number) || number <= 0) return sendJson$1(response, 400, { error: "无效的 PR 详情请求" });
+			try {
+				sendJson$1(response, 200, await loadPullRequest(await validateRepositoryPath(requestedPath, config), number, config));
+			} catch (error) {
+				sendJson$1(response, error instanceof ClientInputError ? 400 : 502, { error: error instanceof Error ? error.message : "PR 详情读取失败" });
+			}
+		}
+	}), "pr-assistant: pull request detail route");
+	ctx.effect(() => webServer.register({
+		kind: "exact",
+		path: COMMIT_ROUTE,
+		async handler(request, response) {
+			if (request.method !== "GET") return sendJson$1(response, 405, { error: "Method not allowed" });
+			const url = new URL(request.url ?? COMMIT_ROUTE, "http://localhost");
+			const requestedPath = url.searchParams.get("path")?.trim();
+			const sha = url.searchParams.get("sha")?.trim();
+			if (!requestedPath || !sha || !/^[a-f0-9]{7,64}$/iu.test(sha)) return sendJson$1(response, 400, { error: "无效的提交详情请求" });
+			try {
+				sendJson$1(response, 200, await loadCommit(await validateRepositoryPath(requestedPath, config), sha, config));
+			} catch (error) {
+				sendJson$1(response, error instanceof ClientInputError ? 400 : 502, { error: error instanceof Error ? error.message : "提交详情读取失败" });
+			}
+		}
+	}), "pr-assistant: commit detail route");
+	ctx.effect(() => webServer.register({
+		kind: "exact",
+		path: REVIEW_COMMENT_ROUTE,
+		async handler(request, response) {
+			try {
+				assertMutationRequest(request);
+				const body = await readJsonBody(request);
+				const requestedPath = typeof body.path === "string" ? body.path.trim() : "";
+				const number = Number(body.number);
+				const comment = typeof body.body === "string" ? body.body.trim() : "";
+				if (!requestedPath || !Number.isInteger(number) || number <= 0) throw new ClientInputError("无效的 PR 评论请求");
+				if (!comment) throw new ClientInputError("评论正文不能为空");
+				if (comment.length > MAX_REVIEW_COMMENT_LENGTH) throw new ClientInputError(`评论正文不能超过 ${MAX_REVIEW_COMMENT_LENGTH} 个字符`);
+				sendJson$1(response, 200, {
+					published: true,
+					...await publishReviewComment(await canonicalRepository(requestedPath, config), number, comment, config)
+				});
+			} catch (error) {
+				sendJson$1(response, error instanceof ClientInputError ? 400 : 502, { error: error instanceof Error ? error.message : "PR 评论发布失败" });
+			}
+		}
+	}), "pr-assistant: review comment route");
+	ctx.effect(() => webServer.register({
+		kind: "exact",
+		path: CONFLICT_PREFLIGHT_ROUTE,
+		async handler(request, response) {
+			try {
+				assertMutationRequest(request);
+				const body = await readJsonBody(request);
+				const requestedPath = typeof body.path === "string" ? body.path.trim() : "";
+				const number = Number(body.number);
+				if (!requestedPath || !Number.isInteger(number) || number <= 0) throw new ClientInputError("无效的冲突处理请求");
+				const path = await canonicalRepository(requestedPath, config);
+				const detail = await loadPullRequest(path, number, config);
+				if (detail.conflictStatus !== "conflicting") throw new ClientInputError("该 PR 当前未确认存在冲突");
+				const sourceBranch = requireBranchName(detail.sourceBranch, "源分支");
+				const targetBranch = requireBranchName(detail.targetBranch, "目标分支");
+				if (await git(path, ["status", "--porcelain=v1"])) throw new ClientInputError("工作区存在未提交修改，请先提交或暂存后再处理冲突");
+				const { sourceSha, targetSha } = await refreshBranches(path, sourceBranch, targetBranch);
+				let currentBranch = await git(path, ["branch", "--show-current"]);
+				if (currentBranch !== sourceBranch) {
+					await git(path, (await gitExit(path, [
+						"show-ref",
+						"--verify",
+						"--quiet",
+						`refs/heads/${sourceBranch}`
+					])).ok ? ["switch", sourceBranch] : [
+						"switch",
+						"--track",
+						"-c",
+						sourceBranch,
+						`origin/${sourceBranch}`
+					]);
+					currentBranch = await git(path, ["branch", "--show-current"]);
+				}
+				if (await git(path, ["rev-parse", "HEAD"]) !== sourceSha) throw new ClientInputError("本地源分支与远端不一致，请先同步后重试");
+				const operation = {
+					id: randomUUID(),
+					path,
+					number,
+					sourceBranch,
+					targetBranch,
+					sourceSha,
+					targetSha,
+					createdAt: Date.now()
+				};
+				conflictOperations.set(operation.id, operation);
+				sendJson$1(response, 200, {
+					operationId: operation.id,
+					path,
+					number,
+					sourceBranch,
+					targetBranch,
+					sourceSha,
+					targetSha,
+					currentBranch
+				});
+			} catch (error) {
+				sendJson$1(response, error instanceof ClientInputError ? 400 : 502, { error: error instanceof Error ? error.message : "冲突处理预检失败" });
+			}
+		}
+	}), "pr-assistant: conflict preflight route");
+	ctx.effect(() => webServer.register({
+		kind: "exact",
+		path: CONFLICT_STATUS_ROUTE,
+		async handler(request, response) {
+			if (request.method !== "GET") return sendJson$1(response, 405, { error: "Method not allowed" });
+			const id = new URL(request.url ?? CONFLICT_STATUS_ROUTE, "http://localhost").searchParams.get("operationId")?.trim();
+			const operation = id ? conflictOperations.get(id) : void 0;
+			if (!operation || Date.now() - operation.createdAt > 1440 * 60 * 1e3) return sendJson$1(response, 404, { error: "冲突处理记录不存在或已过期" });
+			try {
+				sendJson$1(response, 200, await conflictStatus(operation));
+			} catch (error) {
+				sendJson$1(response, 502, { error: error instanceof Error ? error.message : "冲突处理状态读取失败" });
+			}
+		}
+	}), "pr-assistant: conflict status route");
+	ctx.effect(() => webServer.register({
+		kind: "exact",
+		path: CONFLICT_PUSH_ROUTE,
+		async handler(request, response) {
+			try {
+				assertMutationRequest(request);
+				const body = await readJsonBody(request);
+				const id = typeof body.operationId === "string" ? body.operationId : "";
+				const expectedHead = typeof body.expectedHead === "string" ? body.expectedHead : "";
+				if (!/^[a-f0-9]{40,64}$/iu.test(expectedHead)) throw new ClientInputError("无效的提交版本");
+				const operation = conflictOperations.get(id);
+				if (!operation || Date.now() - operation.createdAt > 1440 * 60 * 1e3) throw new ClientInputError("冲突处理记录不存在或已过期");
+				const status = await conflictStatus(operation);
+				if (!status.pushReady || status.headSha !== expectedHead) throw new ClientInputError("仓库状态已变化，当前结果不允许推送");
+				await git(operation.path, [
+					"fetch",
+					"--no-tags",
+					"origin",
+					`+refs/heads/${operation.sourceBranch}:refs/remotes/origin/${operation.sourceBranch}`
+				]);
+				if (await branchSha(operation.path, operation.sourceBranch) !== operation.sourceSha) throw new ClientInputError("远端源分支已更新，请重新开始冲突处理");
+				await git(operation.path, [
+					"push",
+					"origin",
+					`HEAD:refs/heads/${operation.sourceBranch}`
+				]);
+				sendJson$1(response, 200, {
+					pushed: true,
+					sha: await git(operation.path, ["rev-parse", "HEAD"]),
+					sourceBranch: operation.sourceBranch
+				});
+			} catch (error) {
+				sendJson$1(response, error instanceof ClientInputError ? 400 : 502, { error: error instanceof Error ? error.message : "推送失败" });
+			}
+		}
+	}), "pr-assistant: conflict push route");
 }
 //#endregion
 //#region src/worktime-model.ts
@@ -101,14 +977,56 @@ function unitDates(units) {
 	for (const unit of units) for (const day of datesBetween(unit.start, unit.end)) dates.add(day);
 	return [...dates].sort();
 }
+/** Recover old allocations once, and retain exact half-day dates for subsequent batches. */
+function plannedTaskSlots(dates, tasks) {
+	const used = /* @__PURE__ */ new Map();
+	const seen = /* @__PURE__ */ new Set();
+	const allocations = /* @__PURE__ */ new Map();
+	const confirmed = tasks.filter((task) => task.status === "created").sort((a, b) => a.end.localeCompare(b.end) || b.start.localeCompare(a.start));
+	const reserve = (day) => used.set(day, (used.get(day) ?? 0) + 1);
+	for (const task of confirmed) {
+		if (task.itemKey && seen.has(task.itemKey)) continue;
+		if (!task.allocationSlots || task.allocationSlots.length !== Math.round(task.days * 2) || task.allocationSlots.some((day) => day < task.start || day > task.end)) continue;
+		allocations.set(task, [...task.allocationSlots]);
+		task.allocationSlots.forEach(reserve);
+		if (task.itemKey) seen.add(task.itemKey);
+	}
+	for (const task of confirmed) {
+		if (allocations.has(task)) continue;
+		if (task.itemKey && seen.has(task.itemKey)) continue;
+		if (task.itemKey) seen.add(task.itemKey);
+		let remaining = Math.ceil(task.days * 2 - 1e-8);
+		if (!Number.isSafeInteger(remaining) || remaining <= 0) throw new Error("已有 Task 的人天无效，请先核对");
+		const slots = [];
+		const relevant = dates.filter((day) => day >= task.start && day <= task.end);
+		const candidates = [...relevant, ...datesBetween(task.start, task.end).filter((day) => !relevant.includes(day))];
+		for (const day of candidates) {
+			const taken = Math.min(remaining, Math.max(0, 2 - (used.get(day) ?? 0)));
+			used.set(day, (used.get(day) ?? 0) + taken);
+			slots.push(...Array(taken).fill(day));
+			remaining -= taken;
+			if (!remaining) break;
+		}
+		allocations.set(task, slots.sort());
+	}
+	return allocations;
+}
+/** Remaining half-day slots; the wider context recovers legacy multi-range Tasks. */
+function availableWorktimeSlots(dates, tasks, contextDates = dates) {
+	const used = /* @__PURE__ */ new Map();
+	for (const slots of plannedTaskSlots(contextDates, tasks).values()) for (const day of slots) used.set(day, (used.get(day) ?? 0) + 1);
+	return [...new Set(dates)].sort().flatMap((day) => Array(Math.max(0, 2 - (used.get(day) ?? 0))).fill(day));
+}
 /**
 * Allocate person-days across one requirement's ordered dates. Half days are the
 * smallest unit, so two stages may share a date; a plan may leave time
 * unallocated but may never exceed the planned total.
 */
-function allocateGroupTasks(dates, tasks) {
+function allocateGroupTasks(dates, tasks, existing = [], contextDates = dates) {
 	if (!dates.length) throw new Error("请先选择需求的日期");
 	if (!tasks.length || tasks.length > 20) throw new Error("请填写至少一个阶段的人天");
+	const slots = availableWorktimeSlots(dates, existing, contextDates);
+	if (!slots.length) throw new Error("该时间段已创建 Task，当前没有剩余人天，请延长时间段后再安排");
 	let spent = 0;
 	const result = tasks.map((task) => {
 		if (![
@@ -120,18 +1038,19 @@ function allocateGroupTasks(dates, tasks) {
 		].includes(task.stage) || !task.title.trim() || task.title.length > 240 || !Number.isFinite(task.days) || task.days <= 0) throw new Error("任务标题或人天无效");
 		if (task.days < .499999999) throw new Error("每个阶段至少 0.5 人天");
 		if (Math.abs(task.days * 2 - Math.round(task.days * 2)) > 1e-9) throw new Error("每个阶段需按 0.5 人天递增");
-		const first = Math.floor(spent + 1e-8);
+		const first = Math.round(spent * 2);
 		spent += task.days;
-		const last = Math.ceil(spent - 1e-8) - 1;
+		const last = Math.round(spent * 2) - 1;
 		return {
 			...task,
 			title: task.title.trim(),
-			start: dates[first] ?? "",
-			end: dates[last] ?? "",
+			start: slots[first] ?? "",
+			end: slots[last] ?? "",
+			allocationSlots: slots.slice(first, last + 1),
 			status: "pending"
 		};
 	});
-	if (spent > dates.length + 1e-6) throw new Error(`阶段合计不能大于 ${dates.length} 人天，当前为 ${Number(spent.toFixed(4))} 人天`);
+	if (spent > slots.length / 2 + 1e-6) throw new Error(`阶段合计不能大于剩余 ${slots.length / 2} 人天，当前为 ${Number(spent.toFixed(4))} 人天`);
 	return result;
 }
 //#endregion
@@ -347,6 +1266,10 @@ const localDate = (value) => {
 	return new Date(value + 8 * 36e5).toISOString().slice(0, 10);
 };
 const timestamp = (value) => Date.parse(`${value}T00:00:00+08:00`);
+function freezeAllocations(store, itemKey) {
+	const group = [...store.units, ...store.archivedUnits ?? []].filter((unit) => unit.itemKey === itemKey);
+	for (const [task, slots] of plannedTaskSlots(unitDates(group), group.flatMap((unit) => unit.tasks))) task.allocationSlots = slots;
+}
 async function body(request) {
 	if (!request[Symbol.asyncIterator]) throw new Error("请求不支持 JSON 正文");
 	let value = "";
@@ -500,7 +1423,7 @@ function registerWorktime(ctx, deps) {
 			throw error;
 		}
 		const value = JSON.parse(raw);
-		if (value.version !== 1 || !Array.isArray(value.units)) throw new Error("历史工时数据格式异常，已保留原文件");
+		if (value.version !== 1 || !Array.isArray(value.units) || value.archivedUnits !== void 0 && !Array.isArray(value.archivedUnits)) throw new Error("历史工时数据格式异常，已保留原文件");
 		return value;
 	};
 	const save = async (store) => {
@@ -578,7 +1501,8 @@ function registerWorktime(ctx, deps) {
 		if (assignee !== "currentUser()" && !/^[A-Za-z0-9_.@-]{1,128}$/u.test(assignee)) throw new Error("无效的负责人");
 		return assignee === "currentUser()" ? store : {
 			...store,
-			units: []
+			units: [],
+			archivedUnits: []
 		};
 	});
 	route("/api/tomato-board/worktime/metadata", "GET", async (_, query) => (await metadata(deps.run, query.get("itemKey") ?? "")).data);
@@ -589,14 +1513,21 @@ function registerWorktime(ctx, deps) {
 			...record(value),
 			itemKey
 		}));
-		if (!ranges.length || new Set(ranges.map((range) => range.id)).size !== ranges.length) throw new Error("请选择有效且不重复的时间段");
+		if (!keyPattern.test(itemKey) || !Array.isArray(input.ranges) || new Set(ranges.map((range) => range.id)).size !== ranges.length) throw new Error("请选择有效且不重复的时间段");
 		return serial(async () => {
 			const store = await load();
 			if (store.groupOperations?.some((operation) => operation.itemKey === itemKey)) throw new Error("需求上次移动结果待核对，请先核对番茄");
 			const group = store.units.filter((unit) => unit.itemKey === itemKey);
 			const claims = list(input.units).map(record);
 			if (group.length !== claims.length || group.some((unit) => !claims.some((claim) => claim.id === unit.id && claim.revision === unit.revision))) throw new Error("安排已变化，请刷新后编辑");
-			if (group.some((unit) => !ranges.some((range) => range.id === unit.id))) throw new Error("需求安排不可删除，请保留全部已有时间段");
+			const removed = group.filter((unit) => !ranges.some((range) => range.id === unit.id));
+			freezeAllocations(store, itemKey);
+			if (removed.some((unit) => unit.tasks.length)) store.archivedUnits = [...store.archivedUnits ?? [], ...removed.filter((unit) => unit.tasks.length)];
+			if (!ranges.length) {
+				store.units = store.units.filter((unit) => unit.itemKey !== itemKey);
+				await save(store);
+				return { units: [] };
+			}
 			const { story, workspace, assignees } = await storyContext(deps.run, itemKey);
 			const next = ranges.map((range) => {
 				const existing = store.units.find((unit) => unit.id === range.id);
@@ -632,6 +1563,7 @@ function registerWorktime(ctx, deps) {
 			const store = await load();
 			if (store.groupOperations?.some((operation) => operation.itemKey === unit.itemKey)) throw new Error("需求上次移动结果待核对，请先核对番茄");
 			const existing = store.units.find((value) => value.id === unit.id);
+			freezeAllocations(store, unit.itemKey);
 			if (existing && existing.itemKey !== unit.itemKey) throw new Error("需求安排不可替换，请新增安排");
 			if (!existing && input.revision !== void 0) throw new Error("安排已发生变化，请刷新后编辑");
 			if (existing && existing.revision !== input.revision) throw new Error("安排已发生变化，请刷新后编辑");
@@ -703,6 +1635,7 @@ function registerWorktime(ctx, deps) {
 		return serial(async () => {
 			const store = await load();
 			const group = store.units.filter((unit) => unit.itemKey === input.itemKey && unit.id === input.id);
+			freezeAllocations(store, String(input.itemKey));
 			const claims = list(input.units).map(record);
 			if (!group.length || claims.length !== group.length || group.some((unit) => !claims.some((claim) => claim.id === unit.id && claim.revision === unit.revision))) throw new Error("需求安排已变化，请刷新后重试");
 			if (store.groupOperations?.some((operation) => operation.itemKey === input.itemKey)) throw new Error("需求上次移动结果待核对，请先核对番茄");
@@ -750,10 +1683,11 @@ function registerWorktime(ctx, deps) {
 				"current"
 			]));
 			await ownedTask(itemKey, String(input.expectedStart), String(input.expectedEnd), user);
-			const local = store.units.flatMap((unit) => unit.tasks.map((task) => ({
+			const local = [...store.units, ...store.archivedUnits ?? []].flatMap((unit) => unit.tasks.map((task) => ({
 				unit,
 				task
 			}))).filter((value) => value.task.itemKey === itemKey);
+			for (const key of new Set(local.map(({ unit }) => unit.itemKey))) freezeAllocations(store, key);
 			const operation = {
 				itemKey,
 				action: String(input.action),
@@ -780,7 +1714,9 @@ function registerWorktime(ctx, deps) {
 					for (const { task } of local) {
 						task.start = start;
 						task.end = end;
+						delete task.allocationSlots;
 					}
+					for (const key of new Set(local.map(({ unit }) => unit.itemKey))) freezeAllocations(store, key);
 				}
 				for (const { unit } of local) {
 					unit.revision += 1;
@@ -821,18 +1757,21 @@ function registerWorktime(ctx, deps) {
 			const batch = claims.map((claim) => {
 				const unit = store.units.find((value) => value.id === claim.id);
 				if (!unit || unit.itemKey !== first.itemKey || unit.revision !== claim.revision) throw new Error("安排已变化，请刷新后重试");
-				if (unitHasCreatedTasks(unit, store.units)) throw new Error("该时间段已创建 Task，请新增时间段后再安排");
 				return unit;
 			});
-			const unresolved = store.units.filter((unit) => unit.itemKey === first.itemKey).flatMap((unit) => unit.tasks.filter((task) => (task.status === "uncertain" || task.status === "creating") && (batch.includes(unit) || batch.some((range) => task.start <= range.end && task.end >= range.start))));
+			const unresolved = [...store.units, ...store.archivedUnits ?? []].filter((unit) => unit.itemKey === first.itemKey).flatMap((unit) => unit.tasks.filter((task) => (task.status === "uncertain" || task.status === "creating") && (batch.includes(unit) || batch.some((range) => task.start <= range.end && task.end >= range.start))));
 			if (unresolved.some((task) => task.itemKey)) throw new Error("已有 Task 编号但创建结果待核对，请先核对番茄记录，不能直接重复创建");
 			if (unresolved.length && input.confirmRetry !== true) throw new Error("创建结果待核对，请先确认番茄中没有对应 Task，再确认重试");
 			const group = store.units.filter((value) => value.itemKey === first.itemKey);
-			const tasks = allocateGroupTasks(unitDates(batch), list(input.tasks).map(record).map((task) => ({
+			const dates = unitDates(batch);
+			const drafts = list(input.tasks).map(record).map((task) => ({
 				stage: String(task.stage ?? ""),
 				title: String(task.title ?? ""),
 				days: Number(task.days)
-			})).filter((task) => task.days !== 0));
+			})).filter((task) => task.days !== 0);
+			const existing = [...group, ...(store.archivedUnits ?? []).filter((unit) => unit.itemKey === first.itemKey)].flatMap((unit) => unit.tasks);
+			freezeAllocations(store, first.itemKey);
+			const tasks = allocateGroupTasks(dates, drafts, existing, unitDates([...group, ...(store.archivedUnits ?? []).filter((unit) => unit.itemKey === first.itemKey)]));
 			const { options, data, context, definitions } = await metadata(deps.run, first.itemKey);
 			const optionValue = (key, label) => {
 				const match = options(key).find((option) => option.label === label);
@@ -903,7 +1842,8 @@ function registerWorktime(ctx, deps) {
 					skipped
 				};
 			});
-			for (const unit of batch) unit.tasks = [];
+			for (const unit of batch) unit.tasks = unit.tasks.filter((task) => task.status === "created");
+			if (input.confirmRetry === true) for (const unit of store.archivedUnits ?? []) unit.tasks = unit.tasks.filter((task) => !unresolved.includes(task) || Boolean(task.itemKey));
 			for (const task of tasks) (batch.find((unit) => unit.start <= task.start && task.start <= unit.end) ?? batch[0]).tasks.push(task);
 			for (const unit of batch) {
 				unit.project = context.project;
@@ -1373,7 +2313,7 @@ function storyPointValue(raw) {
 	const value = Number(raw);
 	return Number.isFinite(value) && value >= 0 ? value : null;
 }
-async function loadSprints(config) {
+async function readSprints(config) {
 	const sprints = [];
 	for (let page = 1; page <= 100; page += 1) {
 		const payload = await runJson(config, [
@@ -1393,9 +2333,34 @@ async function loadSprints(config) {
 	}
 	throw new Error("迭代数量超出读取上限，请缩小查询范围");
 }
+const sprintReads = /* @__PURE__ */ new Map();
+function loadSprints(config) {
+	const key = JSON.stringify([
+		config.executable,
+		config.profile,
+		config.tomatoOrigin,
+		config.tomatoTenant
+	]);
+	const cached = sprintReads.get(key);
+	if (cached && cached.expires > Date.now()) return cached.promise;
+	if (sprintReads.size >= 20) sprintReads.delete(sprintReads.keys().next().value);
+	const promise = readSprints(config).catch((error) => {
+		if (sprintReads.get(key)?.promise === promise) sprintReads.delete(key);
+		throw error;
+	});
+	sprintReads.set(key, {
+		expires: Date.now() + 3e4,
+		promise
+	});
+	return promise;
+}
 async function loadStoryItems(config, sprint, assignee) {
 	const owner = assignee === "currentUser()" ? assignee : JSON.stringify(assignee);
-	const iql = `迭代 = ${JSON.stringify(sprint)} and 负责人 in [${owner}] and 类型 in [Story, EnablerStory, Task]`;
+	const selected = (await loadSprints(config)).sprints.find((value) => firstText(value.sprintId ?? value.objectId) === sprint);
+	if (!selected) throw new Error("所选迭代不存在或无权查看，请刷新迭代列表");
+	const period = teamPeriod(selected.startDate, selected.endDate);
+	const window = `DateSDate <= ${JSON.stringify(period.end)} and qiwangwanchengriqi >= ${JSON.stringify(period.start)}`;
+	const iql = `负责人 in [${owner}] and ((迭代 = ${JSON.stringify(sprint)} and 类型 in [Story, EnablerStory]) or (类型 in [Story, EnablerStory, Task] and ${window}))`;
 	const items = /* @__PURE__ */ new Map();
 	const limit = Math.max(1, Math.min(config.maxItems ?? 5e3, 2e4));
 	for (let page = 1;; page += 1) {
@@ -1406,7 +2371,7 @@ async function loadStoryItems(config, sprint, assignee) {
 			"--iql",
 			iql,
 			"--fields",
-			"key,name,status,itemType,StoryPoint,assignee,sprint",
+			"key,name,status,itemType,StoryPoint,planStoryPoint,DateSDate,qiwangwanchengriqi,assignee,sprint",
 			"--page",
 			String(page),
 			"--size",
@@ -1418,23 +2383,21 @@ async function loadStoryItems(config, sprint, assignee) {
 			const record = raw;
 			const fields = record.values ?? record.value ?? record;
 			const itemSprints = fieldObjectIds(fields.sprint ?? fields.Sprint ?? fields["迭代"]);
-			const isPlanningItem = [
-				"Story",
-				"EnablerStory",
-				"Task"
-			].includes(item.itemType);
-			if (item.itemKey && isPlanningItem && itemSprints.includes(sprint)) items.set(item.itemKey, {
+			const metrics = teamItemMetrics(item.itemType, fields, itemSprints.includes(sprint), period);
+			if (item.itemKey && metrics) items.set(item.itemKey, {
 				...item,
-				storyPoints: storyPointValue(fields.StoryPoint),
+				...metrics,
 				tomatoUrl: tomatoItemUrl(config, item.itemKey)
 			});
 		}
 		const total = Number(payload.count ?? payload.total);
 		if (!(Number(payload.nextPageIndex) > page || payload.hasMore === true || payload.hasNext === true || (Number.isFinite(total) ? page * 50 < total : values.length === 50)) || !values.length) return {
+			period,
 			items: [...items.values()].slice(0, limit),
 			truncated: items.size > limit
 		};
 		if (page * 50 >= limit) return {
+			period,
 			items: [...items.values()].slice(0, limit),
 			truncated: true
 		};
@@ -1476,6 +2439,11 @@ const name = "tomato-board";
 const inject = ["webServer"];
 function apply(ctx, config = {}) {
 	const webServer = ctx.get("webServer");
+	registerPrAssistant(ctx, {
+		...config.executable ? { executable: config.executable } : {},
+		profile: config.profile || process$1.env.TOMATO_PROFILE || "osc",
+		...config.prAssistant
+	});
 	registerWorktime(ctx, {
 		server: webServer,
 		run: (args) => runJson(config, args),
@@ -1504,9 +2472,9 @@ function apply(ctx, config = {}) {
 			}
 		}
 	}), "tomato-board: sprints");
-	ctx.effect(() => webServer.register({
+	for (const path of ["/api/tomato-board/team-management", "/api/tomato-board/story-points"]) ctx.effect(() => webServer.register({
 		kind: "exact",
-		path: "/api/tomato-board/story-points",
+		path,
 		async handler(request, response) {
 			if (request.method !== "GET") return sendJson(response, 405, { error: "Method not allowed" });
 			const query = new URL(request.url ?? "/", "http://localhost").searchParams;

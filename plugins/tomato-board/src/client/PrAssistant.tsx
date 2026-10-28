@@ -10,6 +10,7 @@ import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
 import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
 import css from './pr-assistant.module.css'
+import { readViewCache, writeViewCache } from './view-cache.ts'
 
 interface PullRequest {
   number: number
@@ -34,6 +35,13 @@ interface RepositoryResult {
   truncated?: boolean
   pullRequests: PullRequest[]
   error?: string
+}
+
+function isPrOverview(value: unknown): value is RepositoryResult[] {
+  return Array.isArray(value) && value.length <= 2000 && value.every(repo => repo && typeof repo.workspaceId === 'string'
+    && typeof repo.workspaceTitle === 'string' && typeof repo.localPath === 'string' && Number.isFinite(repo.openCount)
+    && Array.isArray(repo.pullRequests) && repo.pullRequests.length <= 5000
+    && repo.pullRequests.every((pr: PullRequest) => pr && Number.isInteger(pr.number) && typeof pr.title === 'string' && typeof pr.url === 'string'))
 }
 
 interface PullRequestDetail {
@@ -244,7 +252,7 @@ async function copyToClipboard(text: string): Promise<boolean> {
 async function inspectWorkspace(workspace: WorkspaceView): Promise<RepositoryResult> {
   try {
     const query = new URLSearchParams({ path: workspace.path })
-    const response = await fetch(`/api/pr-assistant/repository?${query}`, { headers: { accept: 'application/json' } })
+    const response = await fetch(`/api/tomato-board/pr/repository?${query}`, { headers: { accept: 'application/json' } })
     const body = await response.json() as Omit<RepositoryResult, 'workspaceId' | 'workspaceTitle'> & { error?: string }
     if (!response.ok) throw new Error(body.error || `请求失败 (${response.status})`)
     return { ...body, workspaceId: workspace.workspaceId, workspaceTitle: workspace.title, localPath: workspace.path }
@@ -273,15 +281,6 @@ async function inspectWorkspaces(workspaces: readonly WorkspaceView[], concurren
     }
   }))
   return results
-}
-
-function SidebarAction({ wide, openWorkbench }: { wide: boolean; openWorkbench: () => void }) {
-  return (
-    <button className={css.sidebarAction} type="button" title="PR 助手" onClick={openWorkbench}>
-      <span className={css.branchIcon} aria-hidden="true"><i /><i /><i /></span>
-      {wide ? <span>PR 助手</span> : null}
-    </button>
-  )
 }
 
 function FileDiff({ diff }: { diff: string }) {
@@ -324,7 +323,7 @@ function CommitRow({ commit, repositoryPath }: { commit: CommitSummary; reposito
     setLoading(true)
     setError(null)
     const query = new URLSearchParams({ path: repositoryPath, sha: commit.sha })
-    void fetch(`/api/pr-assistant/commit?${query}`, {
+    void fetch(`/api/tomato-board/pr/commit?${query}`, {
       headers: { accept: 'application/json' },
       signal: controller.signal,
     }).then(async response => {
@@ -583,10 +582,20 @@ function AiReviewDialog({
   )
 }
 
-function PrAssistantPanel({ ctx, close }: { ctx: Context; close: () => void }) {
+export function PrAssistant({ ctx, close, active: visible = true }: { ctx: Context; close: () => void; active?: boolean }) {
   const panelRef = useRef<HTMLElement>(null)
   const refreshGeneration = useRef(0)
-  const [results, setResults] = useState<RepositoryResult[]>([])
+  const workspaces = useSyncExternalStore(
+    listener => ctx.workspaces.list.subscribe(listener),
+    () => ctx.workspaces.list.getSnapshot(),
+    () => ctx.workspaces.list.getSnapshot(),
+  )
+  const overviewKey = 'pr-overview:' + JSON.stringify(workspaces.items.map(workspace => [workspace.workspaceId, workspace.path]).sort())
+  const overviewScope = useRef(overviewKey)
+  const detailCache = useRef(new Map<string, PullRequestDetail>())
+  const [results, setResults] = useState<RepositoryResult[]>(() => readViewCache(overviewKey, isPrOverview) ?? [])
+  const resultsRef = useRef(results)
+  resultsRef.current = results
   const [loading, setLoading] = useState(false)
   const [query, setQuery] = useState('')
   const [hiddenRepositories, setHiddenRepositories] = useState(readHiddenRepositories)
@@ -605,39 +614,54 @@ function PrAssistantPanel({ ctx, close }: { ctx: Context; close: () => void }) {
   const [pushed, setPushed] = useState(false)
   const [commentBusy, setCommentBusy] = useState(false)
   const [commentStatus, setCommentStatus] = useState<string | null>(null)
-  const workspaces = useSyncExternalStore(
-    listener => ctx.workspaces.list.subscribe(listener),
-    () => ctx.workspaces.list.getSnapshot(),
-    () => ctx.workspaces.list.getSnapshot(),
-  )
+
 
   async function refresh() {
     const generation = ++refreshGeneration.current
     setLoading(true)
     try {
       const next = await inspectWorkspaces(workspaces.items)
-      if (generation === refreshGeneration.current) setResults(next)
+      if (generation === refreshGeneration.current) {
+        const merged = next.map(repo => {
+          const previous = resultsRef.current.find(value => value.workspaceId === repo.workspaceId && value.localPath === repo.localPath)
+          return repo.error && previous ? { ...previous, error: repo.error } : repo
+        })
+        setResults(merged)
+        if (next.some(repo => !repo.error) || next.length === 0) writeViewCache(overviewKey, merged)
+      }
     } finally {
       if (generation === refreshGeneration.current) setLoading(false)
     }
   }
 
-  useEffect(() => { void refresh() }, [workspaces.items])
   useEffect(() => {
-    if (!selection) return
-    setCommitView(false)
+    if (!visible) return
+    if (overviewScope.current !== overviewKey) {
+      overviewScope.current = overviewKey
+      setResults(readViewCache(overviewKey, isPrOverview) ?? [])
+    }
+    void refresh()
+    return () => { refreshGeneration.current += 1 }
+  }, [workspaces.items, overviewKey, visible])
+  useEffect(() => {
+    if (!visible || !selection) return
+    const cacheKey = JSON.stringify([selection.repository.localPath, selection.pullRequest.number])
     const controller = new AbortController()
     const query = new URLSearchParams({ path: selection.repository.localPath, number: String(selection.pullRequest.number), _t: String(Date.now()) })
-    setDetail(null)
+    setDetail(detailCache.current.get(cacheKey) ?? null)
     setDetailError(null)
     setDetailLoading(true)
-    void fetch(`/api/pr-assistant/pull-request?${query}`, {
+    void fetch(`/api/tomato-board/pr/pull-request?${query}`, {
       headers: { accept: 'application/json' },
       signal: controller.signal,
     }).then(async response => {
       const body = await response.json() as PullRequestDetail & { error?: string }
       if (!response.ok) throw new Error(body.error || `请求失败 (${response.status})`)
-      setDetail(body)
+      if (!controller.signal.aborted) {
+        if (detailCache.current.size >= 20) detailCache.current.delete(detailCache.current.keys().next().value!)
+        detailCache.current.set(cacheKey, body)
+        setDetail(body)
+      }
     }).catch(error => {
       if (error instanceof Error && error.name === 'AbortError') return
       setDetailError(error instanceof Error ? error.message : 'PR 详情读取失败')
@@ -645,8 +669,9 @@ function PrAssistantPanel({ ctx, close }: { ctx: Context; close: () => void }) {
       if (!controller.signal.aborted) setDetailLoading(false)
     })
     return () => controller.abort()
-  }, [selection])
+  }, [selection, visible])
   useEffect(() => {
+    setCommitView(false)
     setConflict(selection ? conflictLink(selection.repository, selection.pullRequest) : null)
     setConflictStatus(null)
     setConflictError(null)
@@ -654,13 +679,13 @@ function PrAssistantPanel({ ctx, close }: { ctx: Context; close: () => void }) {
     setCommentStatus(null)
   }, [selection])
   useEffect(() => {
-    if (!conflict) return
+    if (!visible || !conflict) return
     let active = true
     let timer: number | undefined
     const refreshStatus = async () => {
       try {
         const query = new URLSearchParams({ operationId: conflict.operationId })
-        const status = await readApiJson<ConflictGitStatus>(await fetch(`/api/pr-assistant/conflict/status?${query}`, { headers: { accept: 'application/json' } }))
+        const status = await readApiJson<ConflictGitStatus>(await fetch(`/api/tomato-board/pr/conflict/status?${query}`, { headers: { accept: 'application/json' } }))
         if (active) setConflictStatus(status)
       } catch (reason) {
         if (active) setConflictError(reason instanceof Error ? reason.message : '冲突处理状态读取失败')
@@ -669,16 +694,8 @@ function PrAssistantPanel({ ctx, close }: { ctx: Context; close: () => void }) {
     }
     void refreshStatus()
     return () => { active = false; if (timer !== undefined) window.clearTimeout(timer) }
-  }, [conflict])
-  useEffect(() => {
-    const closeOnOutsideNavigation = (event: PointerEvent) => {
-      if (!(event.target instanceof Element) || panelRef.current?.contains(event.target)) return
-      if (event.target.closest('[role="dialog"], [role="menu"]')) return
-      close()
-    }
-    document.addEventListener('pointerdown', closeOnOutsideNavigation, true)
-    return () => document.removeEventListener('pointerdown', closeOnOutsideNavigation, true)
-  }, [close])
+  }, [conflict, visible])
+
 
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase()
@@ -720,7 +737,7 @@ function PrAssistantPanel({ ctx, close }: { ctx: Context; close: () => void }) {
     setCommentBusy(true)
     setCommentStatus(null)
     try {
-      await readApiJson<{ published: true }>(await fetch('/api/pr-assistant/review/comment', {
+      await readApiJson<{ published: true }>(await fetch('/api/tomato-board/pr/review/comment', {
         method: 'POST',
         headers: { accept: 'application/json', 'content-type': 'application/json', 'x-pr-assistant-action': '1' },
         body: JSON.stringify({
@@ -742,7 +759,7 @@ function PrAssistantPanel({ ctx, close }: { ctx: Context; close: () => void }) {
     setConflictBusy(true)
     setConflictError(null)
     try {
-      const response = await fetch('/api/pr-assistant/conflict/preflight', {
+      const response = await fetch('/api/tomato-board/pr/conflict/preflight', {
         method: 'POST',
         headers: { accept: 'application/json', 'content-type': 'application/json', 'x-pr-assistant-action': '1' },
         body: JSON.stringify({ path: selection.repository.localPath, number: selection.pullRequest.number }),
@@ -777,7 +794,7 @@ function PrAssistantPanel({ ctx, close }: { ctx: Context; close: () => void }) {
     setConflictBusy(true)
     setConflictError(null)
     try {
-      await readApiJson<{ pushed: true }>(await fetch('/api/pr-assistant/conflict/push', {
+      await readApiJson<{ pushed: true }>(await fetch('/api/tomato-board/pr/conflict/push', {
         method: 'POST',
         headers: { accept: 'application/json', 'content-type': 'application/json', 'x-pr-assistant-action': '1' },
         body: JSON.stringify({ operationId: conflict.operationId, expectedHead: conflictStatus.headSha }),
@@ -804,8 +821,7 @@ function PrAssistantPanel({ ctx, close }: { ctx: Context; close: () => void }) {
   return (
     <section ref={panelRef} className={css.workbench} aria-label="PR 助手">
       <header className={css.header}>
-        <div>
-          <span className={css.eyebrow}>REVIEW RADAR</span>
+        <div className={css.headerIdentity}>
           <div className={css.titleRow}>
             {selection && commitView ? <button className={css.titleBack} type="button" aria-label="返回 PR 详情" title="返回 PR 详情" onClick={() => setCommitView(false)}>←</button> : null}
             {selection && !commitView ? <button className={css.titleBack} type="button" aria-label="返回 PR 列表" title="返回 PR 列表" onClick={() => setSelection(null)}>←</button> : null}
@@ -824,14 +840,13 @@ function PrAssistantPanel({ ctx, close }: { ctx: Context; close: () => void }) {
               {hiddenRepositories.size ? <button type="button" onClick={() => { setRestoreWorkspaceId(''); setRestoreOpen(true) }}>恢复隐藏 ({hiddenRepositories.size})</button> : null}
             </>
           ) : null}
-          <button type="button" aria-label="关闭" onClick={close}>×</button>
         </div>
       </header>
 
       <div className={css.scrollArea}>
       {selection ? (
         <main className={css.detail}>
-          {detailLoading ? <div className={css.detailState}>正在读取 PR 详情…</div> : null}
+          {detailLoading && !detail ? <div className={css.detailState}>正在读取 PR 详情…</div> : null}
           {detailError ? <div className={css.detailState} role="alert">{detailError}</div> : null}
           {detail ? (
             commitView ? (
@@ -935,7 +950,7 @@ function PrAssistantPanel({ ctx, close }: { ctx: Context; close: () => void }) {
                 <button className={css.hideRepo} type="button" onClick={() => hideRepository(result.workspaceId)}>隐藏</button>
               </div>
             </div>
-            {result.error ? (
+            {result.error && !result.pullRequests.length ? (
               <div className={css.error}><strong>无法读取</strong><span>{result.error}</span></div>
             ) : result.pullRequests.length ? (
               <ol className={css.prList}>
@@ -1004,18 +1019,4 @@ function PrAssistantPanel({ ctx, close }: { ctx: Context; close: () => void }) {
       ) : null}
     </section>
   )
-}
-
-export const inject = ['slots', 'layout', 'sessions', 'workspaces', 'remote', 'remote.session']
-
-export function apply(ctx: Context): void {
-  const close = () => ctx.layout.selectPanel(null)
-  ctx.slots.inject('main', () => ctx.slots.register(
-    { name: 'main', key: 'pr-assistant', id: 'pr-assistant-panel' },
-    () => <PrAssistantPanel ctx={ctx} close={close} />,
-  ))
-  ctx.slots.inject('sidebar.footer.action', () => ctx.slots.register(
-    { name: 'sidebar.footer.action', id: 'pr-assistant' },
-    props => <SidebarAction {...props} openWorkbench={() => ctx.layout.selectPanel('pr-assistant')} />,
-  ))
 }

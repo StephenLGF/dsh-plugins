@@ -2,6 +2,9 @@ import { execFile } from 'node:child_process'
 import process from 'node:process'
 import { promisify } from 'node:util'
 import { resolveCliExecutable } from './cli-path.ts'
+import { teamItemMetrics, teamPeriod } from './team-metrics.ts'
+import { registerPrAssistant } from './pr-assistant.ts'
+import type { PrAssistantConfig } from './pr-assistant.ts'
 import { registerWorktime } from './worktime.ts'
 import type { Context } from '@deepseek-ai/cordis'
 
@@ -42,6 +45,7 @@ interface TomatoTransition {
 }
 
 interface Config {
+  prAssistant?: PrAssistantConfig
   executable?: string
   profile?: string
   iql?: string
@@ -330,7 +334,7 @@ function storyPointValue(raw: unknown): number | null {
   return Number.isFinite(value) && value >= 0 ? value : null
 }
 
-async function loadSprints(config: Config) {
+async function readSprints(config: Config) {
   const sprints: unknown[] = []
   for (let page = 1; page <= 100; page += 1) {
     const payload = await runJson(config, ['team', 'sprint', 'list', '--status', 'active,notStarted,completed', '--page', String(page), '--size', '100']) as Record<string, unknown>
@@ -341,28 +345,44 @@ async function loadSprints(config: Config) {
   throw new Error('迭代数量超出读取上限，请缩小查询范围')
 }
 
+const sprintReads = new Map<string, { expires: number; promise: Promise<{ sprints: unknown[] }> }>()
+function loadSprints(config: Config) {
+  const key = JSON.stringify([config.executable, config.profile, config.tomatoOrigin, config.tomatoTenant])
+  const cached = sprintReads.get(key)
+  if (cached && cached.expires > Date.now()) return cached.promise
+  if (sprintReads.size >= 20) sprintReads.delete(sprintReads.keys().next().value!)
+  const promise = readSprints(config).catch(error => { if (sprintReads.get(key)?.promise === promise) sprintReads.delete(key); throw error })
+  sprintReads.set(key, { expires: Date.now() + 30_000, promise })
+  return promise
+}
+
 async function loadStoryItems(config: Config, sprint: string, assignee: string) {
   // Statistics deliberately do not inherit the board's owner/status filters.
   const owner = assignee === 'currentUser()' ? assignee : JSON.stringify(assignee)
-  const iql = `迭代 = ${JSON.stringify(sprint)} and 负责人 in [${owner}] and 类型 in [Story, EnablerStory, Task]`
-  const items = new Map<string, ReturnType<typeof normalizeItem> & { storyPoints: number | null; tomatoUrl: string }>()
+  const directory = await loadSprints(config)
+  const selected = directory.sprints.find(value => firstText((value as Record<string, unknown>).sprintId ?? (value as Record<string, unknown>).objectId) === sprint) as Record<string, unknown> | undefined
+  if (!selected) throw new Error('所选迭代不存在或无权查看，请刷新迭代列表')
+  const period = teamPeriod(selected.startDate, selected.endDate)
+  const window = `DateSDate <= ${JSON.stringify(period.end)} and qiwangwanchengriqi >= ${JSON.stringify(period.start)}`
+  const iql = `负责人 in [${owner}] and ((迭代 = ${JSON.stringify(sprint)} and 类型 in [Story, EnablerStory]) or (类型 in [Story, EnablerStory, Task] and ${window}))`
+  const items = new Map<string, ReturnType<typeof normalizeItem> & NonNullable<ReturnType<typeof teamItemMetrics>> & { tomatoUrl: string }>()
   const limit = Math.max(1, Math.min(config.maxItems ?? 5000, 20_000))
   for (let page = 1; ; page += 1) {
-    const payload = await runJson(config, ['team', 'item', 'search', '--iql', iql, '--fields', 'key,name,status,itemType,StoryPoint,assignee,sprint', '--page', String(page), '--size', '50']) as Record<string, unknown>
+    const payload = await runJson(config, ['team', 'item', 'search', '--iql', iql, '--fields', 'key,name,status,itemType,StoryPoint,planStoryPoint,DateSDate,qiwangwanchengriqi,assignee,sprint', '--page', String(page), '--size', '50']) as Record<string, unknown>
     const values = unwrapItems(payload)
     for (const raw of values) {
       const item = normalizeItem(raw)
       const record = raw as Record<string, unknown>
       const fields = (record.values ?? record.value ?? record) as Record<string, unknown>
       const itemSprints = fieldObjectIds(fields.sprint ?? fields.Sprint ?? fields['迭代'])
-      const isPlanningItem = ['Story', 'EnablerStory', 'Task'].includes(item.itemType)
-      if (item.itemKey && isPlanningItem && itemSprints.includes(sprint)) items.set(item.itemKey, { ...item, storyPoints: storyPointValue(fields.StoryPoint), tomatoUrl: tomatoItemUrl(config, item.itemKey) })
+      const metrics = teamItemMetrics(item.itemType, fields, itemSprints.includes(sprint), period)
+      if (item.itemKey && metrics) items.set(item.itemKey, { ...item, ...metrics, tomatoUrl: tomatoItemUrl(config, item.itemKey) })
     }
     const total = Number(payload.count ?? payload.total)
     const more = Number(payload.nextPageIndex) > page || payload.hasMore === true || payload.hasNext === true
       || (Number.isFinite(total) ? page * 50 < total : values.length === 50)
-    if (!more || !values.length) return { items: [...items.values()].slice(0, limit), truncated: items.size > limit }
-    if (page * 50 >= limit) return { items: [...items.values()].slice(0, limit), truncated: true }
+    if (!more || !values.length) return { period, items: [...items.values()].slice(0, limit), truncated: items.size > limit }
+    if (page * 50 >= limit) return { period, items: [...items.values()].slice(0, limit), truncated: true }
   }
 }
 
@@ -402,6 +422,11 @@ export const inject = ['webServer']
 
 export function apply(ctx: Context, config: Config = {}): void {
   const webServer = ctx.get('webServer') as unknown as WebServer
+  registerPrAssistant(ctx, {
+    ...(config.executable ? { executable: config.executable } : {}),
+    profile: config.profile || process.env.TOMATO_PROFILE || 'osc',
+    ...config.prAssistant,
+  })
   registerWorktime(ctx, {
     server: webServer, run: args => runJson(config, args), crossSite: isCrossSite,
     scope: JSON.stringify([config.profile || process.env.TOMATO_PROFILE || 'osc', config.tomatoOrigin ?? 'https://osc.gitee.work', config.tomatoTenant ?? 'xly-poc']),
@@ -419,8 +444,8 @@ export function apply(ctx: Context, config: Config = {}): void {
       catch (error) { sendJson(response, 502, errorBody(error, '迭代读取失败')) }
     },
   }), 'tomato-board: sprints')
-  ctx.effect(() => webServer.register({
-    kind: 'exact', path: '/api/tomato-board/story-points',
+  for (const path of ['/api/tomato-board/team-management', '/api/tomato-board/story-points']) ctx.effect(() => webServer.register({
+    kind: 'exact', path,
     async handler(request, response) {
       if (request.method !== 'GET') return sendJson(response, 405, { error: 'Method not allowed' })
       const query = new URL(request.url ?? '/', 'http://localhost').searchParams
