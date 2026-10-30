@@ -1056,9 +1056,9 @@ function allocateGroupTasks(dates, tasks, existing = [], contextDates = dates) {
 //#endregion
 //#region src/task-bugs.ts
 const record$1 = (value) => value && typeof value === "object" && !Array.isArray(value) ? value : {};
-const text$1 = (value) => typeof value === "string" ? value : value && typeof value === "object" ? text$1(record$1(value).name) : "";
-const array = (value) => Array.isArray(value) ? value : [];
-const keyPattern$1 = /^[A-Za-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)*-\d+$/u;
+const text$3 = (value) => typeof value === "string" ? value : value && typeof value === "object" ? text$3(record$1(value).name) : "";
+const array$2 = (value) => Array.isArray(value) ? value : [];
+const keyPattern$3 = /^[A-Za-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)*-\d+$/u;
 const bugTypes = [
 	"Bug",
 	"测试缺陷",
@@ -1066,11 +1066,11 @@ const bugTypes = [
 	"升级问题"
 ];
 const bugFilter = `类型 in ${JSON.stringify(bugTypes)}`;
-const isBug = (row) => bugTypes.includes(text$1(row.itemType)) || bugTypes.includes(text$1(record$1(row.itemType).key));
+const isBug = (row) => bugTypes.includes(text$3(row.itemType)) || bugTypes.includes(text$3(record$1(row.itemType).key));
 const bug = (row) => ({
-	itemKey: text$1(row.key),
-	title: text$1(row.name),
-	status: text$1(row.status)
+	itemKey: text$3(row.key),
+	title: text$3(row.name),
+	status: text$3(row.status)
 });
 /** All reads and writes use native Team data; no local relationship cache. */
 function createTaskBugService(run, config) {
@@ -1085,15 +1085,15 @@ function createTaskBugService(run, config) {
 		});
 	}
 	async function task(itemKey) {
-		if (!keyPattern$1.test(itemKey)) throw new Error("无效的 Task 编号");
+		if (!keyPattern$3.test(itemKey)) throw new Error("无效的 Task 编号");
 		const value = record$1(await run([
 			"team",
 			"item",
 			"view",
 			itemKey
 		]));
-		if (text$1(value.itemType) !== "Task") throw new Error("请选择 Task");
-		if (!text$1(value.objectId)) throw new Error("Task 缺少事项标识");
+		if (text$3(value.itemType) !== "Task") throw new Error("请选择 Task");
+		if (!text$3(value.objectId)) throw new Error("Task 缺少事项标识");
 		return value;
 	}
 	async function search(iql) {
@@ -1115,14 +1115,14 @@ function createTaskBugService(run, config) {
 			if (!Array.isArray(payload.items)) throw new Error("番茄返回的缺陷列表格式异常");
 			for (const row of payload.items.map(record$1).filter(isBug)) {
 				const value = bug(row);
-				if (keyPattern$1.test(value.itemKey)) items.set(value.itemKey, value);
+				if (keyPattern$3.test(value.itemKey)) items.set(value.itemKey, value);
 			}
 			if (payload.items.length < 50 || Number(payload.nextPageIndex) === -1 || Number.isFinite(Number(payload.count)) && page * 50 >= Number(payload.count)) return [...items.values()];
 		}
 		throw new Error("缺陷超过 1000 条，请在番茄中缩小范围");
 	}
 	function linkedQuery(item) {
-		return names.map((name) => `item in linkedItemsOf(${JSON.stringify(`id = ${text$1(item.objectId)}`)}, ${JSON.stringify(name)})`).join(" or ");
+		return names.map((name) => `item in linkedItemsOf(${JSON.stringify(`id = ${text$3(item.objectId)}`)}, ${JSON.stringify(name)})`).join(" or ");
 	}
 	async function count(itemKey) {
 		const cached = countCache.get(itemKey);
@@ -1158,7 +1158,7 @@ function createTaskBugService(run, config) {
 	}
 	return {
 		async counts(itemKeys) {
-			if (!Array.isArray(itemKeys) || itemKeys.length > 100 || itemKeys.some((key) => typeof key !== "string" || !keyPattern$1.test(key))) throw new Error("无效的 Task 编号列表（最多 100 个）");
+			if (!Array.isArray(itemKeys) || itemKeys.length > 100 || itemKeys.some((key) => typeof key !== "string" || !keyPattern$3.test(key))) throw new Error("无效的 Task 编号列表（最多 100 个）");
 			const keys = [...new Set(itemKeys)];
 			const counts = {};
 			const failed = [];
@@ -1182,7 +1182,7 @@ function createTaskBugService(run, config) {
 			const value = await task(itemKey);
 			if (query) {
 				if (query.length > 120) throw new Error("搜索内容不能超过 120 字");
-				if (keyPattern$1.test(query)) {
+				if (keyPattern$3.test(query)) {
 					const target = record$1(await run([
 						"team",
 						"item",
@@ -1194,11 +1194,11 @@ function createTaskBugService(run, config) {
 				return { items: await search(`标题 ~ ${JSON.stringify(query)}`) };
 			}
 			const ancestor = record$1(value.ancestor);
-			const parent = text$1(ancestor.objectId) ? {
-				itemKey: text$1(ancestor.key),
-				title: text$1(ancestor.name)
+			const parent = text$3(ancestor.objectId) ? {
+				itemKey: text$3(ancestor.key),
+				title: text$3(ancestor.name)
 			} : null;
-			const [linked, suggested] = await Promise.all([search(linkedQuery(value)), parent ? search(`ancestors in ${JSON.stringify([text$1(ancestor.objectId)])}`) : Promise.resolve([])]);
+			const [linked, suggested] = await Promise.all([search(linkedQuery(value)), parent ? search(`ancestors in ${JSON.stringify([text$3(ancestor.objectId)])}`) : Promise.resolve([])]);
 			rememberCount(itemKey, linked.length);
 			return {
 				linked,
@@ -1209,7 +1209,7 @@ function createTaskBugService(run, config) {
 		},
 		async link(itemKey, bugKey) {
 			if (!config.bugLinkTypeId) throw new Error("尚未配置番茄事项关联类型");
-			if (!keyPattern$1.test(bugKey)) throw new Error("无效的 Bug 编号");
+			if (!keyPattern$3.test(bugKey)) throw new Error("无效的 Bug 编号");
 			const [source, target, user] = await Promise.all([
 				task(itemKey),
 				run([
@@ -1224,8 +1224,8 @@ function createTaskBugService(run, config) {
 					"current"
 				]).then(record$1)
 			]);
-			if (!array(record$1(source.values).assignee).map(record$1).some((owner) => text$1(user.userId) && text$1(owner.objectId ?? owner.value) === text$1(user.userId) || text$1(user.username) && text$1(owner.username) === text$1(user.username))) throw new Error("只能关联自己负责的 Task");
-			if (!isBug(target) || !text$1(target.objectId)) throw new Error("请选择有效的缺陷事项");
+			if (!array$2(record$1(source.values).assignee).map(record$1).some((owner) => text$3(user.userId) && text$3(owner.objectId ?? owner.value) === text$3(user.userId) || text$3(user.username) && text$3(owner.username) === text$3(user.username))) throw new Error("只能关联自己负责的 Task");
+			if (!isBug(target) || !text$3(target.objectId)) throw new Error("请选择有效的缺陷事项");
 			const existing = await search(linkedQuery(source));
 			if (existing.some((item) => item.itemKey === bugKey)) {
 				rememberCount(itemKey, existing.length);
@@ -1242,7 +1242,7 @@ function createTaskBugService(run, config) {
 				"--values",
 				JSON.stringify({ Relations: { links: [{
 					linkType: config.bugLinkTypeId,
-					destinationItems: [text$1(target.objectId)]
+					destinationItems: [text$3(target.objectId)]
 				}] } })
 			]);
 			rememberCount(itemKey, existing.length + 1);
@@ -1251,6 +1251,281 @@ function createTaskBugService(run, config) {
 				count: existing.length + 1
 			};
 		}
+	};
+}
+//#endregion
+//#region src/task-report.ts
+const row$1 = (value) => value && typeof value === "object" && !Array.isArray(value) ? value : {};
+const text$2 = (value) => typeof value === "string" ? value : textObject(value);
+const textObject = (value) => value && typeof value === "object" ? text$2(row$1(value).name) : "";
+const array$1 = (value) => Array.isArray(value) ? value : [];
+const fields = (item) => row$1(item.values ?? item.value);
+const date = (value) => {
+	if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}/u.test(value)) return value.slice(0, 10);
+	return typeof value === "number" && Number.isFinite(value) ? new Date(value + 8 * 36e5).toISOString().slice(0, 10) : "";
+};
+const stamp = (day) => Date.parse(`${day}T00:00:00+08:00`);
+const validDate = (day) => typeof day === "string" && /^\d{4}-\d{2}-\d{2}$/u.test(day) && Number.isFinite(stamp(day)) && date(stamp(day)) === day;
+const keyPattern$2 = /^[A-Za-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)*-\d+$/u;
+const reviewStates = new Set(["工时核对", "工时核对中"]);
+const doneStates = new Set(["已完成"]);
+const progressStates = new Set(["进行中", "开发中"]);
+async function loadTaskReportConstraints(run) {
+	const definitions = await Promise.all(["ActualFinishTime", "StoryPoint1"].map((key) => run([
+		"team",
+		"field",
+		"list",
+		"--keyword",
+		key,
+		"--fields",
+		"property",
+		"--size",
+		"100"
+	])));
+	const find = (payload, key) => {
+		const definition = array$1(Array.isArray(payload) ? payload : row$1(payload).fields).map(row$1).find((value) => value.key === key);
+		if (!definition) throw new Error(`无法读取报工字段约束：${key}`);
+		return row$1(definition.property);
+	};
+	const finish = find(definitions[0], "ActualFinishTime");
+	const effort = find(definitions[1], "StoryPoint1");
+	const range = array$1(finish.range).map(date);
+	if (finish.range != null && (range.length !== 2 || range.some((value) => !validDate(value)))) throw new Error("无法确认实际完成日期的允许范围");
+	return {
+		...range.length === 2 ? { finishRange: range } : {},
+		...typeof effort.min === "number" ? { daysMin: effort.min } : {},
+		...typeof effort.max === "number" ? { daysMax: effort.max } : {}
+	};
+}
+function transitions(payload) {
+	if (Array.isArray(payload)) return payload.map(row$1);
+	const value = row$1(payload);
+	for (const key of [
+		"transitions",
+		"data",
+		"result"
+	]) {
+		if (Array.isArray(value[key])) return array$1(value[key]).map(row$1);
+		if (Array.isArray(row$1(value[key]).transitions)) return array$1(row$1(value[key]).transitions).map(row$1);
+	}
+	throw new Error("无法读取 Task 工作流");
+}
+/** Only follow live, unambiguous business transitions; never approve work hours. */
+function nextTransition(currentStatus, candidates) {
+	const review = candidates.filter((value) => reviewStates.has(text$2(value.targetStatus ?? value.status)));
+	const done = candidates.filter((value) => doneStates.has(text$2(value.targetStatus ?? value.status)));
+	const progress = candidates.filter((value) => progressStates.has(text$2(value.targetStatus ?? value.status)));
+	const groups = progressStates.has(currentStatus) ? [review, done] : [
+		progress,
+		review,
+		done
+	];
+	const options = groups.find((group) => group.some((value) => value.disabled === false && text$2(value.transition))) ?? groups.flat();
+	const enabled = options.filter((value) => value.disabled === false && text$2(value.transition));
+	if (enabled.length > 1) throw new Error("存在多个报工流转，请在番茄中选择具体分支");
+	if (!enabled.length) throw new Error(options.map((value) => text$2(value.disabledReason)).filter(Boolean).join("；") || "当前没有可用的报工流转，请在番茄中检查工作流和必填字段");
+	return enabled[0];
+}
+function createTaskReportService(run) {
+	return async (input, user, start, end, constraints = {}) => {
+		const result = {
+			itemKey: String(input.itemKey ?? ""),
+			outcome: "failed",
+			currentStatus: "",
+			steps: [],
+			fieldsWritten: false
+		};
+		let mutating = false;
+		const read = async () => row$1(await run([
+			"team",
+			"item",
+			"view",
+			input.itemKey
+		]));
+		const owned = (item) => {
+			if (text$2(item.itemType) !== "Task") throw new Error("只能对 Task 报工");
+			if (!array$1(fields(item).assignee).map(row$1).some((owner) => text$2(user.userId) && text$2(owner.objectId ?? owner.value) === text$2(user.userId) || text$2(user.username) && text$2(owner.username) === text$2(user.username))) throw new Error("只能对当前登录用户负责的 Task 报工");
+		};
+		try {
+			if (!keyPattern$2.test(input.itemKey) || !validDate(start) || !validDate(end) || end < start || !validDate(input.actualStart) || !validDate(input.actualEnd) || input.actualEnd < input.actualStart || typeof input.days !== "number" || !Number.isFinite(input.days) || input.days <= 0 || !Number.isInteger(input.days * 2)) throw new Error("请填写有效的实际日期和工时，最小单位为 0.5 人天");
+			if (constraints.finishRange && (input.actualEnd < constraints.finishRange[0] || input.actualEnd > constraints.finishRange[1])) throw new Error(`实际完成日期须在 ${constraints.finishRange.join(" — ")} 范围内`);
+			if (constraints.daysMin != null && input.days < constraints.daysMin || constraints.daysMax != null && input.days > constraints.daysMax) throw new Error("实际工时超出番茄允许范围");
+			let item = await read();
+			owned(item);
+			let value = fields(item);
+			result.currentStatus = text$2(item.status);
+			const taskStart = date(value.DateSDate);
+			const taskEnd = date(value.qiwangwanchengriqi);
+			if (!taskStart || !taskEnd || taskStart > end || taskEnd < start) throw new Error("Task 已不在所选周，请刷新");
+			if (reviewStates.has(result.currentStatus) || doneStates.has(result.currentStatus)) return {
+				...result,
+				outcome: "skipped"
+			};
+			if (result.currentStatus !== input.expectedStatus || taskStart !== input.expectedStart || taskEnd !== input.expectedEnd || date(value.StartDate) !== input.expectedActualStart || date(value.ActualFinishTime) !== input.expectedActualEnd || (value.StoryPoint1 == null ? null : Number(value.StoryPoint1)) !== input.expectedActualDays) throw new Error("Task 状态、日期或实际工时已变化，请刷新后重试");
+			nextTransition(result.currentStatus, transitions(await run([
+				"team",
+				"transition",
+				"list",
+				input.itemKey
+			])));
+			item = await read();
+			owned(item);
+			value = fields(item);
+			if (text$2(item.status) !== input.expectedStatus || date(value.DateSDate) !== input.expectedStart || date(value.qiwangwanchengriqi) !== input.expectedEnd || date(value.StartDate) !== input.expectedActualStart || date(value.ActualFinishTime) !== input.expectedActualEnd || (value.StoryPoint1 == null ? null : Number(value.StoryPoint1)) !== input.expectedActualDays) throw new Error("报工前 Task 数据已变化，请刷新后重试");
+			const values = {
+				StartDate: stamp(input.actualStart),
+				ActualFinishTime: stamp(input.actualEnd),
+				StoryPoint1: input.days
+			};
+			const matches = (item) => {
+				const actual = fields(item);
+				return date(actual.StartDate) === input.actualStart && date(actual.ActualFinishTime) === input.actualEnd && Number(actual.StoryPoint1) === input.days && date(actual.DateSDate) === input.expectedStart && date(actual.qiwangwanchengriqi) === input.expectedEnd;
+			};
+			mutating = true;
+			await run([
+				"team",
+				"item",
+				"edit",
+				input.itemKey,
+				"--values",
+				JSON.stringify(values)
+			]);
+			item = await read();
+			value = fields(item);
+			result.fieldsWritten = date(value.StartDate) === input.actualStart && date(value.ActualFinishTime) === input.actualEnd && Number(value.StoryPoint1) === input.days;
+			if (!result.fieldsWritten) throw new Error("实际工时或日期回读不一致，已停止流转，请核对番茄");
+			mutating = false;
+			for (let step = 0; step < 3; step++) {
+				owned(item);
+				result.currentStatus = text$2(item.status);
+				if (reviewStates.has(result.currentStatus) || doneStates.has(result.currentStatus)) return {
+					...result,
+					outcome: "success"
+				};
+				const currentStatus = result.currentStatus;
+				const selected = nextTransition(currentStatus, transitions(await run([
+					"team",
+					"transition",
+					"list",
+					input.itemKey
+				])));
+				item = await read();
+				owned(item);
+				if (text$2(item.status) !== currentStatus) throw new Error("流转前 Task 状态已变化，已停止，请刷新后核对");
+				if (!matches(item)) throw new Error("流转前 Task 日期或工时已变化，已停止，请刷新后核对");
+				mutating = true;
+				await run([
+					"team",
+					"transition",
+					"execute",
+					input.itemKey,
+					"--transition",
+					text$2(selected.transition)
+				]);
+				item = await read();
+				result.currentStatus = text$2(item.status);
+				if (result.currentStatus !== text$2(selected.targetStatus ?? selected.status)) throw new Error("流转结果与目标状态不一致，请核对番茄");
+				result.steps.push(`${currentStatus} → ${result.currentStatus}`);
+				mutating = false;
+			}
+			throw new Error("已达到流转步数限制，请核对番茄");
+		} catch (error) {
+			result.outcome = mutating ? "unknown" : result.fieldsWritten || result.steps.length ? "partial" : "failed";
+			result.error = error instanceof Error ? error.message : "报工失败";
+			if (mutating) {
+				try {
+					const actual = await read();
+					result.currentStatus = text$2(actual.status);
+					const value = fields(actual);
+					result.fieldsWritten = date(value.StartDate) === input.actualStart && date(value.ActualFinishTime) === input.actualEnd && Number(value.StoryPoint1) === input.days;
+				} catch {}
+				result.error = `结果待核对，未自动重试：${result.error}`;
+			}
+			return result;
+		}
+	};
+}
+//#endregion
+//#region src/task-report-model.ts
+/** At most two selected Tasks share one person-day, in half-day units. */
+function suggestReportDays(tasks, start) {
+	const days = Object.fromEntries(tasks.map((task) => [task.itemKey, 0]));
+	const conflicts = [];
+	for (const date of datesBetween(start, addDays(start, 6))) {
+		const active = tasks.filter((task) => task.start <= date && date <= task.end);
+		if (active.length > 2) {
+			conflicts.push({
+				date,
+				itemKeys: active.map((task) => task.itemKey)
+			});
+			continue;
+		}
+		for (const task of active) days[task.itemKey] += active.length === 2 ? .5 : 1;
+	}
+	return {
+		days,
+		conflicts
+	};
+}
+//#endregion
+//#region src/requirement-search.ts
+const row = (value) => value && typeof value === "object" && !Array.isArray(value) ? value : {};
+const text$1 = (value) => typeof value === "string" ? value : value && typeof value === "object" ? text$1(row(value).name ?? row(value).label) : "";
+const array = (value) => Array.isArray(value) ? value : [];
+const keyPattern$1 = /^[A-Za-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)*-\d+$/u;
+const types = ["Story", "EnablerStory"];
+function option(raw) {
+	const item = row(raw);
+	if (!types.includes(text$1(item.itemType)) && !types.includes(text$1(row(item.itemType).key))) return null;
+	const itemKey = text$1(item.key);
+	if (!keyPattern$1.test(itemKey) || !text$1(item.name)) return null;
+	const assignees = array(row(item.values ?? item.value).assignee ?? item.assignee).map(row).map((user) => text$1(user.label) || text$1(user.nickname) || text$1(user.username)).filter(Boolean);
+	return {
+		itemKey,
+		title: text$1(item.name),
+		status: text$1(item.status),
+		assignees
+	};
+}
+/** Permission-scoped requirement search, deliberately independent of board owner filters. */
+async function searchRequirements(run, query) {
+	const q = query.trim();
+	if (!q) return {
+		items: [],
+		truncated: false
+	};
+	if (q.length > 120) throw new Error("搜索内容最多 120 个字符");
+	if (keyPattern$1.test(q)) {
+		const item = option(await run([
+			"team",
+			"item",
+			"view",
+			q
+		]));
+		return {
+			items: item ? [item] : [],
+			truncated: false
+		};
+	}
+	const payload = row(await run([
+		"team",
+		"item",
+		"search",
+		"--iql",
+		`类型 in ${JSON.stringify(types)} and 标题 ~ ${JSON.stringify(q)}`,
+		"--fields",
+		"key,name,status,itemType,assignee",
+		"--page",
+		"1",
+		"--size",
+		"20"
+	]));
+	if (!Array.isArray(payload.items)) throw new Error("番茄返回的需求列表格式异常");
+	const items = [...new Map(payload.items.map(option).filter((item) => item !== null).map((item) => [item.itemKey, item])).values()];
+	const total = Number(payload.count ?? payload.total);
+	return {
+		items,
+		truncated: Number.isFinite(total) ? total > payload.items.length : payload.items.length === 20 && payload.nextPageIndex !== -1
 	};
 }
 //#endregion
@@ -1323,7 +1598,18 @@ async function storyContext(run, itemKey) {
 }
 async function metadata(run, itemKey) {
 	const context = await storyContext(run, itemKey);
-	const { project, workspace, assignees, fields } = context;
+	const { project, workspace, fields } = context;
+	const current = record(await run([
+		"team",
+		"user",
+		"current"
+	]));
+	const currentId = text(current.userId ?? current.objectId);
+	if (!currentId) throw new Error("无法确定当前登录用户，不能分配 Task");
+	const taskAssignees = [{
+		...current,
+		objectId: currentId
+	}];
 	const definitions = list(await run([
 		"team",
 		"field",
@@ -1361,12 +1647,13 @@ async function metadata(run, itemKey) {
 	const range = list(record(definitions.find((field) => field.key === "ActualFinishTime")?.property).range).map(localDate).filter(Boolean);
 	return {
 		context,
+		taskAssignees,
 		definitions,
 		options,
 		data: {
 			project,
-			assignee: assignees.map((user) => text(user.objectId)).join(","),
-			assigneeName: assignees.map((user) => text(user.label ?? user.username ?? user.objectId)).join("、"),
+			assignee: currentId,
+			assigneeName: text(current.nickname) || text(current.username) || currentId,
 			teams: options("suoshutuandui").map((option) => option.label),
 			costs: options("Dropdown2").map((option) => option.label),
 			categories: options("Dropdown_task").map((option) => option.label).filter((value) => [
@@ -1377,7 +1664,7 @@ async function metadata(run, itemKey) {
 			].includes(value)),
 			suggestedTeam: text(fields.suoshutuandui) || unanimous("suoshutuandui"),
 			suggestedCost: text(fields.Dropdown2) || unanimous("Dropdown2"),
-			suggestionSource: recentValues.length ? "继承需求字段；空值参考同项目近期 Task 的一致取值，请核对" : "继承需求字段；缺失项请手动选择",
+			suggestionSource: recentValues.length ? "Task 由当前登录用户负责；其余字段继承需求，空值参考同项目近期 Task" : "Task 由当前登录用户负责；其余字段继承需求，缺失项请手动选择",
 			actualRange: range.length === 2 ? range : null
 		}
 	};
@@ -1484,6 +1771,53 @@ function registerWorktime(ctx, deps) {
 		}), `tomato-board: ${path}`);
 	};
 	const taskBugs = createTaskBugService(deps.run, deps);
+	route("/api/tomato-board/worktime/requirements", "GET", async (_, query) => searchRequirements(deps.run, query.get("q") ?? ""));
+	const reportTask = createTaskReportService(deps.run);
+	route("/api/tomato-board/worktime/report-options", "GET", async () => loadTaskReportConstraints(deps.run));
+	route("/api/tomato-board/worktime/report", "POST", async (request) => {
+		const input = await body(request);
+		const start = String(input.start ?? "");
+		const end = String(input.end ?? "");
+		if (datesBetween(start, end).length !== 7) throw new Error("请选择完整的一周");
+		if (!Array.isArray(input.tasks) || !input.tasks.length || input.tasks.length > 100) throw new Error("请选择 1–100 个 Task");
+		const tasks = input.tasks.map((value) => record(value));
+		if (new Set(tasks.map((task) => task.itemKey)).size !== tasks.length) throw new Error("Task 不可重复选择");
+		const allocation = suggestReportDays(tasks.map((task) => ({
+			itemKey: task.itemKey,
+			start: task.expectedStart,
+			end: task.expectedEnd
+		})), start);
+		if (allocation.conflicts.length) throw new Error(`${allocation.conflicts.map((value) => value.date).join("、")} 有超过两个 Task，最小单位为 0.5 人天，请减少本次选择或调整排期`);
+		return serial(async () => {
+			const store = await load();
+			const user = record(await deps.run([
+				"team",
+				"user",
+				"current"
+			]));
+			const constraints = await loadTaskReportConstraints(deps.run);
+			const results = [];
+			try {
+				for (const task of tasks) {
+					if (store.taskOperations?.some((operation) => operation.itemKey === task.itemKey) || store.groupOperations?.some((operation) => operation.tasks.some((value) => value.itemKey === task.itemKey))) {
+						results.push({
+							itemKey: task.itemKey,
+							outcome: "failed",
+							currentStatus: "",
+							steps: [],
+							fieldsWritten: false,
+							error: "上次 Task 操作结果待核对，请先核对番茄"
+						});
+						continue;
+					}
+					results.push(await reportTask(task, user, start, end, constraints));
+				}
+				return { results };
+			} finally {
+				deps.invalidate();
+			}
+		});
+	});
 	route("/api/tomato-board/worktime/task-bug-counts", "POST", async (request) => {
 		const input = await body(request);
 		if (!Array.isArray(input.itemKeys)) throw new Error("缺少 Task 编号列表");
@@ -1772,7 +2106,7 @@ function registerWorktime(ctx, deps) {
 			const existing = [...group, ...(store.archivedUnits ?? []).filter((unit) => unit.itemKey === first.itemKey)].flatMap((unit) => unit.tasks);
 			freezeAllocations(store, first.itemKey);
 			const tasks = allocateGroupTasks(dates, drafts, existing, unitDates([...group, ...(store.archivedUnits ?? []).filter((unit) => unit.itemKey === first.itemKey)]));
-			const { options, data, context, definitions } = await metadata(deps.run, first.itemKey);
+			const { options, data, context, taskAssignees, definitions } = await metadata(deps.run, first.itemKey);
 			const optionValue = (key, label) => {
 				const match = options(key).find((option) => option.label === label);
 				if (!match) throw new Error(`请选择有效的 ${key}`);
@@ -1783,7 +2117,7 @@ function registerWorktime(ctx, deps) {
 				Dropdown2: optionValue("Dropdown2", input.cost),
 				suoshutuandui: optionValue("suoshutuandui", input.team),
 				Dropdown_task: optionValue("Dropdown_task", input.category),
-				assignee: context.assignees.map(userValue)
+				assignee: taskAssignees.map(userValue)
 			};
 			if (!data.categories.includes(String(input.category))) throw new Error("任务分类仅支持软件开发或修复BUG");
 			const planKeys = new Set([
@@ -1907,7 +2241,7 @@ function registerWorktime(ctx, deps) {
 						task.skipped = [...task.skipped ?? [], actualLabels[field]];
 					}
 					const owners = list(actual.assignee).map((value) => text(record(value).objectId ?? record(value).value));
-					if (!context.assignees.every((user) => owners.includes(text(user.objectId)))) throw new Error("Task 负责人回读校验失败");
+					if (owners.length !== taskAssignees.length || !taskAssignees.every((user) => owners.includes(text(user.objectId)))) throw new Error("Task 负责人回读校验失败");
 					task.status = "created";
 				} catch (error) {
 					task.status = "uncertain";
@@ -1935,7 +2269,9 @@ function registerWorktime(ctx, deps) {
 		const assignee = query.get("assignee") || "currentUser()";
 		if (assignee !== "currentUser()" && !/^[A-Za-z0-9_.@-]{1,128}$/u.test(assignee)) throw new Error("无效的负责人");
 		const iql = `负责人 in [${assignee === "currentUser()" ? assignee : JSON.stringify(assignee)}] and 类型 = Task and DateSDate <= ${JSON.stringify(end)} and qiwangwanchengriqi >= ${JSON.stringify(start)}`;
-		const tasks = [];
+		const candidates = /* @__PURE__ */ new Set();
+		let seen = 0;
+		let truncated = false;
 		for (let page = 1; page <= 100; page += 1) {
 			const payload = record(await deps.run([
 				"team",
@@ -1951,24 +2287,54 @@ function registerWorktime(ctx, deps) {
 				"key,name,status,DateSDate,qiwangwanchengriqi,planStoryPoint,StartDate,ActualFinishTime,StoryPoint1"
 			]));
 			const rows = list(payload.items);
-			for (const raw of rows) {
-				const item = record(raw);
+			for (const raw of rows) candidates.add(text(record(raw).key ?? record(raw).itemKey));
+			seen += rows.length;
+			const total = Number(payload.count ?? payload.total);
+			if (!rows.length || (Number.isFinite(total) ? seen >= total : rows.length < 50)) break;
+			if (page === 100) truncated = true;
+		}
+		const user = assignee === "currentUser()" ? record(await deps.run([
+			"team",
+			"user",
+			"current"
+		])) : {
+			username: assignee,
+			userId: assignee
+		};
+		const keys = [...candidates].filter((key) => keyPattern.test(key));
+		const tasks = [];
+		let cursor = 0;
+		await Promise.all(Array.from({ length: Math.min(4, keys.length) }, async () => {
+			while (cursor < keys.length) {
+				const itemKey = keys[cursor++];
+				const item = record(await deps.run([
+					"team",
+					"item",
+					"view",
+					itemKey
+				]));
 				const value = fieldValues(item);
+				if (text(item.itemType) !== "Task" || !list(value.assignee).map(record).some((owner) => text(user.userId) && text(owner.objectId ?? owner.value) === text(user.userId) || text(user.username) && text(owner.username) === text(user.username))) continue;
+				const taskStart = localDate(value.DateSDate);
+				const taskEnd = localDate(value.qiwangwanchengriqi);
+				if (!taskStart || !taskEnd || taskStart > taskEnd || taskStart > end || taskEnd < start) continue;
 				tasks.push({
-					itemKey: text(item.key ?? item.itemKey),
+					itemKey,
 					title: text(item.name ?? item.title),
 					status: text(item.status),
-					start: localDate(value.DateSDate),
-					end: localDate(value.qiwangwanchengriqi),
-					days: Number(value.planStoryPoint) || 0
+					start: taskStart,
+					end: taskEnd,
+					days: Number(value.planStoryPoint) || 0,
+					actualDays: value.StoryPoint1 == null ? null : Number(value.StoryPoint1),
+					actualStart: localDate(value.StartDate),
+					actualEnd: localDate(value.ActualFinishTime)
 				});
 			}
-			const total = Number(payload.count ?? payload.total);
-			if (!rows.length || (Number.isFinite(total) ? tasks.length >= total : rows.length < 50)) return { tasks };
-		}
+		}));
+		tasks.sort((a, b) => a.start.localeCompare(b.start) || a.itemKey.localeCompare(b.itemKey));
 		return {
 			tasks,
-			truncated: true
+			...truncated ? { truncated: true } : {}
 		};
 	});
 }

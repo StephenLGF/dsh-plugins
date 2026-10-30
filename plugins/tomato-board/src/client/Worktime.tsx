@@ -8,6 +8,8 @@ import { worktimeText as t } from './worktime-locale.ts'
 import { AssigneePicker } from './AssigneePicker.tsx'
 import { TaskBugs } from './TaskBugs.tsx'
 import { TomatoLinkButton } from './TomatoLinkButton.tsx'
+import { TaskReport } from './TaskReport.tsx'
+import { RequirementPicker } from './RequirementPicker.tsx'
 import css from './worktime.module.css'
 
 type HistoryTask = { itemKey: string; title: string; status: string; start: string; end: string; days: number }
@@ -66,6 +68,7 @@ export function Worktime({ assignee, users, onAssigneeChange, onRefresh }: { ass
   const [dragging, setDragging] = useState(false)
   const [editingKey, setEditingKey] = useState('')
   const [editingTask, setEditingTask] = useState<HistoryTask | null>(null)
+  const [reporting, setReporting] = useState(false)
   const draggedTask = useRef<CalendarDrag | null>(null)
   const [dragPreview, setDragPreview] = useState<DragPreview | null>(null)
   const dragImage = useRef<HTMLCanvasElement | null>(null)
@@ -96,7 +99,7 @@ export function Worktime({ assignee, users, onAssigneeChange, onRefresh }: { ass
     setBugCounts(current => current[itemKey] === count ? current : { ...current, [itemKey]: count })
   }, [])
   const visibleTaskKeys = useMemo(() => [...new Set([
-    ...calendarUnits.flatMap(unit => unit.tasks), ...calendarHistory,
+    ...calendarUnits.flatMap(unit => unit.tasks.filter(task => task.status !== 'created')), ...calendarHistory,
   ].filter(task => task.itemKey && task.start <= end && task.end >= start).map(task => task.itemKey!))].sort().join(','), [calendarUnits, calendarHistory, start, end])
   useEffect(() => {
     if (!visibleTaskKeys) return
@@ -119,6 +122,10 @@ export function Worktime({ assignee, users, onAssigneeChange, onRefresh }: { ass
   useEffect(() => { pending.current = selection }, [selection])
   useEffect(() => { readOnlyRef.current = readOnly }, [readOnly])
   useEffect(() => {
+    setHistory([]); setUnits([]); setArchivedUnits([])
+    setEditingTask(null); setEditingKey(''); setChoosing(false); setSelection(null); setReporting(false)
+  }, [assignee])
+  useEffect(() => {
     const controller = new AbortController()
     const epoch = readEpoch.current
     setLoading(true)
@@ -130,7 +137,7 @@ export function Worktime({ assignee, users, onAssigneeChange, onRefresh }: { ass
       fetch(`/api/tomato-board/items?assignee=${query}`, { signal: controller.signal, headers: { accept: 'application/json' } }).then(async response => {
         const data = await response.json() as { items?: TomatoItem[]; error?: string }
         if (!response.ok) throw new Error(data.error || t.readFailed)
-        setItems(data.items ?? [])
+        if (!controller.signal.aborted) setItems(data.items ?? [])
       }),
     ]).catch(error => { if (!controller.signal.aborted && !mutationPending.current && epoch === readEpoch.current) setError(errorText(error)) }).finally(() => { if (!controller.signal.aborted) setLoading(false) })
     return () => controller.abort()
@@ -145,6 +152,20 @@ export function Worktime({ assignee, users, onAssigneeChange, onRefresh }: { ass
     }).catch(error => { if (!controller.signal.aborted && !mutationPending.current && epoch === readEpoch.current) setHistoryError(`${t.historyFailed}：${errorText(error)}`) })
     return () => controller.abort()
   }, [start, end, version, assignee])
+  useEffect(() => {
+    const refresh = () => {
+      if (document.visibilityState === 'hidden' || mutationPending.current) return
+      setVersion(value => value + 1)
+    }
+    window.addEventListener('focus', refresh)
+    document.addEventListener('visibilitychange', refresh)
+    const timer = window.setInterval(refresh, 60_000)
+    return () => {
+      window.removeEventListener('focus', refresh)
+      document.removeEventListener('visibilitychange', refresh)
+      window.clearInterval(timer)
+    }
+  }, [])
   // Releasing the pointer finishes a click or a drag, and the plan dialog opens
   // immediately — the calendar never waits for a second confirmation step.
   useEffect(() => {
@@ -198,6 +219,7 @@ export function Worktime({ assignee, users, onAssigneeChange, onRefresh }: { ass
     } finally {
       readEpoch.current += 1; mutationPending.current = false
       setTaskChange(null); setSaving(false)
+      setVersion(value => value + 1)
     }
   }
   async function mutateRequirement(unit: WorktimeUnit, change: WorktimeRequirementChange) {
@@ -248,7 +270,8 @@ export function Worktime({ assignee, users, onAssigneeChange, onRefresh }: { ass
       }
     } catch (error) { setError(errorText(error)) }
   }
-  const knownKeys = new Set(calendarUnits.flatMap(unit => unit.tasks.flatMap(task => task.itemKey ? [task.itemKey] : [])))
+  // Local created records are allocation journals, not live Task snapshots.
+  const knownKeys = new Set(calendarUnits.flatMap(unit => unit.tasks.flatMap(task => task.status !== 'created' && task.itemKey ? [task.itemKey] : [])))
   const remote = calendarHistory.filter(task => !knownKeys.has(task.itemKey))
   const weeks: string[][] = []
   for (let i = 0; i < dates.length; i += 7) weeks.push(dates.slice(i, i + 7))
@@ -281,9 +304,10 @@ export function Worktime({ assignee, users, onAssigneeChange, onRefresh }: { ass
       const c = clip(unit.start, unit.end)
       if (c) bars.push({ key: `u-${unit.id}-${weekStart}`, kind: 'unit', ...c, lane: 0, unit, anchor: unit.start < weekStart ? weekStart : unit.start, label: unit.title, tip: `${t.request} · ${unit.itemKey} · ${unit.start} ~ ${unit.end} · ${datesBetween(unit.start, unit.end).length}${t.days}`, onClick: () => setEditingKey(unit.itemKey) })
       for (const [i, task] of unit.tasks.entries()) {
+        if (task.status === 'created') continue
         const tc = clip(task.start, task.end)
         if (!tc) continue
-        bars.push({ key: `t-${unit.id}-${i}-${weekStart}`, kind: 'task', ...tc, lane: 0, unverified: task.status !== 'created', ...(task.itemKey ? { task: { ...task, itemKey: task.itemKey }, anchor: task.start < weekStart ? weekStart : task.start } : {}), label: task.title, tip: task.error || `${t.task} · ${task.start} ~ ${task.end} · ${task.days}${t.personDays}${task.itemKey ? ` · ${task.itemKey}` : ''} · ${task.status === 'created' ? t.created : task.status === 'pending' ? t.pending : t.uncertain}`, onClick: () => task.itemKey ? setEditingTask({ ...task, itemKey: task.itemKey }) : setEditingKey(unit.itemKey) })
+        bars.push({ key: `t-${unit.id}-${i}-${weekStart}`, kind: 'task', ...tc, lane: 0, unverified: true, ...(task.itemKey ? { task: { ...task, itemKey: task.itemKey }, anchor: task.start < weekStart ? weekStart : task.start } : {}), label: task.title, tip: task.error || `${t.task} · ${task.start} ~ ${task.end} · ${task.days}${t.personDays}${task.itemKey ? ` · ${task.itemKey}` : ''} · ${task.status === 'pending' ? t.pending : t.uncertain}`, onClick: () => task.itemKey ? setEditingTask({ ...task, itemKey: task.itemKey }) : setEditingKey(unit.itemKey) })
       }
     }
     for (const task of remote) {
@@ -303,6 +327,7 @@ export function Worktime({ assignee, users, onAssigneeChange, onRefresh }: { ass
   }
   const editingUnits = editingKey ? sorted(calendarUnits.filter(unit => unit.itemKey === editingKey)) : []
   return <div ref={pageRef} className={css.page}>
+    {reporting && <TaskReport request={api} onClose={() => setReporting(false)} onSaved={() => { setVersion(v => v + 1); onRefresh() }} onNotify={notify} />}
     {notification && <Toast key={notification.id} text={notification.text} anchor={pageRef.current} holdMs={notification.error ? 5000 : 2000} onDone={dismissNotification} />}
     <div className={css.toolbar}>
       <div className={css.period}><h2>{start.replaceAll('-', '.')} <span>—</span> {end.replaceAll('-', '.')}</h2><div className={css.legend}><span className={css.storyDot} />{t.request}<span className={css.taskDot} />{t.task}{!readOnly && <small>{t.dayPickHint}</small>}</div></div>
@@ -313,6 +338,7 @@ export function Worktime({ assignee, users, onAssigneeChange, onRefresh }: { ass
         <button type="button" onClick={() => setAnchor(todayKey())}>{t.today}</button>
         <button type="button" aria-label={t.next} onClick={() => setAnchor(addDays(anchor, 7))}>›</button>
         <button type="button" disabled={loading} onClick={() => { setVersion(v => v + 1); onRefresh() }}>{loading ? t.loading : t.refresh}</button>
+        {!readOnly && <button type="button" disabled={saving} onClick={() => setReporting(true)}>一键报工</button>}
       </div>
     </div>
     {historyError && <p role="status" className={css.notice}>{historyError}</p>}
@@ -375,10 +401,7 @@ export function Worktime({ assignee, users, onAssigneeChange, onRefresh }: { ass
     {choosing && range && <Modal open title={t.pickTitle} closeLabel={t.close} onClose={() => { if (!saving) closePicker() }} className={css.dialogNarrow!}
       footer={<><Button variant="ghost" disabled={saving} onClick={closePicker}>{t.cancel}</Button><Button variant="primary" disabled={!selectedStory || saving} onClick={() => void saveSelection(selectedStory)}>{saving ? t.saving : t.confirmPick}</Button></>}>
       <div className={css.form}>
-        <select aria-label={t.pickTitle} value={selectedStory} onChange={event => setSelectedStory(event.target.value)}>
-          <option value="">{t.placeholder}</option>
-          {requirements.map(item => <option key={item.itemKey} value={item.itemKey}>{item.itemKey} · {item.title}</option>)}
-        </select>
+        <RequirementPicker items={requirements} selected={selectedStory} disabled={saving} request={api} onSelect={setSelectedStory} />
         {error && <p className={css.error} role="alert">{error}</p>}
       </div>
     </Modal>}
@@ -434,6 +457,17 @@ function GroupEditor({ itemKey, units, archivedUnits, onClose, onSaved }: { item
     return () => controller.abort()
   }, [itemKey, title])
   const inputTasks = stages.filter(stage => Number(drafts[stage].days) > 0).map(stage => ({ stage, days: Number(drafts[stage].days), title: drafts[stage].title }))
+  const createBlockReasons = [
+    !rangeCount && '请添加时间段',
+    rangeCount > 0 && count <= 0 && '当前没有剩余可分配人天，请增加时间段',
+    !meta && (error ? 'Task 创建信息读取失败，请关闭弹窗后重试' : '正在读取 Task 创建信息'),
+    meta && !cost && '请选择工时成本归属',
+    meta && !team && '请选择所属团队',
+    meta && !category && '请选择任务分类',
+    !inputTasks.length && '请至少填写一个阶段的人天',
+    over && `${t.overAllocate}（${total} / ${count} 人天）`,
+    retried && !confirmRetry && '请先核对上次创建结果并勾选重试确认',
+  ].filter((value): value is string => typeof value === 'string')
   const changeRange = (key: string, patch: Partial<RangeDraft>) => setRanges(current => current.map(range => range.key === key ? { ...range, ...patch } : range))
   /** Persist ranges first so creation always sees the exact saved revisions. */
   async function persistRanges(): Promise<Array<{ id: string; revision: number }>> {
@@ -469,10 +503,11 @@ function GroupEditor({ itemKey, units, archivedUnits, onClose, onSaved }: { item
   }
   const renderSelect = (label: string, value: string, values: string[], change: (value: string) => void) => <label>{label}<select required value={value} disabled={busy} onChange={event => change(event.target.value)}><option value="">{t.placeholder}</option>{values.map(option => <option key={option}>{option}</option>)}</select></label>
   return <Modal open title={`${t.edit} · ${itemKey}`} description={title} closeLabel={t.close} onClose={() => { if (!busy) onClose() }} className={css.dialog!}
-    footer={<><Button variant="ghost" disabled={busy} onClick={onClose}>{t.close}</Button><Button variant="outline" disabled={busy || (!rangeCount && !rangesChanged)} onClick={() => void saveRanges()}>{busy ? t.saving : t.saveRanges}</Button><Button variant="primary" disabled={busy || !rangeCount || count <= 0 || !meta || !cost || !team || !category || !inputTasks.length || over || (retried && !confirmRetry)} onClick={() => void create()}>{busy ? t.creating : t.create}</Button></>}>
+    footer={<><Button variant="ghost" disabled={busy} onClick={onClose}>{t.close}</Button><Button variant="outline" disabled={busy || (!rangeCount && !rangesChanged)} onClick={() => void saveRanges()}>{busy ? t.saving : t.saveRanges}</Button><Button variant="primary" disabled={busy || createBlockReasons.length > 0} onClick={() => void create()}>{busy ? t.creating : t.create}</Button></>}>
     <div className={css.form}>
       <div className={css.unitSummary}><span>{itemKey}</span><strong>{plannedCount} {t.days}</strong><TomatoLinkButton itemKey={itemKey} /></div>
       <p className={css.help}>{t.createdAllocation} {createdDays} {t.personDays} · {t.currentCapacity} {count} {t.personDays}</p>
+      {!busy && createBlockReasons.length > 0 && <p className={css.error} role="alert">暂不能创建：{createBlockReasons.join('；')}。</p>}
       <div className={css.stageHeading}><h3>{t.range}</h3><span>{ranges.length}</span></div>
       <p className={css.help}>{t.rangeHint}</p>
       <div className={css.ranges}>{ranges.map((range, index) => <div className={css.rangeRow} key={range.key}>

@@ -7,6 +7,10 @@ import { allocateGroupTasks, applyRequirementChange, datesBetween, mergeRequirem
 import type { WorktimeMetadata, WorktimeUnit } from './worktime-model.ts'
 import { createTaskBugService } from './task-bugs.ts'
 import type { BugLinkConfig } from './task-bugs.ts'
+import { createTaskReportService, loadTaskReportConstraints } from './task-report.ts'
+import type { TaskReportInput } from './task-report.ts'
+import { suggestReportDays } from './task-report-model.ts'
+import { searchRequirements } from './requirement-search.ts'
 
 type RecordValue = Record<string, unknown>
 interface Request {
@@ -89,7 +93,11 @@ async function storyContext(run: Dependencies['run'], itemKey: string) {
 
 async function metadata(run: Dependencies['run'], itemKey: string) {
   const context = await storyContext(run, itemKey)
-  const { project, workspace, assignees, fields } = context
+  const { project, workspace, fields } = context
+  const current = record(await run(['team', 'user', 'current']))
+  const currentId = text(current.userId ?? current.objectId)
+  if (!currentId) throw new Error('无法确定当前登录用户，不能分配 Task')
+  const taskAssignees = [{ ...current, objectId: currentId }]
   const rawFields = await run(['team', 'field', 'workspace', '--workspace', workspace, '--item-type', 'Task', '--fields', 'data,property'])
   const definitions = list(rawFields).map(record)
   if (!definitions.length) throw new Error('无法读取 Task 创建字段')
@@ -103,14 +111,14 @@ async function metadata(run: Dependencies['run'], itemKey: string) {
   const unanimous = (key: string) => { const values = [...new Set(recentValues.map(value => text(value[key])).filter(Boolean))]; return values.length === 1 ? values[0]! : '' }
   const range = list(record(definitions.find(field => field.key === 'ActualFinishTime')?.property).range).map(localDate).filter(Boolean)
   const data: WorktimeMetadata = {
-    project, assignee: assignees.map(user => text(user.objectId)).join(','), assigneeName: assignees.map(user => text(user.label ?? user.username ?? user.objectId)).join('、'),
+    project, assignee: currentId, assigneeName: text(current.nickname) || text(current.username) || currentId,
     teams: options('suoshutuandui').map(option => option.label), costs: options('Dropdown2').map(option => option.label),
     categories: options('Dropdown_task').map(option => option.label).filter(value => ['软件开发', '修复BUG', 'bug修复', 'Bug修复'].includes(value)),
     suggestedTeam: text(fields.suoshutuandui) || unanimous('suoshutuandui'), suggestedCost: text(fields.Dropdown2) || unanimous('Dropdown2'),
-    suggestionSource: recentValues.length ? '继承需求字段；空值参考同项目近期 Task 的一致取值，请核对' : '继承需求字段；缺失项请手动选择',
+    suggestionSource: recentValues.length ? 'Task 由当前登录用户负责；其余字段继承需求，空值参考同项目近期 Task' : 'Task 由当前登录用户负责；其余字段继承需求，缺失项请手动选择',
     actualRange: range.length === 2 ? range : null,
   }
-  return { context, definitions, options, data }
+  return { context, taskAssignees, definitions, options, data }
 }
 
 
@@ -180,6 +188,36 @@ export function registerWorktime(ctx: Context, deps: Dependencies): void {
     } }), `tomato-board: ${path}`)
   }
   const taskBugs = createTaskBugService(deps.run, deps)
+  route('/api/tomato-board/worktime/requirements', 'GET', async (_, query) => searchRequirements(deps.run, query.get('q') ?? ''))
+  const reportTask = createTaskReportService(deps.run)
+  route('/api/tomato-board/worktime/report-options', 'GET', async () => loadTaskReportConstraints(deps.run))
+  route('/api/tomato-board/worktime/report', 'POST', async request => {
+    const input = await body(request)
+    const start = String(input.start ?? ''); const end = String(input.end ?? '')
+    if (datesBetween(start, end).length !== 7) throw new Error('请选择完整的一周')
+    if (!Array.isArray(input.tasks) || !input.tasks.length || input.tasks.length > 100) throw new Error('请选择 1–100 个 Task')
+    const tasks = input.tasks.map(value => record(value) as unknown as TaskReportInput)
+    if (new Set(tasks.map(task => task.itemKey)).size !== tasks.length) throw new Error('Task 不可重复选择')
+    const allocation = suggestReportDays(tasks.map(task => ({ itemKey: task.itemKey, start: task.expectedStart, end: task.expectedEnd })), start)
+    if (allocation.conflicts.length) throw new Error(`${allocation.conflicts.map(value => value.date).join('、')} 有超过两个 Task，最小单位为 0.5 人天，请减少本次选择或调整排期`)
+    return serial(async () => {
+      const store = await load()
+      const user = record(await deps.run(['team', 'user', 'current']))
+      const constraints = await loadTaskReportConstraints(deps.run)
+      const results = []
+      try {
+        for (const task of tasks) {
+          if (store.taskOperations?.some(operation => operation.itemKey === task.itemKey)
+            || store.groupOperations?.some(operation => operation.tasks.some(value => value.itemKey === task.itemKey))) {
+            results.push({ itemKey: task.itemKey, outcome: 'failed', currentStatus: '', steps: [], fieldsWritten: false, error: '上次 Task 操作结果待核对，请先核对番茄' })
+            continue
+          }
+          results.push(await reportTask(task, user, start, end, constraints))
+        }
+        return { results }
+      } finally { deps.invalidate() }
+    })
+  })
   route('/api/tomato-board/worktime/task-bug-counts', 'POST', async request => {
     const input = await body(request)
     if (!Array.isArray(input.itemKeys)) throw new Error('缺少 Task 编号列表')
@@ -380,7 +418,7 @@ export function registerWorktime(ctx: Context, deps: Dependencies): void {
       freezeAllocations(store, first.itemKey)
       const tasks = allocateGroupTasks(dates, drafts, existing, unitDates([...group, ...(store.archivedUnits ?? []).filter(unit => unit.itemKey === first.itemKey)]))
       const meta = await metadata(deps.run, first.itemKey)
-      const { options, data, context, definitions } = meta
+      const { options, data, context, taskAssignees, definitions } = meta
       const optionValue = (key: string, label: unknown) => {
         const match = options(key).find(option => option.label === label)
         if (!match) throw new Error(`请选择有效的 ${key}`)
@@ -389,7 +427,7 @@ export function registerWorktime(ctx: Context, deps: Dependencies): void {
       const common: RecordValue = {
         view_project: [context.project], Dropdown2: optionValue('Dropdown2', input.cost), suoshutuandui: optionValue('suoshutuandui', input.team),
         Dropdown_task: optionValue('Dropdown_task', input.category),
-        assignee: context.assignees.map(userValue),
+        assignee: taskAssignees.map(userValue),
       }
       if (!data.categories.includes(String(input.category))) throw new Error('任务分类仅支持软件开发或修复BUG')
       // The plan dates and workload are the point of the record, so they may never
@@ -480,7 +518,7 @@ export function registerWorktime(ctx: Context, deps: Dependencies): void {
             task.skipped = [...(task.skipped ?? []), actualLabels[field]!]
           }
           const owners = list(actual.assignee).map(value => text(record(value).objectId ?? record(value).value))
-          if (!context.assignees.every(user => owners.includes(text(user.objectId)))) throw new Error('Task 负责人回读校验失败')
+          if (owners.length !== taskAssignees.length || !taskAssignees.every(user => owners.includes(text(user.objectId)))) throw new Error('Task 负责人回读校验失败')
           task.status = 'created'
         } catch (error) {
           task.status = 'uncertain'; task.error = error instanceof Error ? error.message : '创建结果待核对'
@@ -500,17 +538,39 @@ export function registerWorktime(ctx: Context, deps: Dependencies): void {
     if (assignee !== 'currentUser()' && !/^[A-Za-z0-9_.@-]{1,128}$/u.test(assignee)) throw new Error('无效的负责人')
     const owner = assignee === 'currentUser()' ? assignee : JSON.stringify(assignee)
     const iql = `负责人 in [${owner}] and 类型 = Task and DateSDate <= ${JSON.stringify(end)} and qiwangwanchengriqi >= ${JSON.stringify(start)}`
-    const tasks: unknown[] = []
+    const candidates = new Set<string>()
+    let seen = 0
+    let truncated = false
     for (let page = 1; page <= 100; page += 1) {
       const payload = record(await deps.run(['team', 'item', 'search', '--iql', iql, '--page', String(page), '--size', '50', '--fields', 'key,name,status,DateSDate,qiwangwanchengriqi,planStoryPoint,StartDate,ActualFinishTime,StoryPoint1']))
       const rows = list(payload.items)
-      for (const raw of rows) {
-        const item = record(raw); const value = fieldValues(item)
-        tasks.push({ itemKey: text(item.key ?? item.itemKey), title: text(item.name ?? item.title), status: text(item.status), start: localDate(value.DateSDate), end: localDate(value.qiwangwanchengriqi), days: Number(value.planStoryPoint) || 0 })
-      }
+      for (const raw of rows) candidates.add(text(record(raw).key ?? record(raw).itemKey))
+      seen += rows.length
       const total = Number(payload.count ?? payload.total)
-      if (!rows.length || (Number.isFinite(total) ? tasks.length >= total : rows.length < 50)) return { tasks }
+      if (!rows.length || (Number.isFinite(total) ? seen >= total : rows.length < 50)) break
+      if (page === 100) truncated = true
     }
-    return { tasks, truncated: true }
+    // Search indexes can retain an old owner/status. Verify live details before
+    // allowing a search result to become an editable calendar Task.
+    const user = assignee === 'currentUser()' ? record(await deps.run(['team', 'user', 'current'])) : { username: assignee, userId: assignee }
+    const keys = [...candidates].filter(key => keyPattern.test(key))
+    const tasks: Array<{ itemKey: string; title: string; status: string; start: string; end: string; days: number; actualDays: number | null; actualStart: string; actualEnd: string }> = []
+    let cursor = 0
+    await Promise.all(Array.from({ length: Math.min(4, keys.length) }, async () => {
+      while (cursor < keys.length) {
+        const itemKey = keys[cursor++]!
+        const item = record(await deps.run(['team', 'item', 'view', itemKey]))
+        const value = fieldValues(item)
+        if (text(item.itemType) !== 'Task' || !list(value.assignee).map(record).some(owner =>
+          (text(user.userId) && text(owner.objectId ?? owner.value) === text(user.userId))
+          || (text(user.username) && text(owner.username) === text(user.username)))) continue
+        const taskStart = localDate(value.DateSDate); const taskEnd = localDate(value.qiwangwanchengriqi)
+        if (!taskStart || !taskEnd || taskStart > taskEnd || taskStart > end || taskEnd < start) continue
+        tasks.push({ itemKey, title: text(item.name ?? item.title), status: text(item.status), start: taskStart, end: taskEnd, days: Number(value.planStoryPoint) || 0,
+          actualDays: value.StoryPoint1 == null ? null : Number(value.StoryPoint1), actualStart: localDate(value.StartDate), actualEnd: localDate(value.ActualFinishTime) })
+      }
+    }))
+    tasks.sort((a, b) => a.start.localeCompare(b.start) || a.itemKey.localeCompare(b.itemKey))
+    return { tasks, ...(truncated ? { truncated: true } : {}) }
   })
 }

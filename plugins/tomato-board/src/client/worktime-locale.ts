@@ -14,7 +14,7 @@ export const worktimeText = {
   start: '开始日期', end: '结束日期', saveRanges: '保存时间段',
   edit: '工时分配', editHint: '每个阶段创建一个直属 Task。标题已结合需求润色，可直接修改。',
   unallocated: '剩余未分配', overAllocate: '阶段合计不能超过剩余可分配人天',
-  project: '所属项目', owner: '负责人', team: '所属团队', cost: '工时成本归属', category: '任务分类',
+  project: '所属项目', owner: 'Task 负责人', team: '所属团队', cost: '工时成本归属', category: '任务分类',
   placeholder: '请选择', loading: '正在读取…', stages: '阶段与投入', stage: '阶段', taskTitle: 'Task 标题',
   total: '阶段合计', create: '确认并创建 Task', creating: '正在创建并核对…',
   createdAllocation: '已分配投入', currentCapacity: '本次可分配', currentStages: '本次阶段与投入', skippedFields: '未写入番茄的字段',

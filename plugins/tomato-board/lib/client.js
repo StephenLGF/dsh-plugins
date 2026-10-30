@@ -2479,7 +2479,7 @@ window.__ModuleLoader__.load({
 			unallocated: "剩余未分配",
 			overAllocate: "阶段合计不能超过剩余可分配人天",
 			project: "所属项目",
-			owner: "负责人",
+			owner: "Task 负责人",
 			team: "所属团队",
 			cost: "工时成本归属",
 			category: "任务分类",
@@ -2596,7 +2596,7 @@ window.__ModuleLoader__.load({
 		}
 		//#endregion
 		//#region \0dsh-css:/Users/gengfeng/dsh-tomato-board/plugins/tomato-board/src/client/worktime.module.css.mjs
-		const css = "._9MUeuG_page{--wt-accent:var(--dsw-alias-state-business-primary);--wt-task:var(--dsw-alias-state-success-primary,var(--dsw-alias-state-business-primary));--wt-line:var(--dsw-alias-border-l2);--wt-bg:var(--dsw-alias-bg-base);--wt-text:var(--dsw-alias-label-primary);--wt-muted:var(--dsw-alias-label-secondary);color:var(--wt-text);box-sizing:border-box;flex-direction:column;flex:1 1 0;min-height:0;padding:10px 14px;display:flex;overflow:hidden}._9MUeuG_toolbar{flex:none;justify-content:space-between;align-items:center;gap:12px;width:100%;max-width:1280px;margin:0 auto 8px;display:flex}._9MUeuG_period{flex-wrap:wrap;align-items:center;gap:16px;display:flex}._9MUeuG_toolbar h2{font-variant-numeric:tabular-nums;letter-spacing:-.04em;margin:0;font-size:18px;font-weight:600;line-height:1.4}._9MUeuG_toolbar h2>span{color:var(--wt-muted);padding:0 6px}._9MUeuG_page button,._9MUeuG_form button{cursor:pointer;font:inherit}._9MUeuG_navigation{flex-wrap:wrap;gap:6px;display:flex}._9MUeuG_navigation button,._9MUeuG_unitSummary button{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-base);color:var(--dsw-alias-label-primary);border-radius:6px;padding:4px 8px;font-size:12px;line-height:1.5}._9MUeuG_navigation button:hover{background:var(--dsw-alias-interactive-bg-hover)}._9MUeuG_page button:focus-visible,._9MUeuG_form button:focus-visible,._9MUeuG_form input:focus-visible,._9MUeuG_page input:focus-visible,._9MUeuG_form select:focus-visible{outline:2px solid var(--dsw-alias-state-business-primary);outline-offset:2px}._9MUeuG_legend{color:var(--wt-muted);align-items:center;gap:5px;margin:0;font-size:11px;display:flex}._9MUeuG_legend small{margin-left:auto;font-size:11px}._9MUeuG_storyDot,._9MUeuG_taskDot{background:var(--wt-accent);border-radius:2px;width:8px;height:8px;display:inline-block}._9MUeuG_taskDot{background:var(--dsw-alias-state-success-primary,var(--wt-text));border-radius:50%;margin-left:12px}._9MUeuG_help{color:var(--dsw-alias-label-secondary);margin:8px 0 12px;font-size:11px;line-height:1.7}._9MUeuG_calendarArea{flex-direction:column;flex:1;width:100%;min-width:0;max-width:1280px;min-height:0;max-height:640px;margin:auto;display:flex}._9MUeuG_dragging ._9MUeuG_bar{pointer-events:none}._9MUeuG_calendar{border:1px solid var(--wt-line);background:var(--wt-bg);border-radius:12px;flex:1;grid-template-rows:auto repeat(5,minmax(0,1fr));grid-template-columns:repeat(7,minmax(0,1fr));min-height:0;display:grid;overflow:hidden}._9MUeuG_weekHeader{scrollbar-gutter:stable;scrollbar-width:thin;background:var(--dsw-alias-interactive-bg-hover);grid-column:1/-1;grid-template-columns:repeat(7,minmax(0,1fr));display:grid;overflow:hidden auto}._9MUeuG_weekday{text-align:center;color:var(--wt-muted);background:var(--dsw-alias-interactive-bg-hover);border-bottom:1px solid var(--wt-line);padding:5px 8px;font-size:11px}._9MUeuG_week{border-bottom:1px solid var(--wt-line);grid-column:1/-1;grid-template-rows:minmax(0,1fr);grid-template-columns:minmax(0,1fr);min-height:0;display:grid;overflow:hidden}._9MUeuG_weekScroll{scrollbar-gutter:stable;scrollbar-width:thin;overscroll-behavior-y:contain;grid-area:1/1;min-height:0;overflow:hidden auto}._9MUeuG_weekScroll:focus-visible{outline:2px solid var(--wt-accent);outline-offset:-2px}._9MUeuG_weekHighlights{scrollbar-gutter:stable;scrollbar-width:thin;pointer-events:none;z-index:3;grid-area:1/1;grid-template-rows:minmax(0,1fr);grid-template-columns:repeat(7,minmax(0,1fr));min-height:0;display:grid;overflow:hidden auto}._9MUeuG_highlightCell{box-sizing:border-box;min-width:0;min-height:0}._9MUeuG_weekContent{min-height:100%;display:flex;position:relative}._9MUeuG_week:last-of-type{border-bottom:0}._9MUeuG_day{border-right:1px solid var(--wt-line);user-select:none;cursor:pointer;touch-action:none;flex:1 1 0;min-width:0;min-height:0;padding:4px 5px 5px;transition:background .12s;position:relative}._9MUeuG_weekend{background:color-mix(in srgb, var(--wt-text) 5%, var(--wt-bg))}._9MUeuG_selectedDay{background:color-mix(in srgb, var(--wt-accent) 15%, transparent);box-shadow:inset 0 0 0 1px var(--wt-accent)}._9MUeuG_dayNumber{z-index:2;min-width:24px;height:24px;color:var(--wt-text);background:var(--wt-bg);font-variant-numeric:tabular-nums;border:0;border-radius:999px;justify-content:flex-start;align-items:center;gap:2px;margin:0 0 0 1px;padding:0 5px;display:inline-flex;position:sticky;top:0}._9MUeuG_week ._9MUeuG_dayNumber{letter-spacing:-.01em;font-size:14px;font-weight:600;line-height:1}._9MUeuG_dayNumber small{color:var(--wt-muted);font-size:10px;font-weight:400}._9MUeuG_events{z-index:1;pointer-events:none;grid-template-columns:repeat(7,minmax(0,1fr));grid-auto-rows:20px;align-content:start;gap:3px;padding-top:30px;display:grid;position:absolute;top:0;left:0;right:0}._9MUeuG_events ._9MUeuG_bar:hover{filter:brightness(.96)}._9MUeuG_events ._9MUeuG_bar{pointer-events:auto;white-space:nowrap;text-overflow:ellipsis;text-align:left;cursor:pointer;min-width:0;color:var(--wt-text);border-radius:4px;margin:0 3px;padding:0 5px;font-size:11px;line-height:18px;overflow:hidden}._9MUeuG_barUnit{border:1px solid color-mix(in srgb, var(--wt-accent) 30%, transparent);border-left:3px solid var(--wt-accent);background:color-mix(in srgb, var(--wt-accent) 12%, var(--wt-bg))}._9MUeuG_barTask{border:1px solid color-mix(in srgb, var(--wt-task) 26%, transparent);border-left:3px solid var(--wt-task);background:color-mix(in srgb, var(--wt-task) 10%, var(--wt-bg))}._9MUeuG_barUnverified{border:1px dashed color-mix(in srgb, var(--wt-task) 45%, transparent);border-left:3px solid var(--wt-task);background:color-mix(in srgb, var(--wt-task) 6%, var(--wt-bg))}._9MUeuG_readOnlyTag{border:1px solid var(--wt-line);color:var(--wt-muted);white-space:nowrap;border-radius:999px;flex:none;align-self:center;padding:2px 8px;font-size:11px}._9MUeuG_error{color:var(--dsw-alias-state-error-primary);overflow-wrap:anywhere;font-size:12px;line-height:1.7}._9MUeuG_notice{border:1px solid var(--dsw-alias-border-l2);color:var(--dsw-alias-label-secondary);border-radius:7px;padding:8px 12px;font-size:11px;line-height:1.7}._9MUeuG_dialog{max-width:94vw;width:min(850px,94vw)!important}._9MUeuG_dialogNarrow{max-width:92vw;width:min(420px,92vw)!important}._9MUeuG_taskDialog{max-width:94vw;font-size:12px;line-height:1.5;width:min(960px,94vw)!important}._9MUeuG_taskDialog button{font-size:12px;line-height:18px}._9MUeuG_taskDialog button:not(._9MUeuG_bugTitle){white-space:nowrap}._9MUeuG_bugs{border-top:1px solid var(--dsw-alias-border-l2);margin-top:16px;padding-top:12px}._9MUeuG_bugToolbar{justify-content:space-between;align-items:center;gap:16px;margin-bottom:10px;display:flex}._9MUeuG_bugColumns{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;display:grid}._9MUeuG_bugColumns[data-readonly]{grid-template-columns:minmax(0,1fr)}._9MUeuG_bugPanel{border:1px solid var(--dsw-alias-border-l2);border-radius:10px;flex-direction:column;min-width:0;height:clamp(220px,34vh,360px);display:flex;overflow:hidden}._9MUeuG_bugPanelHeading{box-sizing:border-box;background:var(--dsw-alias-interactive-bg-hover);border-bottom:1px solid var(--dsw-alias-border-l2);flex-wrap:wrap;flex:none;justify-content:space-between;align-items:center;gap:4px 8px;min-height:38px;padding:6px 12px;display:flex}._9MUeuG_bugPanelHeading h4{margin:0;font-size:12px;font-weight:600}._9MUeuG_bugPanelHeading small{color:var(--dsw-alias-label-secondary);margin-left:4px;font-size:11px;font-weight:400}._9MUeuG_bugEmpty{min-height:100px;color:var(--dsw-alias-label-secondary);flex:1;place-content:center;margin:0;padding:20px;font-size:12px;display:grid}._9MUeuG_bugHeading{justify-content:space-between;align-items:center;gap:8px;display:flex}._9MUeuG_bugHeading h3,._9MUeuG_bugHeading h4{margin:0;font-size:13px;font-weight:600}._9MUeuG_bugHeading h4{font-size:12px}._9MUeuG_bugHeading small{color:var(--dsw-alias-label-secondary);margin-left:4px;font-weight:400}._9MUeuG_bugList{scrollbar-width:thin;scrollbar-gutter:stable;overscroll-behavior-y:contain;flex:1;min-height:0;margin:0;padding:0 12px;list-style:none;overflow-y:auto}._9MUeuG_bugRow{border-bottom:1px solid var(--dsw-alias-border-l2);align-items:center;gap:8px;padding:11px 0;display:flex}._9MUeuG_bugRow:last-child{border-bottom:0}._9MUeuG_bugTitle{text-align:left;min-width:0;color:var(--dsw-alias-label-primary);cursor:default;background:0 0;border:0;flex:1;gap:3px;padding:0;display:grid}._9MUeuG_bugTitle span{overflow-wrap:anywhere;font-size:12px;line-height:1.5}._9MUeuG_bugTitle small,._9MUeuG_bugParent{color:var(--dsw-alias-label-secondary);font-size:11px}._9MUeuG_bugStatus{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-secondary);border-radius:4px;flex:none;padding:2px 7px;font-size:11px}._9MUeuG_bugSearch{flex:0 400px;align-items:center;gap:8px;min-width:0;margin:0;display:flex}._9MUeuG_form ._9MUeuG_bugSearch input{flex:1;width:0;min-width:0;padding:6px 9px}._9MUeuG_bugSearch>button,._9MUeuG_bugHeading>button,._9MUeuG_bugRow>button:not(._9MUeuG_bugTitle){white-space:nowrap;flex:none}._9MUeuG_bugParent{align-items:center;gap:6px;display:inline-flex}@media (width<=760px){._9MUeuG_bugColumns{grid-template-columns:minmax(0,1fr)}._9MUeuG_bugPanel{height:220px}._9MUeuG_bugToolbar{flex-wrap:wrap;gap:8px}._9MUeuG_bugSearch{flex-basis:100%}}._9MUeuG_form{color:var(--dsw-alias-label-primary);max-height:68vh;padding:6px;font-size:12px;line-height:1.5;overflow-y:auto}._9MUeuG_form input:not([type=checkbox]),._9MUeuG_form select{box-sizing:border-box;width:100%;min-width:0;font:inherit;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-base);color:var(--dsw-alias-label-primary);border-radius:7px;padding:8px 10px;font-size:12px}._9MUeuG_form input:read-only{opacity:.75}._9MUeuG_form label{color:var(--dsw-alias-label-secondary);gap:6px;font-size:11px;display:grid}._9MUeuG_twoColumns{grid-template-columns:1fr 1fr;gap:12px;margin:12px 0;display:grid}._9MUeuG_ranges{gap:8px;margin:8px 0;display:grid}._9MUeuG_rangeRow{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto auto;align-items:center;gap:8px;display:grid}._9MUeuG_rangeRow small{color:var(--dsw-alias-label-secondary);white-space:nowrap;font-variant-numeric:tabular-nums;font-size:11px}._9MUeuG_rangeRow>button{color:var(--dsw-alias-state-error-primary);background:0 0;border:0;padding:0 2px;font-size:11px}._9MUeuG_rangeRow>button._9MUeuG_danger{color:var(--wt-bg);background:var(--dsw-alias-state-error-primary);border-radius:4px;padding:1px 6px;font-weight:600}._9MUeuG_addRange{border:1px dashed var(--dsw-alias-border-l2);color:var(--dsw-alias-state-business-primary);background:0 0;border-radius:7px;justify-self:start;margin-bottom:14px;padding:6px 10px;font-size:12px}._9MUeuG_unitSummary{border-bottom:1px solid var(--dsw-alias-border-l2);align-items:center;gap:12px;padding-bottom:10px;font-size:12px;display:flex}._9MUeuG_unitSummary span{color:var(--dsw-alias-label-secondary)}._9MUeuG_unitSummary button{margin-left:auto}._9MUeuG_stageHeading{justify-content:space-between;align-items:center;margin-top:18px;display:flex}._9MUeuG_stageHeading h3{margin:0;font-size:14px;line-height:1.5}._9MUeuG_stageHeading span{color:var(--dsw-alias-label-secondary);font-size:11px}._9MUeuG_stageHeading b{color:var(--dsw-alias-state-business-primary)}._9MUeuG_stages{gap:10px;margin-bottom:18px;display:grid}._9MUeuG_stageRow{grid-template-columns:130px minmax(0,1fr);gap:12px;display:grid}._9MUeuG_result{border-bottom:1px solid var(--dsw-alias-border-l2);gap:6px;padding:10px 0;display:grid}._9MUeuG_result strong{font-size:12px;font-weight:550;line-height:1.6}._9MUeuG_result small{color:var(--dsw-alias-label-secondary);font-size:11px}._9MUeuG_result button{color:var(--dsw-alias-state-business-primary);background:0 0;border:0;justify-self:start;padding:0;font-size:11px}@media (width<=1000px){._9MUeuG_page{padding:8px 10px}._9MUeuG_toolbar h2{font-size:18px}}@media (width<=720px){._9MUeuG_toolbar{flex-wrap:wrap;align-items:center}._9MUeuG_period{gap:6px 12px}._9MUeuG_navigation{gap:4px}._9MUeuG_legend small{display:none}._9MUeuG_twoColumns{grid-template-columns:1fr}._9MUeuG_stageRow{grid-template-columns:100px minmax(0,1fr)}._9MUeuG_rangeRow{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)}}@media (prefers-reduced-motion:reduce){._9MUeuG_day{transition:none}}._9MUeuG_userPicker{--assignee-picker-min-width:150px;--assignee-dropdown-width:280px;align-items:center}._9MUeuG_events ._9MUeuG_bar[draggable=true]{cursor:grab}._9MUeuG_events ._9MUeuG_bar[draggable=true]:active{cursor:grabbing}._9MUeuG_events ._9MUeuG_bar{align-items:center;gap:4px;padding-left:9px;padding-right:9px;display:flex;position:relative}._9MUeuG_barLabel{white-space:nowrap;text-overflow:ellipsis;flex:1;min-width:0;display:block;overflow:hidden}._9MUeuG_taskBugBadge{box-sizing:border-box;background:var(--dsw-alias-state-error-primary,#d93025);color:#fff;font-variant-numeric:tabular-nums;border-radius:7px;flex:none;justify-content:center;align-items:center;min-width:14px;height:14px;padding:0 4px;font-size:10px;font-weight:600;line-height:14px;display:inline-flex}._9MUeuG_resizeHandle{cursor:ew-resize;opacity:0;width:14px;position:absolute;top:0;bottom:0}._9MUeuG_resizeHandle:after{content:\"\";background:currentColor;border-radius:2px;width:2px;position:absolute;top:4px;bottom:4px;left:6px}._9MUeuG_bar:hover ._9MUeuG_resizeHandle{opacity:.65}._9MUeuG_resizeStart{left:0}._9MUeuG_resizeEnd{right:0}._9MUeuG_previewStatus{height:22px;color:var(--wt-muted);white-space:nowrap;text-overflow:ellipsis;flex:none;font-size:11px;line-height:22px;overflow:hidden}._9MUeuG_previewUnitDay{background:color-mix(in srgb, var(--wt-accent) 18%, transparent);box-shadow:inset 0 2px var(--wt-accent), inset 0 -2px var(--wt-accent)}._9MUeuG_previewTaskDay{background:color-mix(in srgb, var(--wt-task) 18%, transparent);box-shadow:inset 0 2px var(--wt-task), inset 0 -2px var(--wt-task)}._9MUeuG_highlightCell._9MUeuG_previewStartDay{border-left:2px solid var(--wt-accent)}._9MUeuG_highlightCell._9MUeuG_previewEndDay{border-right:2px solid var(--wt-accent)}._9MUeuG_previewTaskDay._9MUeuG_previewStartDay{border-left-color:var(--wt-task)}._9MUeuG_previewTaskDay._9MUeuG_previewEndDay{border-right-color:var(--wt-task)}._9MUeuG_previewing ._9MUeuG_bar{opacity:.5}._9MUeuG_day[data-highlighted] ._9MUeuG_dayNumber{font-weight:700}._9MUeuG_previewDisabledDay{cursor:not-allowed;opacity:.6;background:color-mix(in srgb, var(--dsw-alias-state-error-primary) 12%, transparent);box-shadow:inset 0 0 0 1px var(--dsw-alias-state-error-primary)}._9MUeuG_previewDisabledStatus{color:var(--dsw-alias-state-error-primary)}._9MUeuG_itemLink{color:var(--dsw-alias-label-secondary);justify-self:start;align-items:center;gap:6px;font-size:11px;display:inline-flex}";
+		const css = "._9MUeuG_page{--wt-accent:var(--dsw-alias-state-business-primary);--wt-task:var(--dsw-alias-state-success-primary,var(--dsw-alias-state-business-primary));--wt-line:var(--dsw-alias-border-l2);--wt-bg:var(--dsw-alias-bg-base);--wt-text:var(--dsw-alias-label-primary);--wt-muted:var(--dsw-alias-label-secondary);color:var(--wt-text);box-sizing:border-box;flex-direction:column;flex:1 1 0;min-height:0;padding:10px 14px;display:flex;overflow:hidden}._9MUeuG_toolbar{flex:none;justify-content:space-between;align-items:center;gap:12px;width:100%;max-width:1280px;margin:0 auto 8px;display:flex}._9MUeuG_period{flex-wrap:wrap;align-items:center;gap:16px;display:flex}._9MUeuG_toolbar h2{font-variant-numeric:tabular-nums;letter-spacing:-.04em;margin:0;font-size:18px;font-weight:600;line-height:1.4}._9MUeuG_toolbar h2>span{color:var(--wt-muted);padding:0 6px}._9MUeuG_page button,._9MUeuG_form button{cursor:pointer;font:inherit}._9MUeuG_navigation{flex-wrap:wrap;gap:6px;display:flex}._9MUeuG_navigation button,._9MUeuG_unitSummary button{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-base);color:var(--dsw-alias-label-primary);border-radius:6px;padding:4px 8px;font-size:12px;line-height:1.5}._9MUeuG_navigation button:hover{background:var(--dsw-alias-interactive-bg-hover)}._9MUeuG_page button:focus-visible,._9MUeuG_form button:focus-visible,._9MUeuG_form input:focus-visible,._9MUeuG_page input:focus-visible,._9MUeuG_form select:focus-visible{outline:2px solid var(--dsw-alias-state-business-primary);outline-offset:2px}._9MUeuG_legend{color:var(--wt-muted);align-items:center;gap:5px;margin:0;font-size:11px;display:flex}._9MUeuG_legend small{margin-left:auto;font-size:11px}._9MUeuG_storyDot,._9MUeuG_taskDot{background:var(--wt-accent);border-radius:2px;width:8px;height:8px;display:inline-block}._9MUeuG_taskDot{background:var(--dsw-alias-state-success-primary,var(--wt-text));border-radius:50%;margin-left:12px}._9MUeuG_help{color:var(--dsw-alias-label-secondary);margin:8px 0 12px;font-size:11px;line-height:1.7}._9MUeuG_calendarArea{flex-direction:column;flex:1;width:100%;min-width:0;max-width:1280px;min-height:0;max-height:640px;margin:auto;display:flex}._9MUeuG_dragging ._9MUeuG_bar{pointer-events:none}._9MUeuG_calendar{border:1px solid var(--wt-line);background:var(--wt-bg);border-radius:12px;flex:1;grid-template-rows:auto repeat(5,minmax(0,1fr));grid-template-columns:repeat(7,minmax(0,1fr));min-height:0;display:grid;overflow:hidden}._9MUeuG_weekHeader{scrollbar-gutter:stable;scrollbar-width:thin;background:var(--dsw-alias-interactive-bg-hover);grid-column:1/-1;grid-template-columns:repeat(7,minmax(0,1fr));display:grid;overflow:hidden auto}._9MUeuG_weekday{text-align:center;color:var(--wt-muted);background:var(--dsw-alias-interactive-bg-hover);border-bottom:1px solid var(--wt-line);padding:5px 8px;font-size:11px}._9MUeuG_week{border-bottom:1px solid var(--wt-line);grid-column:1/-1;grid-template-rows:minmax(0,1fr);grid-template-columns:minmax(0,1fr);min-height:0;display:grid;overflow:hidden}._9MUeuG_weekScroll{scrollbar-gutter:stable;scrollbar-width:thin;overscroll-behavior-y:contain;grid-area:1/1;min-height:0;overflow:hidden auto}._9MUeuG_weekScroll:focus-visible{outline:2px solid var(--wt-accent);outline-offset:-2px}._9MUeuG_weekHighlights{scrollbar-gutter:stable;scrollbar-width:thin;pointer-events:none;z-index:3;grid-area:1/1;grid-template-rows:minmax(0,1fr);grid-template-columns:repeat(7,minmax(0,1fr));min-height:0;display:grid;overflow:hidden auto}._9MUeuG_highlightCell{box-sizing:border-box;min-width:0;min-height:0}._9MUeuG_weekContent{min-height:100%;display:flex;position:relative}._9MUeuG_week:last-of-type{border-bottom:0}._9MUeuG_day{border-right:1px solid var(--wt-line);user-select:none;cursor:pointer;touch-action:none;flex:1 1 0;min-width:0;min-height:0;padding:4px 5px 5px;transition:background .12s;position:relative}._9MUeuG_weekend{background:color-mix(in srgb, var(--wt-text) 5%, var(--wt-bg))}._9MUeuG_selectedDay{background:color-mix(in srgb, var(--wt-accent) 15%, transparent);box-shadow:inset 0 0 0 1px var(--wt-accent)}._9MUeuG_dayNumber{z-index:2;min-width:24px;height:24px;color:var(--wt-text);background:var(--wt-bg);font-variant-numeric:tabular-nums;border:0;border-radius:999px;justify-content:flex-start;align-items:center;gap:2px;margin:0 0 0 1px;padding:0 5px;display:inline-flex;position:sticky;top:0}._9MUeuG_week ._9MUeuG_dayNumber{letter-spacing:-.01em;font-size:14px;font-weight:600;line-height:1}._9MUeuG_dayNumber small{color:var(--wt-muted);font-size:10px;font-weight:400}._9MUeuG_events{z-index:1;pointer-events:none;grid-template-columns:repeat(7,minmax(0,1fr));grid-auto-rows:20px;align-content:start;gap:3px;padding-top:30px;display:grid;position:absolute;top:0;left:0;right:0}._9MUeuG_events ._9MUeuG_bar:hover{filter:brightness(.96)}._9MUeuG_events ._9MUeuG_bar{pointer-events:auto;white-space:nowrap;text-overflow:ellipsis;text-align:left;cursor:pointer;min-width:0;color:var(--wt-text);border-radius:4px;margin:0 3px;padding:0 5px;font-size:11px;line-height:18px;overflow:hidden}._9MUeuG_barUnit{border:1px solid color-mix(in srgb, var(--wt-accent) 30%, transparent);border-left:3px solid var(--wt-accent);background:color-mix(in srgb, var(--wt-accent) 12%, var(--wt-bg))}._9MUeuG_barTask{border:1px solid color-mix(in srgb, var(--wt-task) 26%, transparent);border-left:3px solid var(--wt-task);background:color-mix(in srgb, var(--wt-task) 10%, var(--wt-bg))}._9MUeuG_barUnverified{border:1px dashed color-mix(in srgb, var(--wt-task) 45%, transparent);border-left:3px solid var(--wt-task);background:color-mix(in srgb, var(--wt-task) 6%, var(--wt-bg))}._9MUeuG_readOnlyTag{border:1px solid var(--wt-line);color:var(--wt-muted);white-space:nowrap;border-radius:999px;flex:none;align-self:center;padding:2px 8px;font-size:11px}._9MUeuG_error{color:var(--dsw-alias-state-error-primary);overflow-wrap:anywhere;font-size:12px;line-height:1.7}._9MUeuG_notice{border:1px solid var(--dsw-alias-border-l2);color:var(--dsw-alias-label-secondary);border-radius:7px;padding:8px 12px;font-size:11px;line-height:1.7}._9MUeuG_dialog{max-width:94vw;width:min(850px,94vw)!important}._9MUeuG_dialogNarrow{max-width:92vw;width:min(420px,92vw)!important}._9MUeuG_taskDialog{max-width:94vw;font-size:12px;line-height:1.5;width:min(960px,94vw)!important}._9MUeuG_taskDialog button{font-size:12px;line-height:18px}._9MUeuG_taskDialog button:not(._9MUeuG_bugTitle){white-space:nowrap}._9MUeuG_bugs{border-top:1px solid var(--dsw-alias-border-l2);margin-top:16px;padding-top:12px}._9MUeuG_bugToolbar{justify-content:space-between;align-items:center;gap:16px;margin-bottom:10px;display:flex}._9MUeuG_bugColumns{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;display:grid}._9MUeuG_bugColumns[data-readonly]{grid-template-columns:minmax(0,1fr)}._9MUeuG_bugPanel{border:1px solid var(--dsw-alias-border-l2);border-radius:10px;flex-direction:column;min-width:0;height:clamp(220px,34vh,360px);display:flex;overflow:hidden}._9MUeuG_bugPanelHeading{box-sizing:border-box;background:var(--dsw-alias-interactive-bg-hover);border-bottom:1px solid var(--dsw-alias-border-l2);flex-wrap:wrap;flex:none;justify-content:space-between;align-items:center;gap:4px 8px;min-height:38px;padding:6px 12px;display:flex}._9MUeuG_bugPanelHeading h4{margin:0;font-size:12px;font-weight:600}._9MUeuG_bugPanelHeading small{color:var(--dsw-alias-label-secondary);margin-left:4px;font-size:11px;font-weight:400}._9MUeuG_bugEmpty{min-height:100px;color:var(--dsw-alias-label-secondary);flex:1;place-content:center;margin:0;padding:20px;font-size:12px;display:grid}._9MUeuG_bugHeading{justify-content:space-between;align-items:center;gap:8px;display:flex}._9MUeuG_bugHeading h3,._9MUeuG_bugHeading h4{margin:0;font-size:13px;font-weight:600}._9MUeuG_bugHeading h4{font-size:12px}._9MUeuG_bugHeading small{color:var(--dsw-alias-label-secondary);margin-left:4px;font-weight:400}._9MUeuG_bugList{scrollbar-width:thin;scrollbar-gutter:stable;overscroll-behavior-y:contain;flex:1;min-height:0;margin:0;padding:0 12px;list-style:none;overflow-y:auto}._9MUeuG_bugRow{border-bottom:1px solid var(--dsw-alias-border-l2);align-items:center;gap:8px;padding:11px 0;display:flex}._9MUeuG_bugRow:last-child{border-bottom:0}._9MUeuG_bugTitle{text-align:left;min-width:0;color:var(--dsw-alias-label-primary);cursor:default;background:0 0;border:0;flex:1;gap:3px;padding:0;display:grid}._9MUeuG_bugTitle span{overflow-wrap:anywhere;font-size:12px;line-height:1.5}._9MUeuG_bugTitle small,._9MUeuG_bugParent{color:var(--dsw-alias-label-secondary);font-size:11px}._9MUeuG_bugStatus{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-secondary);border-radius:4px;flex:none;padding:2px 7px;font-size:11px}._9MUeuG_bugSearch{flex:0 400px;align-items:center;gap:8px;min-width:0;margin:0;display:flex}._9MUeuG_form ._9MUeuG_bugSearch input{flex:1;width:0;min-width:0;padding:6px 9px}._9MUeuG_bugSearch>button,._9MUeuG_bugHeading>button,._9MUeuG_bugRow>button:not(._9MUeuG_bugTitle){white-space:nowrap;flex:none}._9MUeuG_bugParent{align-items:center;gap:6px;display:inline-flex}@media (width<=760px){._9MUeuG_bugColumns{grid-template-columns:minmax(0,1fr)}._9MUeuG_bugPanel{height:220px}._9MUeuG_bugToolbar{flex-wrap:wrap;gap:8px}._9MUeuG_bugSearch{flex-basis:100%}}._9MUeuG_form{color:var(--dsw-alias-label-primary);max-height:68vh;padding:6px;font-size:12px;line-height:1.5;overflow-y:auto}._9MUeuG_form input:not([type=checkbox]),._9MUeuG_form select{box-sizing:border-box;width:100%;min-width:0;font:inherit;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-base);color:var(--dsw-alias-label-primary);border-radius:7px;padding:8px 10px;font-size:12px}._9MUeuG_form input:read-only{opacity:.75}._9MUeuG_form label{color:var(--dsw-alias-label-secondary);gap:6px;font-size:11px;display:grid}._9MUeuG_twoColumns{grid-template-columns:1fr 1fr;gap:12px;margin:12px 0;display:grid}._9MUeuG_ranges{gap:8px;margin:8px 0;display:grid}._9MUeuG_rangeRow{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto auto;align-items:center;gap:8px;display:grid}._9MUeuG_rangeRow small{color:var(--dsw-alias-label-secondary);white-space:nowrap;font-variant-numeric:tabular-nums;font-size:11px}._9MUeuG_rangeRow>button{color:var(--dsw-alias-state-error-primary);background:0 0;border:0;padding:0 2px;font-size:11px}._9MUeuG_rangeRow>button._9MUeuG_danger{color:var(--wt-bg);background:var(--dsw-alias-state-error-primary);border-radius:4px;padding:1px 6px;font-weight:600}._9MUeuG_addRange{border:1px dashed var(--dsw-alias-border-l2);color:var(--dsw-alias-state-business-primary);background:0 0;border-radius:7px;justify-self:start;margin-bottom:14px;padding:6px 10px;font-size:12px}._9MUeuG_unitSummary{border-bottom:1px solid var(--dsw-alias-border-l2);align-items:center;gap:12px;padding-bottom:10px;font-size:12px;display:flex}._9MUeuG_unitSummary span{color:var(--dsw-alias-label-secondary)}._9MUeuG_unitSummary button{margin-left:auto}._9MUeuG_stageHeading{justify-content:space-between;align-items:center;margin-top:18px;display:flex}._9MUeuG_stageHeading h3{margin:0;font-size:14px;line-height:1.5}._9MUeuG_stageHeading span{color:var(--dsw-alias-label-secondary);font-size:11px}._9MUeuG_stageHeading b{color:var(--dsw-alias-state-business-primary)}._9MUeuG_stages{gap:10px;margin-bottom:18px;display:grid}._9MUeuG_stageRow{grid-template-columns:130px minmax(0,1fr);gap:12px;display:grid}._9MUeuG_result{border-bottom:1px solid var(--dsw-alias-border-l2);gap:6px;padding:10px 0;display:grid}._9MUeuG_reportDialog{width:min(1180px,100vw - 48px)!important;max-width:calc(100vw - 48px)!important}._9MUeuG_reportForm{max-height:68vh}._9MUeuG_reportToolbar{border-bottom:1px solid var(--dsw-alias-border-l2);justify-content:space-between;align-items:center;gap:16px;padding:0 0 12px;display:flex;overflow-x:auto}._9MUeuG_reportWeekNav{border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-base);border-radius:7px;flex:none;align-items:center;height:32px;display:flex}._9MUeuG_reportToolbar svg{fill:none;stroke:currentColor;stroke-width:1.5px;stroke-linecap:round;stroke-linejoin:round;flex:none;width:14px;height:14px}._9MUeuG_reportToolbar ._9MUeuG_reportNavButton,._9MUeuG_reportToolbar ._9MUeuG_reportToolbarButton{min-width:0;height:28px;color:var(--dsw-alias-label-secondary);font:inherit;white-space:nowrap;cursor:pointer;background:0 0;border:0;border-radius:5px;flex:none;justify-content:center;align-items:center;gap:5px;padding:0 9px;font-size:12px;line-height:1;display:inline-flex}._9MUeuG_reportToolbar ._9MUeuG_reportNavButton{width:28px;margin:0 2px;padding:0}._9MUeuG_reportToolbar button:hover:not(:disabled),._9MUeuG_reportWeekPicker:hover{color:var(--dsw-alias-label-primary);background:var(--dsw-alias-interactive-bg-hover)}._9MUeuG_reportToolbar button:disabled{cursor:default;opacity:.45}._9MUeuG_reportToolbar button[aria-pressed=true]{color:var(--dsw-alias-state-business-primary);background:color-mix(in srgb, var(--dsw-alias-state-business-primary) 8%, transparent)}._9MUeuG_reportWeekNav ._9MUeuG_reportWeekPicker{border-right:1px solid var(--dsw-alias-border-l2);border-left:1px solid var(--dsw-alias-border-l2);height:28px;color:var(--dsw-alias-label-primary);font-variant-numeric:tabular-nums;white-space:nowrap;cursor:pointer;align-items:center;gap:8px;padding:0 10px;font-size:12px;display:flex;position:relative}._9MUeuG_reportWeekPicker>svg{color:var(--dsw-alias-label-secondary)}._9MUeuG_reportWeekPicker b{color:var(--dsw-alias-label-tertiary);margin:0 3px;font-weight:400}._9MUeuG_reportWeekPicker input[type=date]{opacity:0;cursor:pointer;width:100%;height:100%;padding:0;position:absolute;inset:0}._9MUeuG_reportWeekPicker:focus-within{outline:2px solid var(--dsw-alias-state-business-primary);outline-offset:2px;border-radius:3px}._9MUeuG_reportWeekActions{flex:none;gap:5px;display:flex}._9MUeuG_reportTotal{color:var(--dsw-alias-label-secondary);align-self:center;margin-right:auto;font-size:12px}._9MUeuG_reportTableScroll{overflow-x:auto}._9MUeuG_reportTable{border-collapse:collapse;table-layout:fixed;text-align:left;width:100%;min-width:960px;font-size:12px}._9MUeuG_reportTable th{color:var(--dsw-alias-label-secondary);white-space:nowrap;font-size:11px;font-weight:500}._9MUeuG_reportTable th,._9MUeuG_reportTable td{border-bottom:1px solid var(--dsw-alias-border-l2);vertical-align:top;padding:10px 8px}._9MUeuG_reportTable th:first-child{width:32px}._9MUeuG_reportTable th:nth-child(2){width:30%}._9MUeuG_reportTable th:nth-child(3){width:78px}._9MUeuG_reportTable th:nth-child(4){width:75px}._9MUeuG_reportTable th:nth-child(5){width:86px}._9MUeuG_reportTable th:nth-child(6),._9MUeuG_reportTable th:nth-child(7){width:134px}._9MUeuG_reportTable strong{overflow-wrap:anywhere;font-weight:500;line-height:1.6;display:block}._9MUeuG_reportTable small{color:var(--dsw-alias-label-secondary);font-size:10px}._9MUeuG_reportTable p{margin:4px 0 0}._9MUeuG_reportTable input[type=checkbox]{margin-top:6px}._9MUeuG_reportTable ._9MUeuG_itemLink{margin:3px 0;font-size:11px}._9MUeuG_requirementPicker{gap:10px;display:grid}._9MUeuG_requirementPicker>._9MUeuG_help{margin:0}._9MUeuG_requirementResults{gap:6px;max-height:330px;display:grid;overflow-y:auto}._9MUeuG_requirementResult{align-items:center;gap:6px;display:flex}._9MUeuG_requirementChoice{border:1px solid var(--dsw-alias-border-l2);min-width:0;color:var(--dsw-alias-label-primary);background:var(--dsw-alias-bg-base);text-align:left;border-radius:8px;flex:1;gap:5px;padding:10px;display:grid}._9MUeuG_requirementChoice[aria-pressed=true]{border-color:var(--dsw-alias-state-business-primary);background:color-mix(in srgb, var(--dsw-alias-state-business-primary) 9%, var(--dsw-alias-bg-base))}._9MUeuG_requirementChoice strong{overflow-wrap:anywhere;font-size:12px;font-weight:500;line-height:1.5}._9MUeuG_requirementChoice span{color:var(--dsw-alias-label-secondary);font-size:11px;line-height:1.5}._9MUeuG_result strong{font-size:12px;font-weight:550;line-height:1.6}._9MUeuG_result small{color:var(--dsw-alias-label-secondary);font-size:11px}._9MUeuG_result button{color:var(--dsw-alias-state-business-primary);background:0 0;border:0;justify-self:start;padding:0;font-size:11px}@media (width<=1000px){._9MUeuG_page{padding:8px 10px}._9MUeuG_toolbar h2{font-size:18px}}@media (width<=720px){._9MUeuG_toolbar{flex-wrap:wrap;align-items:center}._9MUeuG_period{gap:6px 12px}._9MUeuG_navigation{gap:4px}._9MUeuG_legend small{display:none}._9MUeuG_twoColumns{grid-template-columns:1fr}._9MUeuG_stageRow{grid-template-columns:100px minmax(0,1fr)}._9MUeuG_rangeRow{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)}}@media (prefers-reduced-motion:reduce){._9MUeuG_day{transition:none}}._9MUeuG_userPicker{--assignee-picker-min-width:150px;--assignee-dropdown-width:280px;align-items:center}._9MUeuG_events ._9MUeuG_bar[draggable=true]{cursor:grab}._9MUeuG_events ._9MUeuG_bar[draggable=true]:active{cursor:grabbing}._9MUeuG_events ._9MUeuG_bar{align-items:center;gap:4px;padding-left:9px;padding-right:9px;display:flex;position:relative}._9MUeuG_barLabel{white-space:nowrap;text-overflow:ellipsis;flex:1;min-width:0;display:block;overflow:hidden}._9MUeuG_taskBugBadge{box-sizing:border-box;background:var(--dsw-alias-state-error-primary,#d93025);color:#fff;font-variant-numeric:tabular-nums;border-radius:7px;flex:none;justify-content:center;align-items:center;min-width:14px;height:14px;padding:0 4px;font-size:10px;font-weight:600;line-height:14px;display:inline-flex}._9MUeuG_resizeHandle{cursor:ew-resize;opacity:0;width:14px;position:absolute;top:0;bottom:0}._9MUeuG_resizeHandle:after{content:\"\";background:currentColor;border-radius:2px;width:2px;position:absolute;top:4px;bottom:4px;left:6px}._9MUeuG_bar:hover ._9MUeuG_resizeHandle{opacity:.65}._9MUeuG_resizeStart{left:0}._9MUeuG_resizeEnd{right:0}._9MUeuG_previewStatus{height:22px;color:var(--wt-muted);white-space:nowrap;text-overflow:ellipsis;flex:none;font-size:11px;line-height:22px;overflow:hidden}._9MUeuG_previewUnitDay{background:color-mix(in srgb, var(--wt-accent) 18%, transparent);box-shadow:inset 0 2px var(--wt-accent), inset 0 -2px var(--wt-accent)}._9MUeuG_previewTaskDay{background:color-mix(in srgb, var(--wt-task) 18%, transparent);box-shadow:inset 0 2px var(--wt-task), inset 0 -2px var(--wt-task)}._9MUeuG_highlightCell._9MUeuG_previewStartDay{border-left:2px solid var(--wt-accent)}._9MUeuG_highlightCell._9MUeuG_previewEndDay{border-right:2px solid var(--wt-accent)}._9MUeuG_previewTaskDay._9MUeuG_previewStartDay{border-left-color:var(--wt-task)}._9MUeuG_previewTaskDay._9MUeuG_previewEndDay{border-right-color:var(--wt-task)}._9MUeuG_previewing ._9MUeuG_bar{opacity:.5}._9MUeuG_day[data-highlighted] ._9MUeuG_dayNumber{font-weight:700}._9MUeuG_previewDisabledDay{cursor:not-allowed;opacity:.6;background:color-mix(in srgb, var(--dsw-alias-state-error-primary) 12%, transparent);box-shadow:inset 0 0 0 1px var(--dsw-alias-state-error-primary)}._9MUeuG_previewDisabledStatus{color:var(--dsw-alias-state-error-primary)}._9MUeuG_itemLink{color:var(--dsw-alias-label-secondary);justify-self:start;align-items:center;gap:6px;font-size:11px;display:inline-flex}";
 		const tagId = "@stephen1620/dsh-tomato-board/worktime.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
@@ -2655,6 +2655,21 @@ window.__ModuleLoader__.load({
 			"rangeRow": "_9MUeuG_rangeRow",
 			"ranges": "_9MUeuG_ranges",
 			"readOnlyTag": "_9MUeuG_readOnlyTag",
+			"reportDialog": "_9MUeuG_reportDialog",
+			"reportForm": "_9MUeuG_reportForm",
+			"reportNavButton": "_9MUeuG_reportNavButton",
+			"reportTable": "_9MUeuG_reportTable",
+			"reportTableScroll": "_9MUeuG_reportTableScroll",
+			"reportToolbar": "_9MUeuG_reportToolbar",
+			"reportToolbarButton": "_9MUeuG_reportToolbarButton",
+			"reportTotal": "_9MUeuG_reportTotal",
+			"reportWeekActions": "_9MUeuG_reportWeekActions",
+			"reportWeekNav": "_9MUeuG_reportWeekNav",
+			"reportWeekPicker": "_9MUeuG_reportWeekPicker",
+			"requirementChoice": "_9MUeuG_requirementChoice",
+			"requirementPicker": "_9MUeuG_requirementPicker",
+			"requirementResult": "_9MUeuG_requirementResult",
+			"requirementResults": "_9MUeuG_requirementResults",
 			"resizeEnd": "_9MUeuG_resizeEnd",
 			"resizeHandle": "_9MUeuG_resizeHandle",
 			"resizeStart": "_9MUeuG_resizeStart",
@@ -2909,6 +2924,546 @@ window.__ModuleLoader__.load({
 			});
 		}
 		//#endregion
+		//#region src/task-report-model.ts
+		/** Reporting weeks follow Monday–Sunday, independently of the calendar viewport. */
+		function reportWeek(day) {
+			return addDays(day, -(((/* @__PURE__ */ new Date(`${day}T00:00:00Z`)).getUTCDay() + 6) % 7));
+		}
+		/** At most two selected Tasks share one person-day, in half-day units. */
+		function suggestReportDays(tasks, start) {
+			const days = Object.fromEntries(tasks.map((task) => [task.itemKey, 0]));
+			const conflicts = [];
+			for (const date of datesBetween(start, addDays(start, 6))) {
+				const active = tasks.filter((task) => task.start <= date && date <= task.end);
+				if (active.length > 2) {
+					conflicts.push({
+						date,
+						itemKeys: active.map((task) => task.itemKey)
+					});
+					continue;
+				}
+				for (const task of active) days[task.itemKey] += active.length === 2 ? .5 : 1;
+			}
+			return {
+				days,
+				conflicts
+			};
+		}
+		//#endregion
+		//#region src/client/TaskReport.tsx
+		const today = () => new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Shanghai" }).format(/* @__PURE__ */ new Date());
+		const terminal = (status) => [
+			"工时核对",
+			"工时核对中",
+			"已完成",
+			"已取消",
+			"延期解决"
+		].includes(status);
+		const errorText$1 = (error) => error instanceof Error ? error.message : "报工失败";
+		const outcomeText = {
+			success: "报工成功",
+			skipped: "已报工，跳过",
+			failed: "未完成",
+			partial: "部分完成",
+			unknown: "结果待核对"
+		};
+		function TaskReport({ request, onClose, onSaved, onNotify }) {
+			const [week, setWeek] = (0, react.useState)(() => reportWeek(today()));
+			const end = addDays(week, 6);
+			const [version, setVersion] = (0, react.useState)(0);
+			const [tasks, setTasks] = (0, react.useState)([]);
+			const [selected, setSelected] = (0, react.useState)(/* @__PURE__ */ new Set());
+			const [drafts, setDrafts] = (0, react.useState)({});
+			const [results, setResults] = (0, react.useState)({});
+			const [loading, setLoading] = (0, react.useState)(true);
+			const [busy, setBusy] = (0, react.useState)(false);
+			const submitting = (0, react.useRef)(false);
+			const [error, setError] = (0, react.useState)("");
+			const [uncertain, setUncertain] = (0, react.useState)(false);
+			const [constraints, setConstraints] = (0, react.useState)({});
+			const selectedTasks = (0, react.useMemo)(() => tasks.filter((task) => selected.has(task.itemKey)), [tasks, selected]);
+			const suggestions = (0, react.useMemo)(() => {
+				const allocation = suggestReportDays(tasks.filter((task) => selected.has(task.itemKey) || [
+					"工时核对",
+					"工时核对中",
+					"已完成"
+				].includes(task.status)), week);
+				return {
+					...allocation,
+					conflicts: allocation.conflicts.filter((value) => value.itemKeys.some((key) => selected.has(key)))
+				};
+			}, [
+				tasks,
+				selected,
+				week
+			]);
+			const daysFor = (task) => Number(drafts[task.itemKey]?.days ?? suggestions.days[task.itemKey] ?? 0);
+			const startFor = (task) => drafts[task.itemKey]?.start ?? (task.actualStart || task.start);
+			const endFor = (task) => drafts[task.itemKey]?.end ?? (task.actualEnd || task.end);
+			const total = selectedTasks.reduce((sum, task) => sum + daysFor(task), 0);
+			const invalid = selectedTasks.some((task) => !Number.isFinite(daysFor(task)) || daysFor(task) <= 0 || !Number.isInteger(daysFor(task) * 2) || !startFor(task) || !endFor(task) || endFor(task) < startFor(task) || constraints.finishRange && (endFor(task) < constraints.finishRange[0] || endFor(task) > constraints.finishRange[1]) || constraints.daysMin != null && daysFor(task) < constraints.daysMin || constraints.daysMax != null && daysFor(task) > constraints.daysMax);
+			(0, react.useEffect)(() => {
+				const controller = new AbortController();
+				setLoading(true);
+				setError("");
+				setTasks([]);
+				setSelected(/* @__PURE__ */ new Set());
+				setDrafts({});
+				setResults({});
+				setUncertain(false);
+				Promise.all([request(`/history?start=${week}&end=${end}&assignee=currentUser()`, void 0, controller.signal), request("/report-options", void 0, controller.signal)]).then(([data, limits]) => {
+					if (controller.signal.aborted) return;
+					if (data.truncated) throw new Error("本周 Task 过多，未获取完整数据，请在番茄中报工");
+					setTasks(data.tasks);
+					setConstraints(limits);
+					setSelected(new Set(data.tasks.filter((task) => !terminal(task.status) && task.start >= week && task.end <= end).map((task) => task.itemKey)));
+				}).catch((error) => {
+					if (!controller.signal.aborted) setError(errorText$1(error));
+				}).finally(() => {
+					if (!controller.signal.aborted) setLoading(false);
+				});
+				return () => controller.abort();
+			}, [
+				week,
+				end,
+				version,
+				request
+			]);
+			function toggle(key) {
+				setSelected((current) => {
+					const next = new Set(current);
+					if (next.has(key)) next.delete(key);
+					else next.add(key);
+					return next;
+				});
+			}
+			function edit(key, field, value) {
+				setDrafts((current) => ({
+					...current,
+					[key]: {
+						...current[key],
+						[field]: value
+					}
+				}));
+			}
+			async function submit() {
+				if (submitting.current || !selectedTasks.length || invalid || suggestions.conflicts.length || uncertain) return;
+				submitting.current = true;
+				setBusy(true);
+				setError("");
+				const payload = selectedTasks.map((task) => ({
+					itemKey: task.itemKey,
+					expectedStatus: task.status,
+					expectedStart: task.start,
+					expectedEnd: task.end,
+					expectedActualDays: task.actualDays,
+					expectedActualStart: task.actualStart,
+					expectedActualEnd: task.actualEnd,
+					days: daysFor(task),
+					actualStart: startFor(task),
+					actualEnd: endFor(task)
+				}));
+				try {
+					const data = await request("/report", {
+						start: week,
+						end,
+						tasks: payload
+					});
+					setResults(Object.fromEntries(data.results.map((result) => [result.itemKey, result])));
+					setSelected(/* @__PURE__ */ new Set());
+					setTasks((current) => current.map((task) => {
+						const result = data.results.find((value) => value.itemKey === task.itemKey);
+						const input = payload.find((value) => value.itemKey === task.itemKey);
+						return result ? {
+							...task,
+							status: result.currentStatus || task.status,
+							...result.fieldsWritten && input ? {
+								actualDays: input.days,
+								actualStart: input.actualStart,
+								actualEnd: input.actualEnd
+							} : {}
+						} : task;
+					}));
+					setUncertain(data.results.some((result) => result.outcome === "unknown"));
+					const success = data.results.filter((result) => result.outcome === "success").length;
+					const failed = data.results.filter((result) => !["success", "skipped"].includes(result.outcome)).length;
+					onNotify(`报工完成：成功 ${success} 项${failed ? `，${failed} 项需处理` : ""}`, failed > 0);
+					if (!failed && data.results.length === payload.length) onClose();
+				} catch (error) {
+					setError(`未能确认提交结果，请刷新并核对各 Task 后再操作：${errorText$1(error)}`);
+					setUncertain(true);
+					onNotify("报工结果待核对，请刷新查看", true);
+				} finally {
+					submitting.current = false;
+					setBusy(false);
+					onSaved();
+				}
+			}
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Modal, {
+				open: true,
+				title: "一键报工",
+				closeLabel: "关闭",
+				className: worktime_module_css_default.reportDialog,
+				onClose: () => {
+					if (!busy) onClose();
+				},
+				footer: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+						className: worktime_module_css_default.reportTotal,
+						children: [
+							"已选 ",
+							selectedTasks.length,
+							" 项 · ",
+							Number.isFinite(total) ? total : 0,
+							" 人天"
+						]
+					}),
+					/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+						variant: "ghost",
+						disabled: busy,
+						onClick: onClose,
+						children: "关闭"
+					}),
+					/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
+						variant: "primary",
+						disabled: busy || loading || !selectedTasks.length || invalid || !!suggestions.conflicts.length || uncertain,
+						onClick: () => void submit(),
+						children: busy ? "正在报工…" : "确认工时并流转"
+					})
+				] }),
+				children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					className: `${worktime_module_css_default.form} ${worktime_module_css_default.reportForm}`,
+					children: [
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: worktime_module_css_default.reportToolbar,
+							role: "toolbar",
+							"aria-label": "报工周切换",
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: worktime_module_css_default.reportWeekNav,
+								children: [
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+										type: "button",
+										className: worktime_module_css_default.reportNavButton,
+										"aria-label": "上一周",
+										title: "上一周",
+										disabled: busy,
+										onClick: () => setWeek(addDays(week, -7)),
+										children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("svg", {
+											viewBox: "0 0 16 16",
+											"aria-hidden": "true",
+											children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "m10 4-4 4 4 4" })
+										})
+									}),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", {
+										className: worktime_module_css_default.reportWeekPicker,
+										children: [
+											/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("svg", {
+												viewBox: "0 0 16 16",
+												"aria-hidden": "true",
+												children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("rect", {
+													x: "2.5",
+													y: "3.5",
+													width: "11",
+													height: "10",
+													rx: "2"
+												}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M5 2v3m6-3v3M3 7h10" })]
+											}),
+											/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: [
+												week.replaceAll("-", "."),
+												" ",
+												/* @__PURE__ */ (0, react_jsx_runtime.jsx)("b", { children: "—" }),
+												" ",
+												end.replaceAll("-", ".")
+											] }),
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+												type: "date",
+												"aria-label": "报工所在周",
+												value: week,
+												disabled: busy,
+												onClick: (event) => {
+													try {
+														event.currentTarget.showPicker?.();
+													} catch {}
+												},
+												onChange: (event) => {
+													if (event.target.value) setWeek(reportWeek(event.target.value));
+												}
+											})
+										]
+									}),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+										type: "button",
+										className: worktime_module_css_default.reportNavButton,
+										"aria-label": "下一周",
+										title: "下一周",
+										disabled: busy,
+										onClick: () => setWeek(addDays(week, 7)),
+										children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("svg", {
+											viewBox: "0 0 16 16",
+											"aria-hidden": "true",
+											children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "m6 4 4 4-4 4" })
+										})
+									})
+								]
+							}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: worktime_module_css_default.reportWeekActions,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									type: "button",
+									className: worktime_module_css_default.reportToolbarButton,
+									disabled: busy,
+									"aria-pressed": week === reportWeek(today()),
+									onClick: () => setWeek(reportWeek(today())),
+									children: "本周"
+								}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+									type: "button",
+									className: worktime_module_css_default.reportToolbarButton,
+									disabled: busy || loading,
+									onClick: () => setVersion((value) => value + 1),
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("svg", {
+										viewBox: "0 0 16 16",
+										"aria-hidden": "true",
+										children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M13 6a5.2 5.2 0 1 0 .2 3M13 2.5V6H9.5" })
+									}), "刷新"]
+								})]
+							})]
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+							className: worktime_module_css_default.help,
+							children: "单位：人天，最小 0.5。同一天一个 Task 默认 1，两个各 0.5；已报工 Task 仍计入当日任务数。修改后写入实际工时并流转。"
+						}),
+						suggestions.conflicts.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("p", {
+							className: worktime_module_css_default.notice,
+							role: "alert",
+							children: [suggestions.conflicts.map((value) => `${value.date} 有 ${value.itemKeys.length} 个 Task`).join("；"), "。最小单位为 0.5，请取消部分选择或先调整排期。"]
+						}),
+						selectedTasks.some((task) => task.start < week || task.end > end) && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+							className: worktime_module_css_default.notice,
+							children: "跨周 Task 的建议工时仅统计本周；提交会覆盖整项 Task 的实际工时，请核对总工时及实际日期。"
+						}),
+						constraints.finishRange && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("p", {
+							className: worktime_module_css_default.help,
+							children: [
+								"番茄允许的实际完成日期：",
+								constraints.finishRange.join(" — "),
+								"。"
+							]
+						}),
+						invalid && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+							className: worktime_module_css_default.error,
+							children: "请核对工时和日期：工时须为正数且以 0.5 递增，日期和工时须符合番茄允许范围。"
+						}),
+						error && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+							role: "alert",
+							className: worktime_module_css_default.error,
+							children: error
+						}),
+						uncertain && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+							className: worktime_module_css_default.notice,
+							children: "部分结果待核对，请先点击刷新查看服务器数据，再决定是否继续。"
+						}),
+						loading ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+							role: "status",
+							children: "正在读取本周 Task…"
+						}) : tasks.length === 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", { children: "本周没有 Task" }) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							className: worktime_module_css_default.reportTableScroll,
+							children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("table", {
+								className: worktime_module_css_default.reportTable,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("thead", { children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("tr", { children: [
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", { children: "选择" }),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", { children: "Task" }),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", { children: "状态" }),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", { children: "计划 / 已报" }),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", { children: "本次实际工时" }),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", { children: "实际开始" }),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("th", { children: "实际结束" })
+								] }) }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("tbody", { children: tasks.map((task) => {
+									const result = results[task.itemKey];
+									const disabled = busy || terminal(task.status) || uncertain || !!result;
+									return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("tr", { children: [
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", { children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+											type: "checkbox",
+											"aria-label": `选择 ${task.itemKey}`,
+											checked: selected.has(task.itemKey),
+											disabled,
+											onChange: () => toggle(task.itemKey)
+										}) }),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("td", { children: [
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("strong", { children: task.title }),
+											/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+												className: worktime_module_css_default.itemLink,
+												children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: task.itemKey }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(TomatoLinkButton, {
+													itemKey: task.itemKey,
+													disabled: busy
+												})]
+											}),
+											/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("small", { children: [
+												task.start,
+												" — ",
+												task.end,
+												(task.start < week || task.end > end) && " · 跨周"
+											] }),
+											result && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("p", {
+												className: result.outcome === "success" || result.outcome === "skipped" ? worktime_module_css_default.help : worktime_module_css_default.error,
+												children: [
+													outcomeText[result.outcome],
+													result.steps.length ? ` · ${result.steps.join("；")}` : "",
+													result.error ? `：${result.error}` : ""
+												]
+											})
+										] }),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", { children: task.status }),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("td", { children: [
+											task.days,
+											" / ",
+											task.actualDays ?? "—"
+										] }),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", { children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+											type: "number",
+											min: "0.5",
+											step: "0.5",
+											"aria-label": `${task.itemKey} 实际工时`,
+											value: drafts[task.itemKey]?.days ?? suggestions.days[task.itemKey] ?? task.actualDays ?? "",
+											disabled: disabled || !selected.has(task.itemKey),
+											onChange: (event) => edit(task.itemKey, "days", event.target.value)
+										}) }),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", { children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+											type: "date",
+											"aria-label": `${task.itemKey} 实际开始`,
+											value: drafts[task.itemKey]?.start ?? (task.actualStart || task.start),
+											disabled: disabled || !selected.has(task.itemKey),
+											onChange: (event) => edit(task.itemKey, "start", event.target.value)
+										}) }),
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("td", { children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+											type: "date",
+											"aria-label": `${task.itemKey} 实际结束`,
+											value: drafts[task.itemKey]?.end ?? (task.actualEnd || task.end),
+											disabled: disabled || !selected.has(task.itemKey),
+											onChange: (event) => edit(task.itemKey, "end", event.target.value)
+										}) })
+									] }, task.itemKey);
+								}) })]
+							})
+						})
+					]
+				})
+			});
+		}
+		//#endregion
+		//#region src/client/RequirementPicker.tsx
+		function RequirementPicker({ items, selected, disabled, request, onSelect }) {
+			const [query, setQuery] = (0, react.useState)("");
+			const [results, setResults] = (0, react.useState)([]);
+			const [loading, setLoading] = (0, react.useState)(false);
+			const [error, setError] = (0, react.useState)("");
+			const [truncated, setTruncated] = (0, react.useState)(false);
+			const q = query.trim();
+			(0, react.useEffect)(() => {
+				if (!q) {
+					setResults([]);
+					setError("");
+					setLoading(false);
+					setTruncated(false);
+					return;
+				}
+				const controller = new AbortController();
+				setLoading(true);
+				setError("");
+				setResults([]);
+				setTruncated(false);
+				const timer = window.setTimeout(() => {
+					request(`/requirements?q=${encodeURIComponent(q)}`, void 0, controller.signal).then((data) => {
+						if (!controller.signal.aborted) {
+							setResults(data.items);
+							setTruncated(data.truncated);
+						}
+					}).catch((error) => {
+						if (!controller.signal.aborted) setError(error instanceof Error ? error.message : "搜索失败");
+					}).finally(() => {
+						if (!controller.signal.aborted) setLoading(false);
+					});
+				}, 300);
+				return () => {
+					window.clearTimeout(timer);
+					controller.abort();
+				};
+			}, [q, request]);
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+				className: worktime_module_css_default.requirementPicker,
+				children: [
+					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+						type: "search",
+						autoFocus: true,
+						"aria-label": "搜索需求编号或标题",
+						placeholder: "搜索需求编号或标题（不限负责人）",
+						maxLength: 120,
+						value: query,
+						disabled,
+						onChange: (event) => {
+							setQuery(event.target.value);
+							onSelect("");
+						}
+					}),
+					!q ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
+						"aria-label": "我的需求",
+						value: selected,
+						disabled,
+						onChange: (event) => onSelect(event.target.value),
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+							value: "",
+							children: "从我的需求中选择"
+						}), items.map((item) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("option", {
+							value: item.itemKey,
+							children: [
+								item.itemKey,
+								" · ",
+								item.title
+							]
+						}, item.itemKey))]
+					}) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [loading ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+						role: "status",
+						className: worktime_module_css_default.help,
+						children: "正在搜索…"
+					}) : error ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+						role: "alert",
+						className: worktime_module_css_default.error,
+						children: error
+					}) : results.length === 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+						className: worktime_module_css_default.help,
+						children: "没有找到可访问的需求，请尝试完整编号或其他关键词。"
+					}) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+						className: worktime_module_css_default.requirementResults,
+						children: results.map((item) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: worktime_module_css_default.requirementResult,
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+								type: "button",
+								className: worktime_module_css_default.requirementChoice,
+								"aria-pressed": selected === item.itemKey,
+								disabled,
+								onClick: () => onSelect(item.itemKey),
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("strong", { children: item.title }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: [
+									item.itemKey,
+									" · ",
+									item.status || "状态未知",
+									" · ",
+									item.assignees.join("、") || "未设置负责人"
+								] })]
+							}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(TomatoLinkButton, {
+								itemKey: item.itemKey,
+								disabled
+							})]
+						}, item.itemKey))
+					}), truncated && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+						className: worktime_module_css_default.help,
+						children: "仅显示前 20 条，请输入更具体的标题或完整编号。"
+					})] }),
+					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("small", {
+						className: worktime_module_css_default.help,
+						children: "新分配的 Task 由当前登录用户负责。"
+					})
+				]
+			});
+		}
+		//#endregion
 		//#region src/client/Worktime.tsx
 		const stages = Object.keys(worktimeText.stageLabels);
 		const errorText = (error) => error instanceof Error ? error.message : worktimeText.readFailed;
@@ -2977,6 +3532,7 @@ window.__ModuleLoader__.load({
 			const [dragging, setDragging] = (0, react.useState)(false);
 			const [editingKey, setEditingKey] = (0, react.useState)("");
 			const [editingTask, setEditingTask] = (0, react.useState)(null);
+			const [reporting, setReporting] = (0, react.useState)(false);
 			const draggedTask = (0, react.useRef)(null);
 			const [dragPreview, setDragPreview] = (0, react.useState)(null);
 			const dragImage = (0, react.useRef)(null);
@@ -3015,7 +3571,7 @@ window.__ModuleLoader__.load({
 					[itemKey]: count
 				});
 			}, []);
-			const visibleTaskKeys = (0, react.useMemo)(() => [...new Set([...calendarUnits.flatMap((unit) => unit.tasks), ...calendarHistory].filter((task) => task.itemKey && task.start <= end && task.end >= start).map((task) => task.itemKey))].sort().join(","), [
+			const visibleTaskKeys = (0, react.useMemo)(() => [...new Set([...calendarUnits.flatMap((unit) => unit.tasks.filter((task) => task.status !== "created")), ...calendarHistory].filter((task) => task.itemKey && task.start <= end && task.end >= start).map((task) => task.itemKey))].sort().join(","), [
 				calendarUnits,
 				calendarHistory,
 				start,
@@ -3046,6 +3602,16 @@ window.__ModuleLoader__.load({
 				readOnlyRef.current = readOnly;
 			}, [readOnly]);
 			(0, react.useEffect)(() => {
+				setHistory([]);
+				setUnits([]);
+				setArchivedUnits([]);
+				setEditingTask(null);
+				setEditingKey("");
+				setChoosing(false);
+				setSelection(null);
+				setReporting(false);
+			}, [assignee]);
+			(0, react.useEffect)(() => {
 				const controller = new AbortController();
 				const epoch = readEpoch.current;
 				setLoading(true);
@@ -3061,7 +3627,7 @@ window.__ModuleLoader__.load({
 				}).then(async (response) => {
 					const data = await response.json();
 					if (!response.ok) throw new Error(data.error || worktimeText.readFailed);
-					setItems(data.items ?? []);
+					if (!controller.signal.aborted) setItems(data.items ?? []);
 				})]).catch((error) => {
 					if (!controller.signal.aborted && !mutationPending.current && epoch === readEpoch.current) setError(errorText(error));
 				}).finally(() => {
@@ -3087,6 +3653,20 @@ window.__ModuleLoader__.load({
 				version,
 				assignee
 			]);
+			(0, react.useEffect)(() => {
+				const refresh = () => {
+					if (document.visibilityState === "hidden" || mutationPending.current) return;
+					setVersion((value) => value + 1);
+				};
+				window.addEventListener("focus", refresh);
+				document.addEventListener("visibilitychange", refresh);
+				const timer = window.setInterval(refresh, 6e4);
+				return () => {
+					window.removeEventListener("focus", refresh);
+					document.removeEventListener("visibilitychange", refresh);
+					window.clearInterval(timer);
+				};
+			}, []);
 			(0, react.useEffect)(() => {
 				const stop = () => {
 					if (!selecting.current) return;
@@ -3214,6 +3794,7 @@ window.__ModuleLoader__.load({
 					mutationPending.current = false;
 					setTaskChange(null);
 					setSaving(false);
+					setVersion((value) => value + 1);
 				}
 			}
 			async function mutateRequirement(unit, change) {
@@ -3292,7 +3873,7 @@ window.__ModuleLoader__.load({
 					setError(errorText(error));
 				}
 			}
-			const knownKeys = new Set(calendarUnits.flatMap((unit) => unit.tasks.flatMap((task) => task.itemKey ? [task.itemKey] : [])));
+			const knownKeys = new Set(calendarUnits.flatMap((unit) => unit.tasks.flatMap((task) => task.status !== "created" && task.itemKey ? [task.itemKey] : [])));
 			const remote = calendarHistory.filter((task) => !knownKeys.has(task.itemKey));
 			const weeks = [];
 			for (let i = 0; i < dates.length; i += 7) weeks.push(dates.slice(i, i + 7));
@@ -3355,6 +3936,7 @@ window.__ModuleLoader__.load({
 						onClick: () => setEditingKey(unit.itemKey)
 					});
 					for (const [i, task] of unit.tasks.entries()) {
+						if (task.status === "created") continue;
 						const tc = clip(task.start, task.end);
 						if (!tc) continue;
 						bars.push({
@@ -3362,7 +3944,7 @@ window.__ModuleLoader__.load({
 							kind: "task",
 							...tc,
 							lane: 0,
-							unverified: task.status !== "created",
+							unverified: true,
 							...task.itemKey ? {
 								task: {
 									...task,
@@ -3371,7 +3953,7 @@ window.__ModuleLoader__.load({
 								anchor: task.start < weekStart ? weekStart : task.start
 							} : {},
 							label: task.title,
-							tip: task.error || `${worktimeText.task} · ${task.start} ~ ${task.end} · ${task.days}${worktimeText.personDays}${task.itemKey ? ` · ${task.itemKey}` : ""} · ${task.status === "created" ? worktimeText.created : task.status === "pending" ? worktimeText.pending : worktimeText.uncertain}`,
+							tip: task.error || `${worktimeText.task} · ${task.start} ~ ${task.end} · ${task.days}${worktimeText.personDays}${task.itemKey ? ` · ${task.itemKey}` : ""} · ${task.status === "pending" ? worktimeText.pending : worktimeText.uncertain}`,
 							onClick: () => task.itemKey ? setEditingTask({
 								...task,
 								itemKey: task.itemKey
@@ -3412,6 +3994,15 @@ window.__ModuleLoader__.load({
 				ref: pageRef,
 				className: worktime_module_css_default.page,
 				children: [
+					reporting && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(TaskReport, {
+						request: api,
+						onClose: () => setReporting(false),
+						onSaved: () => {
+							setVersion((v) => v + 1);
+							onRefresh();
+						},
+						onNotify: notify
+					}),
 					notification && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Toast, {
 						text: notification.text,
 						anchor: pageRef.current,
@@ -3479,6 +4070,12 @@ window.__ModuleLoader__.load({
 										onRefresh();
 									},
 									children: loading ? worktimeText.loading : worktimeText.refresh
+								}),
+								!readOnly && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									type: "button",
+									disabled: saving,
+									onClick: () => setReporting(true),
+									children: "一键报工"
 								})
 							]
 						})]
@@ -3651,21 +4248,12 @@ window.__ModuleLoader__.load({
 						})] }),
 						children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 							className: worktime_module_css_default.form,
-							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("select", {
-								"aria-label": worktimeText.pickTitle,
-								value: selectedStory,
-								onChange: (event) => setSelectedStory(event.target.value),
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
-									value: "",
-									children: worktimeText.placeholder
-								}), requirements.map((item) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("option", {
-									value: item.itemKey,
-									children: [
-										item.itemKey,
-										" · ",
-										item.title
-									]
-								}, item.itemKey))]
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(RequirementPicker, {
+								items: requirements,
+								selected: selectedStory,
+								disabled: saving,
+								request: api,
+								onSelect: setSelectedStory
 							}), error && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
 								className: worktime_module_css_default.error,
 								role: "alert",
@@ -3772,6 +4360,17 @@ window.__ModuleLoader__.load({
 				days: Number(drafts[stage].days),
 				title: drafts[stage].title
 			}));
+			const createBlockReasons = [
+				!rangeCount && "请添加时间段",
+				rangeCount > 0 && count <= 0 && "当前没有剩余可分配人天，请增加时间段",
+				!meta && (error ? "Task 创建信息读取失败，请关闭弹窗后重试" : "正在读取 Task 创建信息"),
+				meta && !cost && "请选择工时成本归属",
+				meta && !team && "请选择所属团队",
+				meta && !category && "请选择任务分类",
+				!inputTasks.length && "请至少填写一个阶段的人天",
+				over && `${worktimeText.overAllocate}（${total} / ${count} 人天）`,
+				retried && !confirmRetry && "请先核对上次创建结果并勾选重试确认"
+			].filter((value) => typeof value === "string");
 			const changeRange = (key, patch) => setRanges((current) => current.map((range) => range.key === key ? {
 				...range,
 				...patch
@@ -3888,7 +4487,7 @@ window.__ModuleLoader__.load({
 					}),
 					/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.Button, {
 						variant: "primary",
-						disabled: busy || !rangeCount || count <= 0 || !meta || !cost || !team || !category || !inputTasks.length || over || retried && !confirmRetry,
+						disabled: busy || createBlockReasons.length > 0,
 						onClick: () => void create(),
 						children: busy ? worktimeText.creating : worktimeText.create
 					})
@@ -3922,6 +4521,15 @@ window.__ModuleLoader__.load({
 								count,
 								" ",
 								worktimeText.personDays
+							]
+						}),
+						!busy && createBlockReasons.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("p", {
+							className: worktime_module_css_default.error,
+							role: "alert",
+							children: [
+								"暂不能创建：",
+								createBlockReasons.join("；"),
+								"。"
 							]
 						}),
 						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {

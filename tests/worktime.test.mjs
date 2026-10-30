@@ -35,7 +35,7 @@ test('resolves the CLI without depending on the developer machine PATH', async t
   assert.throws(() => resolveCliExecutable('missing-tomato-cli-test', '', home), /找不到/)
 })
 
-async function setup(t, { failSecond = false, failFirst = false, requiredActualFinish = false, failRead = false, failEdit = false, failEditAt = 0 } = {}) {
+async function setup(t, { failSecond = false, failFirst = false, requiredActualFinish = false, failRead = false, failEdit = false, failEditAt = 0, storyOwner = 'owner1' } = {}) {
   const dir = await mkdtemp(join(tmpdir(), 'tomato-worktime-'))
   t.after(() => rm(dir, { recursive: true, force: true }))
   const db = join(dir, 'cli.json')
@@ -45,9 +45,9 @@ async function setup(t, { failSecond = false, failFirst = false, requiredActualF
 import fs from 'node:fs';
 const db=${JSON.stringify(db)}; const state=JSON.parse(fs.readFileSync(db)); const args=process.argv.slice(2);const arg=k=>args[args.indexOf(k)+1];
 const field=(key,name,opts,required=true)=>({key,name,required,data:{customData:opts.map(x=>({label:x,value:x}))},property:{}});
-const story={key:'Story-1',objectId:'story1',name:'高级仪表盘支持订阅',itemType:{name:'Story'},workspace:{key:'Report',name:'Insight'},values:{view_project:['产品项目'],assignee:[{objectId:'owner1',username:'owner',nickname:'负责人',label:'负责人(owner)'}]}};
+const story={key:'Story-1',objectId:'story1',name:'高级仪表盘支持订阅',itemType:{name:'Story'},workspace:{key:'Report',name:'Insight'},values:{view_project:['产品项目'],assignee:[{objectId:${JSON.stringify(storyOwner)},username:'owner',nickname:'负责人',label:'负责人(owner)'}]}};
 let result={};
-if(args[1]==='user') result={userId:'owner1',username:'owner'};
+if(args[1]==='user') result={userId:'owner1',username:'owner',nickname:'负责人'};
 else if(args[1]==='field') result=[field('view_project','所属项目',['产品项目']),field('Dropdown2','工时成本归属',['主线产品']),field('suoshutuandui','所属团队',['Insight团队']),field('Dropdown_task','任务分类',['软件开发','修复BUG']),field('assignee','负责人',[]),field('qiwangwanchengriqi','计划完成时间',[]),{key:'ActualFinishTime',name:'实际完成时间',required:${requiredActualFinish},property:{range:[1792080000000,1792684800000]}}];
 else if(args[2]==='search') result={count:1,items:[{key:'Task-old',values:{Dropdown2:['主线产品'],suoshutuandui:['Insight团队']}}]};
 else if(args[2]==='view') { if(args[3]!=='Story-1'&&state.failRead){state.failRead=false;fs.writeFileSync(db,JSON.stringify(state));process.exit(2)} result=args[3]==='Story-1'?story:state.created.find(x=>x.key===args[3]); }
@@ -82,6 +82,22 @@ const create = revision => ({ id: unit.id, revision, cost: '主线产品', team:
   { stage: 'understand', title: '梳理高级仪表盘订阅需求与现有项目实现', days: 1 },
   { stage: 'develop', title: '实现高级仪表盘订阅功能并完成集成', days: 2 },
 ] })
+
+test('a requirement owned by someone else creates Tasks for the current login without editing its owner', async t => {
+  const { request, db, dataFile } = await setup(t, { storyOwner: 'someone-else' })
+  assert.equal((await request('/api/tomato-board/worktime/unit', unit)).status, 200)
+  const metadata = await request('/api/tomato-board/worktime/metadata?itemKey=Story-1')
+  assert.equal(metadata.body.assignee, 'owner1')
+  const result = await request('/api/tomato-board/worktime/create', create(1))
+  assert.equal(result.status, 200)
+  assert.equal(result.body.error, undefined)
+  const remote = JSON.parse(await readFile(db, 'utf8'))
+  assert.equal(remote.created.length, 2)
+  for (const task of remote.created) assert.deepEqual(task.values.assignee.map(owner => owner.value), ['owner1'])
+  assert.equal(remote.edits, undefined)
+  const local = JSON.parse(await readFile(dataFile, 'utf8'))
+  assert.ok(local.units[0].assignees.includes('someone-else'))
+})
 
 test('additional allocation uses remaining half days and preserves existing Task slots', () => {
   const [existing] = allocateTasks('2026-10-16', '2026-10-16', [{ stage: 'understand', title: '理解需求', days: .5 }])
