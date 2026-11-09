@@ -9,10 +9,10 @@ const input = {
   expectedActualDays: null, expectedActualStart: '', expectedActualEnd: '', days: .5, actualStart: '2026-10-27', actualEnd: '2026-10-27',
 }
 
-function setup({ status = '新建', owner = 'owner1', disabled = false, directDone = false, failExecute = false, partialEdit = false, reassign = false, ambiguous = false, drift = false } = {}) {
+function setup({ status = '新建', owner = 'owner1', disabled = false, directDone = false, failExecute = false, partialEdit = false, reassign = false, ambiguous = false, drift = false, itemType = 'Task' } = {}) {
   const calls = []
   let edits = 0
-  const item = { itemType: { name: 'Task' }, status: { name: status }, values: {
+  const item = { itemType: { name: itemType }, status: { name: status }, values: {
     DateSDate: '2026-10-27', qiwangwanchengriqi: '2026-10-27', assignee: [{ objectId: owner }],
   } }
   const run = async args => {
@@ -112,6 +112,35 @@ test('disabled or ambiguous workflows do not change fields', async () => {
   }
 })
 
+test('missing actual effort is filled before rediscovering the enabled reporting transition', async () => {
+  const item = { itemType: { name: 'Task' }, status: { name: '进行中' }, values: { DateSDate: '2026-10-27', qiwangwanchengriqi: '2026-10-27', assignee: [{ objectId: 'owner1' }] } }
+  const calls = []
+  const result = await createTaskReportService(async args => {
+    calls.push(args[2])
+    if (args[2] === 'view') return structuredClone(item)
+    if (args[2] === 'list') return [{ transition: '提交核对', targetStatus: '工时核对中', disabled: item.values.StoryPoint1 == null,
+      disabledReason: item.values.StoryPoint1 == null ? '当前事项字段「工时工作量」应该非空；当前事项字段「工时工作量」应该非空' : '' }]
+    if (args[2] === 'edit') Object.assign(item.values, JSON.parse(args.at(-1)))
+    if (args[2] === 'execute') { assert.equal(item.values.StoryPoint1, .5); item.status.name = '工时核对中' }
+    return {}
+  })({ ...input, expectedStatus: '进行中' }, user, '2026-10-26', '2026-11-01')
+  assert.equal(result.outcome, 'success')
+  assert.ok(calls.indexOf('edit') < calls.lastIndexOf('list'))
+  assert.equal(result.currentStatus, '工时核对中')
+})
+
+test('a missing effort field mixed with an unrelated restriction cannot bypass preflight', async () => {
+  let wrote = false
+  const result = await createTaskReportService(async args => {
+    if (args[2] === 'view') return { itemType: { name: 'Task' }, status: { name: '新建' }, values: { DateSDate: input.expectedStart, qiwangwanchengriqi: input.expectedEnd, assignee: [{ objectId: 'owner1' }] } }
+    if (args[2] === 'list') return [{ transition: '开始', targetStatus: '进行中', disabled: true, disabledReason: '当前事项字段「工时工作量」应该非空；无操作权限' }]
+    wrote = true
+  })(input, user, '2026-10-26', '2026-11-01')
+  assert.equal(result.outcome, 'failed')
+  assert.match(result.error, /无操作权限/)
+  assert.equal(wrote, false)
+})
+
 test('follows an enabled completed branch if the review branch is unavailable', async () => {
   const item = { itemType: { name: 'Task' }, status: { name: '进行中' }, values: { DateSDate: '2026-10-27', qiwangwanchengriqi: '2026-10-27', assignee: [{ objectId: 'owner1' }] } }
   const result = await createTaskReportService(async args => {
@@ -170,4 +199,12 @@ test('discovers actual date bounds and effort constraints by exact field key', a
   const constraints = await loadTaskReportConstraints(async args => ({ fields: [{ key: args[args.indexOf('--keyword') + 1], property: args.includes('ActualFinishTime') ? { range: [1792684800000, 1793289600000] } : { min: 0, max: 20 } }] }))
   assert.deepEqual(constraints, { finishRange: ['2026-10-23', '2026-10-30'], daysMin: 0, daysMax: 20 })
   await assert.rejects(() => loadTaskReportConstraints(async () => ({ fields: [] })), /字段约束/)
+})
+
+test('tracking tasks use the same verified reporting workflow', async () => {
+  const ctx = setup({ itemType: '跟踪任务' })
+  const result = await ctx.report()
+  assert.equal(result.outcome, 'success')
+  assert.equal(result.currentStatus, '工时核对中')
+  assert.equal(ctx.item.values.StoryPoint1, .5)
 })

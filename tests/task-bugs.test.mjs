@@ -2,10 +2,10 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { createTaskBugService } from '../plugins/tomato-board/src/task-bugs.ts'
 
-function setup() {
+function setup(itemType = 'Task') {
   const calls = []
   const target = { key: 'Bug-1', objectId: 'bug1', name: '订阅失败', itemType: { name: 'Bug' }, status: { name: '待测试' } }
-  const source = { key: 'Task-1', objectId: 'task1', itemType: { name: 'Task' }, ancestor: { objectId: 'story1', key: 'Story-1', name: '父需求' }, values: { assignee: [{ objectId: 'owner1' }] } }
+  const source = { key: 'Task-1', objectId: 'task1', itemType: { name: itemType }, ancestor: { objectId: 'story1', key: 'Story-1', name: '父需求' }, values: { assignee: [{ objectId: 'owner1' }] } }
   const state = { linked: false, owner: 'owner1', edits: 0 }
   const service = createTaskBugService(async args => {
     calls.push(args)
@@ -95,4 +95,11 @@ test('a stale background count cannot overwrite a newer modal result', async () 
   assert.equal((await service.load('Task-1')).linked.length, 1)
   release()
   assert.deepEqual(await counting, { counts: { 'Task-1': 1 }, failed: [] })
+})
+
+test('tracking tasks use the same native Bug relationship API', async () => {
+  const { service, state } = setup('跟踪任务')
+  await service.link('Task-1', 'Bug-1')
+  assert.equal(state.edits, 1)
+  assert.equal((await service.load('Task-1')).linked[0].itemKey, 'Bug-1')
 })

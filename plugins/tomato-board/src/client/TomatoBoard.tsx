@@ -1,3 +1,4 @@
+import { typeTone } from './item-type-colors.ts'
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
 import type { Context } from '@deepseek-ai/cordis'
 import type {} from '@deepseek-ai/dsh-api-session-controller/client'
@@ -359,7 +360,7 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
   const workbenchRef = useRef<HTMLElement>(null)
   const filterMenuRef = useRef<HTMLDetailsElement>(null)
   const [page, setPage] = useState<'board' | 'team' | 'worktime' | 'pr'>('board')
-  const [visitedTabs, setVisitedTabs] = useState({ pr: false, team: false })
+  const [visitedTabs, setVisitedTabs] = useState({ pr: false, team: false, worktime: false })
   const [teamToolbar, setTeamToolbar] = useState<React.ReactNode>(null)
   const [search, setSearch] = useState(readSearch)
   const [blacklist, setBlacklist] = useState(readFilterBlacklist)
@@ -393,18 +394,35 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
   }, [board.open, directoryVersion])
   useEffect(() => {
     if (!board.open) return
-    const closeOnOutsideNavigation = (event: PointerEvent) => {
-      if (!(event.target instanceof Element)) return
+    // Selection changes cover new sessions and navigation from other entry points.
+    // Metadata updates (streaming, titles, unread status) must not dismiss the board.
+    let currentSession = ctx.sessions.list.getSnapshot().current
+    const unsubscribe = ctx.sessions.list.subscribe(() => {
+      const nextSession = ctx.sessions.list.getSnapshot().current
+      if (nextSession === currentSession) return
+      currentSession = nextSession
+      closeWorkbench(ctx)
+    })
+    const closeOnSessionClick = (event: MouseEvent) => {
+      if (event.button !== 0 || !(event.target instanceof Element)) return
       if (workbenchRef.current?.contains(event.target)) return
       if (event.target.closest('[role="dialog"], [role="menu"]')) return
-      // Modal masks are siblings of the dialog in a body portal. The document
-      // capture listener runs before their close handler, so keep the workbench
-      // open for the whole modal layer, including its mask and outer padding.
-      if (event.target.closest('[role="presentation"]')?.querySelector('[role="dialog"][aria-modal="true"]')) return
+      // Harness marks session rows (including search results) with aria-selected;
+      // project rows only have aria-expanded. Clicking the already selected session
+      // must also return to the conversation, even though its ID stays unchanged.
+      const row = event.target.closest('[role="treeitem"][aria-selected]')
+      if (!row) return
+      const control = event.target.closest('button, a, input, select, textarea, [role="button"]')
+      if (control && control !== row) return
       closeWorkbench(ctx)
     }
-    document.addEventListener('pointerdown', closeOnOutsideNavigation, true)
-    return () => document.removeEventListener('pointerdown', closeOnOutsideNavigation, true)
+    // Bubble after the row's navigation handler; menus can stop propagation and
+    // dragging a row never counts as a navigation click.
+    document.addEventListener('click', closeOnSessionClick)
+    return () => {
+      unsubscribe()
+      document.removeEventListener('click', closeOnSessionClick)
+    }
   }, [board.open])
   useEffect(() => {
     const closeFilterMenu = (event: PointerEvent) => {
@@ -558,7 +576,7 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
                 type="search"
                 value={search}
                 onChange={event => { const value = event.target.value; setSearch(value); saveSearch(value) }}
-                placeholder="搜索标题或 tag…"
+                placeholder="搜索标题、编号或类型…"
                 aria-label="搜索标题或 tag"
               />
             </label>
@@ -598,14 +616,15 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
         </div>
         <nav className={css.pageTabs} aria-label="番茄工作台页面">
           <button type="button" aria-current={page === 'board' ? 'page' : undefined} onClick={() => setPage('board')}>事项看板</button>
-          <button type="button" aria-current={page === 'worktime' ? 'page' : undefined} onClick={() => setPage('worktime')}>{worktimeText.title}</button>
+          <button type="button" aria-current={page === 'worktime' ? 'page' : undefined} onClick={() => { setVisitedTabs(current => ({ ...current, worktime: true })); setPage('worktime') }}>{worktimeText.title}</button>
           <button type="button" aria-current={page === 'pr' ? 'page' : undefined} onClick={() => { setVisitedTabs(current => ({ ...current, pr: true })); setPage('pr') }}>PR 助手</button>
           <button type="button" aria-current={page === 'team' ? 'page' : undefined} onClick={() => { setVisitedTabs(current => ({ ...current, team: true })); setPage('team') }}>团队管理</button>
         </nav>
       </header>
       {visitedTabs.pr && <div className={css.tabPanel} hidden={page !== 'pr'}><PrAssistant active={page === 'pr'} ctx={ctx} close={() => closeWorkbench(ctx)} /></div>}
       {visitedTabs.team && <div className={css.tabPanel} hidden={page !== 'team'}><TeamManagement active={page === 'team'} toolbarTarget={setTeamToolbar} onOpenItem={openItem} /></div>}
-      {page === 'worktime' ? <Worktime key={selectedAssignee} assignee={selectedAssignee} users={filterDirectory.users} onAssigneeChange={value => { setSelectedAssignee(value); void refresh(value) }} onRefresh={() => { void refresh(selectedAssignee) }} /> : page === 'board' ? <>
+      {visitedTabs.worktime && <div className={css.tabPanel} hidden={page !== 'worktime'}><Worktime active={page === 'worktime'} key={selectedAssignee} assignee={selectedAssignee} users={filterDirectory.users} onAssigneeChange={value => { setSelectedAssignee(value); void refresh(value) }} onRefresh={() => { void refresh(selectedAssignee) }} /></div>}
+      {page === 'board' ? <>
       {board.successMessage && <Toast
         text={board.successMessage}
         anchor={workbenchRef.current}
@@ -746,14 +765,6 @@ const PRIORITY_LABELS: Record<string, string> = {
 }
 const priorityLabel = (value: string) => PRIORITY_LABELS[value] ?? value
 
-const TYPE_TONES: Record<string, string> = {
-  Story: '#2f7d72', EnablerStory: '#2777a8', Task: '#7b61a8', Bug: '#c34f43', 缺陷: '#c34f43', 测试缺陷: '#d06438', Epic: '#9a6b24', Feature: '#3f68ad',
-}
-function typeTone(type: string): string {
-  if (TYPE_TONES[type]) return TYPE_TONES[type]
-  const palette = ['#2f7d72', '#2777a8', '#7b61a8', '#c34f43', '#9a6b24', '#51753a', '#a14f78']
-  return palette[[...type].reduce((hash, char) => hash + char.charCodeAt(0), 0) % palette.length]!
-}
 
 function FilterRow({ label, options, hidden, onToggle }: {
   label: string

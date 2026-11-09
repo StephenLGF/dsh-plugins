@@ -35,7 +35,7 @@ test('resolves the CLI without depending on the developer machine PATH', async t
   assert.throws(() => resolveCliExecutable('missing-tomato-cli-test', '', home), /找不到/)
 })
 
-async function setup(t, { failSecond = false, failFirst = false, requiredActualFinish = false, failRead = false, failEdit = false, failEditAt = 0, storyOwner = 'owner1' } = {}) {
+async function setup(t, { failSecond = false, failFirst = false, requiredActualFinish = false, failRead = false, failEdit = false, failEditAt = 0, storyOwner = 'owner1', projectLabel = '产品项目', sprint, dropSprint = false } = {}) {
   const dir = await mkdtemp(join(tmpdir(), 'tomato-worktime-'))
   t.after(() => rm(dir, { recursive: true, force: true }))
   const db = join(dir, 'cli.json')
@@ -44,14 +44,14 @@ async function setup(t, { failSecond = false, failFirst = false, requiredActualF
   await writeFile(executable, `#!${process.execPath}
 import fs from 'node:fs';
 const db=${JSON.stringify(db)}; const state=JSON.parse(fs.readFileSync(db)); const args=process.argv.slice(2);const arg=k=>args[args.indexOf(k)+1];
-const field=(key,name,opts,required=true)=>({key,name,required,data:{customData:opts.map(x=>({label:x,value:x}))},property:{}});
-const story={key:'Story-1',objectId:'story1',name:'高级仪表盘支持订阅',itemType:{name:'Story'},workspace:{key:'Report',name:'Insight'},values:{view_project:['产品项目'],assignee:[{objectId:${JSON.stringify(storyOwner)},username:'owner',nickname:'负责人',label:'负责人(owner)'}]}};
+const field=(key,name,opts,required=true)=>({key,name,required,data:{customData:opts.map(x=>({label:key==='view_project'?${JSON.stringify(projectLabel)}:x,value:x}))},property:{}});
+const story={key:'Story-1',objectId:'story1',name:'高级仪表盘支持订阅',itemType:{name:'Story'},workspace:{key:'Report',name:'Insight'},values:{sprint:${JSON.stringify(sprint) ?? 'undefined'},view_project:['产品项目'],assignee:[{objectId:${JSON.stringify(storyOwner)},username:'owner',nickname:'负责人',label:'负责人(owner)'}]}};
 let result={};
 if(args[1]==='user') result={userId:'owner1',username:'owner',nickname:'负责人'};
 else if(args[1]==='field') result=[field('view_project','所属项目',['产品项目']),field('Dropdown2','工时成本归属',['主线产品']),field('suoshutuandui','所属团队',['Insight团队']),field('Dropdown_task','任务分类',['软件开发','修复BUG']),field('assignee','负责人',[]),field('qiwangwanchengriqi','计划完成时间',[]),{key:'ActualFinishTime',name:'实际完成时间',required:${requiredActualFinish},property:{range:[1792080000000,1792684800000]}}];
-else if(args[2]==='search') result={count:1,items:[{key:'Task-old',values:{Dropdown2:['主线产品'],suoshutuandui:['Insight团队']}}]};
-else if(args[2]==='view') { if(args[3]!=='Story-1'&&state.failRead){state.failRead=false;fs.writeFileSync(db,JSON.stringify(state));process.exit(2)} result=args[3]==='Story-1'?story:state.created.find(x=>x.key===args[3]); }
-else if(args[2]==='create') { state.attempts=(state.attempts||0)+1; fs.writeFileSync(db,JSON.stringify(state)); if(state.failFirst&&state.attempts===1)process.exit(2); if(state.failSecond&&state.created.length===1)process.exit(2); const item={key:'Task-'+(state.created.length+1),itemType:{name:'Task'},name:arg('--title'),ancestors:[{objectId:'story1'}],values:JSON.parse(arg('--values'))};state.created.push(item);fs.writeFileSync(db,JSON.stringify(state));result={itemKey:item.key}; }
+else if(args[2]==='search') result=arg('--iql').includes('ancestors in')?{count:state.created.length,items:state.created}:{count:1,items:[{key:'Task-old',values:{Dropdown2:['主线产品'],suoshutuandui:['Insight团队']}}]};
+else if(args[2]==='view') { if(args[3]!=='Story-1'&&state.failRead){state.failRead=false;fs.writeFileSync(db,JSON.stringify(state));process.exit(2)} result=args[3]==='Story-1'?story:state.created.find(x=>x.key===args[3]); if(args[3]!=='Story-1'&&result?.values.sprint)result={...result,values:{...result.values,sprint:result.values.sprint.map(id=>({objectId:id,value:id,label:'迭代名称'}))}}; }
+else if(args[2]==='create') { state.attempts=(state.attempts||0)+1; fs.writeFileSync(db,JSON.stringify(state)); if(state.failFirst&&state.attempts===1)process.exit(2); if(state.failSecond&&state.created.length===1)process.exit(2); const item={key:'Task-'+(state.created.length+1),itemType:{name:'Task'},name:arg('--title'),ancestors:[{objectId:'story1'}],values:JSON.parse(arg('--values'))};if(item.values.sprint&&(!Array.isArray(item.values.sprint)||item.values.sprint.some(id=>typeof id!=='string'))){console.error('迭代数据格式错误');process.exit(2)}if(${dropSprint})delete item.values.sprint;state.created.push(item);fs.writeFileSync(db,JSON.stringify(state));result={itemKey:item.key}; }
 else if(args[2]==='edit') { state.edits=(state.edits||0)+1;fs.writeFileSync(db,JSON.stringify(state));if(state.failEdit||state.failEditAt===state.edits)process.exit(2);const item=state.created.find(x=>x.key===args[3]);Object.assign(item.values,JSON.parse(arg('--values')));fs.writeFileSync(db,JSON.stringify(state));result={success:true}; }
 else if(args[2]==='delete') { state.deleted=[...(state.deleted||[]),args[3]];state.created=state.created.filter(x=>x.key!==args[3]);fs.writeFileSync(db,JSON.stringify(state));result={success:true}; }
 else process.exit(3);
@@ -99,6 +99,17 @@ test('a requirement owned by someone else creates Tasks for the current login wi
   assert.ok(local.units[0].assignees.includes('someone-else'))
 })
 
+test('project metadata shows the option label while Task creation retains its stored value', async t => {
+  const { request, db } = await setup(t, { projectLabel: 'PS-OTH00272-4E-20260130' })
+  const meta = await request('/api/tomato-board/worktime/metadata?itemKey=Story-1')
+  assert.equal(meta.body.project, 'PS-OTH00272-4E-20260130')
+  await request('/api/tomato-board/worktime/unit', unit)
+  const result = await request('/api/tomato-board/worktime/create', create(1))
+  assert.equal(result.body.error, undefined)
+  const remote = JSON.parse(await readFile(db, 'utf8'))
+  assert.deepEqual(remote.created[0].values.view_project, ['产品项目'])
+})
+
 test('additional allocation uses remaining half days and preserves existing Task slots', () => {
   const [existing] = allocateTasks('2026-10-16', '2026-10-16', [{ stage: 'understand', title: '理解需求', days: .5 }])
   existing.status = 'created'; existing.itemKey = 'Task-1'
@@ -130,7 +141,7 @@ test('extending an allocated range permits another batch without modifying or re
   })
   assert.equal(added.status, 200)
   const after = JSON.parse(await readFile(dataFile, 'utf8')).units[0]
-  assert.deepEqual(after.tasks.slice(0, 2), original.tasks)
+  assert.deepEqual(after.tasks.slice(0, 2), original.tasks.map(task => ({ ...task, itemType: 'Task' })))
   assert.deepEqual(after.tasks.slice(2).map(task => [task.start, task.end, task.days]), [['2026-10-19', '2026-10-20', 1.5], ['2026-10-20', '2026-10-20', .5]])
   assert.equal(JSON.parse(await readFile(db, 'utf8')).created.length, 4)
   const full = await request('/api/tomato-board/worktime/create', { ...create(after.revision), tasks: [{ stage: 'verify', title: '没有剩余容量', days: .5 }] })
@@ -348,7 +359,7 @@ test('real CLI process persists a unit, verifies two child Tasks, prevents dupli
   fixture.dispose()
   assert.equal(fixture.routes.length, 0)
   const reboot = fixture.makeRequest()
-  result = await reboot.request('/api/tomato-board/worktime')
+  result = await reboot.request('/api/tomato-board/worktime?itemKey=Story-1')
   assert.equal(result.body.units[0].tasks[1].itemKey, 'Task-2')
   assert.equal((await reboot.request('/api/tomato-board/worktime/unit', { ...unit, revision: 2, end: '2026-10-29' })).status, 400)
 })
@@ -476,7 +487,7 @@ test('removing the last allocated range preserves remote Tasks and archives thei
   assert.deepEqual(removed.body.units, [])
   const after = JSON.parse(await readFile(dataFile, 'utf8'))
   assert.deepEqual(after.units, [])
-  assert.deepEqual(after.archivedUnits, before.units)
+  assert.deepEqual(after.archivedUnits, before.units.map(unit => ({ ...unit, tasks: unit.tasks.map(task => ({ ...task, itemType: 'Task' })) })))
   assert.deepEqual(JSON.parse(await readFile(db, 'utf8')), remote)
   const task = after.archivedUnits[0].tasks[0]
   const moved = await request('/api/tomato-board/worktime/task', {
@@ -486,7 +497,7 @@ test('removing the last allocated range preserves remote Tasks and archives thei
   assert.equal(JSON.parse(await readFile(dataFile, 'utf8')).archivedUnits[0].tasks[0].start, '2026-10-25')
 })
 
-test('removing an uncertain range does not allow its remote Task to be duplicated', async t => {
+test('removing a local range still counts Tasks confirmed by the remote API', async t => {
   const { request, dataFile, db } = await setup(t, { failRead: true })
   await request('/api/tomato-board/worktime/unit', unit)
   await request('/api/tomato-board/worktime/create', create(1))
@@ -502,7 +513,7 @@ test('removing an uncertain range does not allow its remote Task to be duplicate
   const attempts = JSON.parse(await readFile(db, 'utf8')).attempts
   const retried = await request('/api/tomato-board/worktime/create', { ...create(next.body.unit.revision), id: next.body.unit.id, confirmRetry: true })
   assert.equal(retried.status, 400)
-  assert.match(retried.body.error, /已有 Task 编号/)
+  assert.match(retried.body.error, /剩余 2 人天/)
   assert.equal(JSON.parse(await readFile(db, 'utf8')).attempts, attempts)
 })
 
@@ -540,24 +551,22 @@ test('merges a touching range while preserving a separate range across a date ga
   assert.deepEqual(store.units.map(unit => [unit.start, unit.end]), [['2026-10-16', '2026-10-19'], ['2026-10-21', '2026-10-21']])
 })
 
-test('a failed creation stays editable so the plan can be retried', async t => {
-  const { request, makeRequest, db } = await setup(t, { failFirst: true })
+test('a previous failed creation does not block a new explicit batch and keeps its audit journal', async t => {
+  const { request, db, dataFile } = await setup(t, { failFirst: true })
   await request('/api/tomato-board/worktime/unit', unit)
   const failed = await request('/api/tomato-board/worktime/create', create(1))
-  assert.equal(failed.status, 200)
-  assert.match(failed.body.error, /请核对后处理/)
   assert.equal(failed.body.unit.tasks[0].status, 'uncertain')
-  const unconfirmed = await request('/api/tomato-board/worktime/create', create(2))
-  assert.equal(unconfirmed.status, 400)
-  assert.match(unconfirmed.body.error, /确认重试/)
-  // The record is not history yet: the range may still be edited and the plan retried.
-  const edited = await request('/api/tomato-board/worktime/unit', { id: unit.id, revision: 2, itemKey: 'Story-1', start: '2026-10-16', end: '2026-10-17' })
-  assert.equal(edited.status, 200)
-  const retried = await request('/api/tomato-board/worktime/create', { ...create(3), confirmRetry: true, tasks: [{ stage: 'develop', title: '实现高级仪表盘订阅功能并完成集成', days: 2 }] })
-  assert.equal(retried.status, 200)
-  assert.equal(retried.body.unit.tasks.length, 1)
-  assert.equal(retried.body.unit.tasks[0].status, 'created')
-  assert.equal(JSON.parse(await readFile(db, 'utf8')).created.length, 1)
+  const next = await request('/api/tomato-board/worktime/create', create(2))
+  assert.equal(next.status, 200)
+  assert.equal(next.body.error, undefined)
+  assert.equal(next.body.unit.tasks.length, 2)
+  assert.ok(next.body.unit.tasks.every(task => task.status === 'created'))
+  assert.equal(JSON.parse(await readFile(db, 'utf8')).created.length, 2)
+  const local = JSON.parse(await readFile(dataFile, 'utf8'))
+  assert.ok(local.creationHistory.some(unit => unit.tasks.some(task => task.status === 'uncertain')))
+  const repeated = await request('/api/tomato-board/worktime/create', create(2))
+  assert.equal(repeated.status, 400)
+  assert.equal(JSON.parse(await readFile(db, 'utf8')).created.length, 2)
 })
 
 test('a Task spanning ranges locks every covered range against editing and duplicate creation', async t => {
@@ -579,7 +588,7 @@ test('a Task spanning ranges locks every covered range against editing and dupli
   assert.equal(JSON.parse(await readFile(dataFile, 'utf8')).units[1].end, second.end)
 })
 
-test('a known Task whose verification failed cannot be duplicated even with confirmed retry', async t => {
+test('a remotely confirmed Task consumes capacity despite an older uncertain journal', async t => {
   const { request, db } = await setup(t, { failRead: true })
   await request('/api/tomato-board/worktime/unit', unit)
   const failed = await request('/api/tomato-board/worktime/create', create(1))
@@ -587,8 +596,47 @@ test('a known Task whose verification failed cannot be duplicated even with conf
   assert.equal(failed.body.unit.tasks[0].itemKey, 'Task-1')
   const retry = await request('/api/tomato-board/worktime/create', { ...create(2), confirmRetry: true })
   assert.equal(retry.status, 400)
-  assert.match(retry.body.error, /已有 Task 编号/)
+  assert.match(retry.body.error, /剩余 2 人天/)
   assert.equal(JSON.parse(await readFile(db, 'utf8')).created.length, 1)
+})
+
+test('deleted remote Tasks no longer appear or consume capacity even if the local journal still exists', async t => {
+  const { request, db } = await setup(t)
+  await request('/api/tomato-board/worktime/unit', unit)
+  await request('/api/tomato-board/worktime/create', create(1))
+  const remote = JSON.parse(await readFile(db, 'utf8'))
+  remote.created = []
+  await writeFile(db, JSON.stringify(remote))
+  const fresh = await request('/api/tomato-board/worktime?itemKey=Story-1')
+  assert.deepEqual(fresh.body.units[0].tasks, [])
+  const result = await request('/api/tomato-board/worktime/create', create(2))
+  assert.equal(result.body.error, undefined)
+  assert.equal(JSON.parse(await readFile(db, 'utf8')).created.length, 2)
+})
+
+test('an existing remote Task is reread and new allocation can use remaining capacity without a retry checkbox', async t => {
+  const { request, db } = await setup(t, { failRead: true })
+  await request('/api/tomato-board/worktime/unit', unit)
+  await request('/api/tomato-board/worktime/create', create(1))
+  const fresh = await request('/api/tomato-board/worktime?itemKey=Story-1')
+  assert.equal(fresh.body.units[0].tasks[0].status, 'created')
+  const result = await request('/api/tomato-board/worktime/create', { ...create(2), tasks: [create(2).tasks[1]] })
+  assert.equal(result.body.error, undefined)
+  assert.equal(JSON.parse(await readFile(db, 'utf8')).created.length, 2)
+})
+
+test('a failed remote refresh does not substitute local Task journals as successful data', async t => {
+  const { request, db } = await setup(t)
+  await request('/api/tomato-board/worktime/unit', unit)
+  await request('/api/tomato-board/worktime/create', create(1))
+  const remote = JSON.parse(await readFile(db, 'utf8'))
+  remote.failRead = true
+  await writeFile(db, JSON.stringify(remote))
+  const fresh = await request('/api/tomato-board/worktime?itemKey=Story-1')
+  assert.equal(fresh.status, 400)
+  assert.equal(fresh.body.units, undefined)
+  const recovered = await request('/api/tomato-board/worktime?itemKey=Story-1')
+  assert.equal(recovered.body.units[0].tasks.length, 2)
 })
 
 test('saves all range edits before merging and rejects a stale snapshot without partial writes', async t => {
@@ -635,4 +683,53 @@ test('a requirement can be planned again in a later batch without touching creat
   })
   assert.equal(repeat.status, 400)
   assert.match(repeat.body.error, /已创建 Task/)
+})
+
+test('local calendar plans load without contacting Tomato or exposing cached Task journals', async t => {
+  const { request, dataFile, db } = await setup(t)
+  await rm(join(db, '..', 'gitee'))
+  await writeFile(dataFile, JSON.stringify({ version: 1, units: [{ ...unit, tasks: [{ itemKey: 'Task-cached', status: 'created', days: 1 }] }] }))
+  const before = await readFile(dataFile, 'utf8')
+  const result = await request('/api/tomato-board/worktime')
+  assert.equal(result.status, 200)
+  assert.equal(result.body.units[0].itemKey, unit.itemKey)
+  assert.deepEqual(result.body.units[0].tasks, [])
+  assert.equal(await readFile(dataFile, 'utf8'), before)
+})
+
+const inheritedSprint = [{ label: 'Team-2026-1120', name: 'Team-2026-1120', locked: false, objectId: 'sprint-id', value: 'sprint-id' }]
+
+test('new Tasks convert parent iteration objects to ID arrays and verify normalized readback', async t => {
+  const { request, db } = await setup(t, { sprint: inheritedSprint })
+  await request('/api/tomato-board/worktime/unit', unit)
+  const result = await request('/api/tomato-board/worktime/create', create(1))
+  assert.equal(result.body.error, undefined)
+  const remote = JSON.parse(await readFile(db, 'utf8'))
+  assert.equal(remote.created.length, 2)
+  for (const task of remote.created) assert.deepEqual(task.values.sprint, ['sprint-id'])
+})
+
+test('a requirement without an iteration does not send an empty iteration to Task creation', async t => {
+  const { request, db } = await setup(t)
+  await request('/api/tomato-board/worktime/unit', unit)
+  await request('/api/tomato-board/worktime/create', create(1))
+  for (const task of JSON.parse(await readFile(db, 'utf8')).created) assert.equal('sprint' in task.values, false)
+})
+
+test('an iteration lost by the server fails readback verification and stops the batch', async t => {
+  const { request, db } = await setup(t, { sprint: inheritedSprint, dropSprint: true })
+  await request('/api/tomato-board/worktime/unit', unit)
+  const result = await request('/api/tomato-board/worktime/create', create(1))
+  assert.match(result.body.error, /sprint.*回读校验失败/)
+  assert.equal(JSON.parse(await readFile(db, 'utf8')).created.length, 1)
+  assert.equal(result.body.unit.tasks[0].status, 'uncertain')
+})
+
+
+test('iteration inheritance preserves dynamic IDs from string values rather than a fixed iteration', async t => {
+  const { request, db } = await setup(t, { sprint: ['another-sprint-id'] })
+  await request('/api/tomato-board/worktime/unit', unit)
+  const result = await request('/api/tomato-board/worktime/create', create(1))
+  assert.equal(result.body.error, undefined)
+  for (const task of JSON.parse(await readFile(db, 'utf8')).created) assert.deepEqual(task.values.sprint, ['another-sprint-id'])
 })

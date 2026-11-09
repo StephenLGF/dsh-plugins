@@ -9,4 +9,8 @@ const bundle = clientBundle('@stephen1620/dsh-tomato-board', [
   'src/invariant.ts',
 ])
 
-export default (config: Parameters<typeof bundle>[0]) => bundle(config).map(value => ({ ...value, tsconfig: false }))
+export default (config: Parameters<typeof bundle>[0]) => bundle(config).map(value => ({
+  ...value,
+  // Build this standalone checkout without the Harness workspace's tsc references.
+  tsconfig: fileURLToPath(new URL('./tsconfig.bundle.json', import.meta.url)),
+}))

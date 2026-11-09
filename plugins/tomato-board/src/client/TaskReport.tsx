@@ -1,3 +1,5 @@
+import { typeTone } from './item-type-colors.ts'
+import { Tag } from './Tag.tsx'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Button, Modal } from '@deepseek-ai/dsh-client-ui-primitives'
 import { addDays } from '../worktime-model.ts'
@@ -7,7 +9,7 @@ import { TomatoLinkButton } from './TomatoLinkButton.tsx'
 import css from './worktime.module.css'
 
 interface ReportTask {
-  itemKey: string; title: string; status: string; start: string; end: string; days: number
+  itemKey: string; itemType?: string; title: string; status: string; start: string; end: string; days: number
   actualDays: number | null; actualStart: string; actualEnd: string
 }
 type Request = <T>(path: string, input?: unknown, signal?: AbortSignal) => Promise<T>
@@ -130,7 +132,7 @@ export function TaskReport({ request, onClose, onSaved, onNotify }: {
           const disabled = busy || terminal(task.status) || uncertain || !!result
           return <tr key={task.itemKey}>
             <td><input type="checkbox" aria-label={`选择 ${task.itemKey}`} checked={selected.has(task.itemKey)} disabled={disabled} onChange={() => toggle(task.itemKey)} /></td>
-            <td><strong>{task.title}</strong><div className={css.itemLink}><span>{task.itemKey}</span><TomatoLinkButton itemKey={task.itemKey} disabled={busy} /></div><small>{task.start} — {task.end}{(task.start < week || task.end > end) && ' · 跨周'}</small>{result && <p className={result.outcome === 'success' || result.outcome === 'skipped' ? css.help : css.error}>{outcomeText[result.outcome]}{result.steps.length ? ` · ${result.steps.join('；')}` : ''}{result.error ? `：${result.error}` : ''}</p>}</td>
+            <td><strong>{task.itemType === '跟踪任务' && <Tag tone={typeTone(task.itemType)}>跟踪任务</Tag>}{task.title}</strong><div className={css.itemLink}><span>{task.itemKey}</span><TomatoLinkButton itemKey={task.itemKey} disabled={busy} /></div><small>{task.start} — {task.end}{(task.start < week || task.end > end) && ' · 跨周'}</small>{result && <p className={result.outcome === 'success' || result.outcome === 'skipped' ? css.help : css.error}>{outcomeText[result.outcome]}{result.steps.length ? ` · ${result.steps.join('；')}` : ''}{result.error ? `：${result.error}` : ''}</p>}</td>
             <td>{task.status}</td><td>{task.days} / {task.actualDays ?? '—'}</td>
             <td><input type="number" min="0.5" step="0.5" aria-label={`${task.itemKey} 实际工时`} value={drafts[task.itemKey]?.days ?? suggestions.days[task.itemKey] ?? task.actualDays ?? ''} disabled={disabled || !selected.has(task.itemKey)} onChange={event => edit(task.itemKey, 'days', event.target.value)} /></td>
             <td><input type="date" aria-label={`${task.itemKey} 实际开始`} value={drafts[task.itemKey]?.start ?? (task.actualStart || task.start)} disabled={disabled || !selected.has(task.itemKey)} onChange={event => edit(task.itemKey, 'start', event.target.value)} /></td>

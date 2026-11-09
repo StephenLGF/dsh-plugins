@@ -1,3 +1,4 @@
+import { isScheduledTask } from './task-types.ts'
 type Row = Record<string, unknown>
 type Run = (args: string[]) => Promise<unknown>
 export interface BugLinkConfig { bugLinkTypeId?: string; bugLinkNames?: string[] }
@@ -23,7 +24,7 @@ export function createTaskBugService(run: Run, config: BugLinkConfig) {
   async function task(itemKey: string) {
     if (!keyPattern.test(itemKey)) throw new Error('无效的 Task 编号')
     const value = record(await run(['team', 'item', 'view', itemKey]))
-    if (text(value.itemType) !== 'Task') throw new Error('请选择 Task')
+    if (!isScheduledTask(text(value.itemType))) throw new Error('请选择 Task 或跟踪任务')
     if (!text(value.objectId)) throw new Error('Task 缺少事项标识')
     return value
   }

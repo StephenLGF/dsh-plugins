@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { DragEvent } from 'react'
+import { typeTone } from './item-type-colors.ts'
+import type { CSSProperties, DragEvent } from 'react'
 import { Modal, Button, Toast } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { TomatoItem } from './TomatoBoard'
 import type { WorktimeMetadata, WorktimeUnit, WorktimeTaskChange, WorktimeRequirementChange } from '../worktime-model.ts'
@@ -12,9 +13,9 @@ import { TaskReport } from './TaskReport.tsx'
 import { RequirementPicker } from './RequirementPicker.tsx'
 import css from './worktime.module.css'
 
-type HistoryTask = { itemKey: string; title: string; status: string; start: string; end: string; days: number }
+type HistoryTask = { itemType?: string; itemKey: string; title: string; status: string; start: string; end: string; days: number }
 type CalendarDrag = { task?: HistoryTask; unit?: WorktimeUnit; anchor: string; edge: 'move' | 'start' | 'end' }
-type DragPreview = { ranges: Array<{ start: string; end: string }>; target: string; kind: 'unit' | 'task'; invalid: boolean }
+type DragPreview = { ranges: Array<{ start: string; end: string }>; target: string; kind: 'unit' | 'task' | 'tracking'; invalid: boolean }
 type Stage = keyof typeof t.stageLabels
 type RangeDraft = { key: string; id?: string; revision?: number; start: string; end: string; locked?: boolean }
 const stages = Object.keys(t.stageLabels) as Stage[]
@@ -37,7 +38,7 @@ const sorted = (units: WorktimeUnit[]) => [...units].sort((a, b) => (a.start < b
 const daysIn = (start: string, end: string) => { try { return datesBetween(start, end).length } catch { return 0 } }
 
 /** Five-week planning calendar: pick days, then one plan per requirement. */
-export function Worktime({ assignee, users, onAssigneeChange, onRefresh }: { assignee: string; users: Array<{ username: string; name: string }>; onAssigneeChange: (username: string) => void; onRefresh: () => void }) {
+export function Worktime({ active = true, assignee, users, onAssigneeChange, onRefresh }: { active?: boolean; assignee: string; users: Array<{ username: string; name: string }>; onAssigneeChange: (username: string) => void; onRefresh: () => void }) {
   const pageRef = useRef<HTMLDivElement>(null)
   const notificationId = useRef(0)
   const [notification, setNotification] = useState<{ id: number; text: string; error: boolean } | null>(null)
@@ -133,13 +134,13 @@ export function Worktime({ assignee, users, onAssigneeChange, onRefresh }: { ass
     void Promise.all([
       api<{ units: WorktimeUnit[]; archivedUnits?: WorktimeUnit[] }>(`?assignee=${query}`, undefined, controller.signal).then(data => {
         if (!controller.signal.aborted && !mutationPending.current && epoch === readEpoch.current) { setUnits(data.units); setArchivedUnits(data.archivedUnits ?? []) }
-      }),
+      }).finally(() => { if (!controller.signal.aborted) setLoading(false) }),
       fetch(`/api/tomato-board/items?assignee=${query}`, { signal: controller.signal, headers: { accept: 'application/json' } }).then(async response => {
         const data = await response.json() as { items?: TomatoItem[]; error?: string }
         if (!response.ok) throw new Error(data.error || t.readFailed)
         if (!controller.signal.aborted) setItems(data.items ?? [])
       }),
-    ]).catch(error => { if (!controller.signal.aborted && !mutationPending.current && epoch === readEpoch.current) setError(errorText(error)) }).finally(() => { if (!controller.signal.aborted) setLoading(false) })
+    ]).catch(error => { if (!controller.signal.aborted && !mutationPending.current && epoch === readEpoch.current) setError(errorText(error)) })
     return () => controller.abort()
   }, [version, assignee])
   useEffect(() => {
@@ -153,6 +154,7 @@ export function Worktime({ assignee, users, onAssigneeChange, onRefresh }: { ass
     return () => controller.abort()
   }, [start, end, version, assignee])
   useEffect(() => {
+    if (!active) return
     const refresh = () => {
       if (document.visibilityState === 'hidden' || mutationPending.current) return
       setVersion(value => value + 1)
@@ -165,7 +167,14 @@ export function Worktime({ assignee, users, onAssigneeChange, onRefresh }: { ass
       document.removeEventListener('visibilitychange', refresh)
       window.clearInterval(timer)
     }
-  }, [])
+  }, [active])
+  useEffect(() => {
+    if (active) return
+    selecting.current = false
+    setDragging(false)
+    draggedTask.current = null
+    setDragPreview(null)
+  }, [active])
   // Releasing the pointer finishes a click or a drag, and the plan dialog opens
   // immediately — the calendar never waits for a second confirmation step.
   useEffect(() => {
@@ -245,7 +254,7 @@ export function Worktime({ assignee, users, onAssigneeChange, onRefresh }: { ass
     const source = draggedTask.current
     if (!source) return
     setDragPreview(current => current?.target === day ? current : {
-      ranges: previewRanges(source, day), target: day, kind: source.unit ? 'unit' : 'task',
+      ranges: previewRanges(source, day), target: day, kind: source.unit ? 'unit' : source.task?.itemType === '跟踪任务' ? 'tracking' : 'task',
       invalid: !calendarDragAllowed(source.task ?? source.unit!, source.edge, day),
     })
   }
@@ -275,7 +284,7 @@ export function Worktime({ assignee, users, onAssigneeChange, onRefresh }: { ass
   const remote = calendarHistory.filter(task => !knownKeys.has(task.itemKey))
   const weeks: string[][] = []
   for (let i = 0; i < dates.length; i += 7) weeks.push(dates.slice(i, i + 7))
-  type Bar = { key: string; kind: 'unit' | 'task'; startCol: number; span: number; lane: number; label: string; tip: string; unverified?: boolean; task?: HistoryTask; unit?: WorktimeUnit; anchor?: string; onClick: () => void }
+  type Bar = { key: string; kind: 'unit' | 'task' | 'tracking'; startCol: number; span: number; lane: number; label: string; tip: string; unverified?: boolean; task?: HistoryTask; unit?: WorktimeUnit; anchor?: string; onClick: () => void }
   function beginBarDrag(event: DragEvent<HTMLElement>, bar: Bar, edge: 'move' | 'start' | 'end' = 'move') {
     event.stopPropagation()
     const data = bar.task ?? bar.unit
@@ -287,7 +296,7 @@ export function Worktime({ assignee, users, onAssigneeChange, onRefresh }: { ass
     event.dataTransfer.effectAllowed = 'move'; event.dataTransfer.setData('text/plain', data.itemKey)
     if (!dragImage.current) { dragImage.current = document.createElement('canvas'); dragImage.current.width = 1; dragImage.current.height = 1 }
     event.dataTransfer.setDragImage(dragImage.current, 0, 0)
-    setDragPreview({ ranges: previewRanges(draggedTask.current, anchor), target: anchor, kind: bar.unit ? 'unit' : 'task', invalid: false })
+    setDragPreview({ ranges: previewRanges(draggedTask.current, anchor), target: anchor, kind: bar.unit ? 'unit' : bar.task?.itemType === '跟踪任务' ? 'tracking' : 'task', invalid: false })
   }
   /** macOS-calendar style: clip each unit/task into the week, then stack overlapping bars into lanes. */
   const buildBars = (weekDates: string[]): Bar[] => {
@@ -313,7 +322,7 @@ export function Worktime({ assignee, users, onAssigneeChange, onRefresh }: { ass
     for (const task of remote) {
       const c = clip(task.start, task.end)
       if (!c) continue
-      bars.push({ key: `r-${task.itemKey}-${weekStart}`, kind: 'task', ...c, lane: 0, task, anchor: task.start < weekStart ? weekStart : task.start, label: task.title, tip: `${t.task} · ${task.status} · ${task.itemKey} · ${task.start} ~ ${task.end}`, onClick: () => setEditingTask(task) })
+      bars.push({ key: `r-${task.itemKey}-${weekStart}`, kind: task.itemType === '跟踪任务' ? 'tracking' : 'task', ...c, lane: 0, task, anchor: task.start < weekStart ? weekStart : task.start, label: task.title, tip: `${task.itemType || t.task} · ${task.status} · ${task.itemKey} · ${task.start} ~ ${task.end}`, onClick: () => setEditingTask(task) })
     }
     bars.sort((a, b) => a.startCol - b.startCol || b.span - a.span)
     const laneEnds: number[] = []
@@ -326,11 +335,11 @@ export function Worktime({ assignee, users, onAssigneeChange, onRefresh }: { ass
     return bars
   }
   const editingUnits = editingKey ? sorted(calendarUnits.filter(unit => unit.itemKey === editingKey)) : []
-  return <div ref={pageRef} className={css.page}>
-    {reporting && <TaskReport request={api} onClose={() => setReporting(false)} onSaved={() => { setVersion(v => v + 1); onRefresh() }} onNotify={notify} />}
-    {notification && <Toast key={notification.id} text={notification.text} anchor={pageRef.current} holdMs={notification.error ? 5000 : 2000} onDone={dismissNotification} />}
+  return <div ref={pageRef} className={css.page} style={{ '--wt-accent': typeTone('Story'), '--wt-task': typeTone('Task'), '--wt-tracking': typeTone('跟踪任务') } as CSSProperties}>
+    {active && reporting && <TaskReport request={api} onClose={() => setReporting(false)} onSaved={() => { setVersion(v => v + 1); onRefresh() }} onNotify={notify} />}
+    {active && notification && <Toast key={notification.id} text={notification.text} anchor={pageRef.current} holdMs={notification.error ? 5000 : 2000} onDone={dismissNotification} />}
     <div className={css.toolbar}>
-      <div className={css.period}><h2>{start.replaceAll('-', '.')} <span>—</span> {end.replaceAll('-', '.')}</h2><div className={css.legend}><span className={css.storyDot} />{t.request}<span className={css.taskDot} />{t.task}{!readOnly && <small>{t.dayPickHint}</small>}</div></div>
+      <div className={css.period}><h2>{start.replaceAll('-', '.')} <span>—</span> {end.replaceAll('-', '.')}</h2><div className={css.legend}><span className={css.storyDot} />{t.request}<span className={css.taskDot} />{t.task}<span className={css.trackingDot} />跟踪任务{!readOnly && <small>{t.dayPickHint}</small>}</div></div>
       <div className={css.navigation}>
         <AssigneePicker users={users} value={assignee} onChange={onAssigneeChange} label={null} className={css.userPicker!} currentUserName={t.currentUser} ariaLabel={t.switchUser} />
         {readOnly && <span className={css.readOnlyTag}>{t.readOnlyView}</span>}
@@ -373,7 +382,7 @@ export function Worktime({ assignee, users, onAssigneeChange, onRefresh }: { ass
             })}
             <div className={css.events}>
               {bars.map(bar => <button key={bar.key} type="button" title={bar.tip}
-                draggable={!readOnly && !saving && !!(bar.task || bar.unit)} onDragStart={event => beginBarDrag(event, bar)} onDragEnd={() => { draggedTask.current = null; setDragPreview(null) }} onClick={bar.onClick} className={`${css.bar} ${bar.kind === 'unit' ? css.barUnit : bar.unverified ? css.barUnverified : css.barTask}`} style={{ gridColumn: `${bar.startCol} / span ${bar.span}`, gridRow: String(bar.lane + 1) }}>
+                draggable={!readOnly && !saving && !!(bar.task || bar.unit)} onDragStart={event => beginBarDrag(event, bar)} onDragEnd={() => { draggedTask.current = null; setDragPreview(null) }} onClick={bar.onClick} className={`${css.bar} ${bar.kind === 'unit' ? css.barUnit : bar.unverified ? css.barUnverified : bar.kind === 'tracking' ? css.barTracking : css.barTask}`} style={{ gridColumn: `${bar.startCol} / span ${bar.span}`, gridRow: String(bar.lane + 1) }}>
                 <span className={css.barLabel}>{bar.label}</span>
                 {bar.task && (bugCounts[bar.task.itemKey] ?? 0) > 0 && <span className={css.taskBugBadge} aria-label={`关联 ${bugCounts[bar.task.itemKey]} 个 Bug`} title={`关联 ${bugCounts[bar.task.itemKey]} 个 Bug`}>{bugCounts[bar.task.itemKey]}</span>}
                 {!readOnly && !saving && (bar.task || bar.unit) && <>
@@ -391,42 +400,42 @@ export function Worktime({ assignee, users, onAssigneeChange, onRefresh }: { ass
                 const previewStart = dragPreview?.ranges.some(value => value.start === day)
                 const previewEnd = dragPreview?.ranges.some(value => value.end === day)
                 const disabled = dragPreview?.invalid && (previewed || dragPreview.target === day)
-                return <div key={day} className={`${css.highlightCell} ${selected ? css.selectedDay : ''} ${previewed ? dragPreview?.kind === 'task' ? css.previewTaskDay : css.previewUnitDay : ''} ${previewStart ? css.previewStartDay : ''} ${previewEnd ? css.previewEndDay : ''} ${disabled ? css.previewDisabledDay : ''}`} />
+                return <div key={day} className={`${css.highlightCell} ${selected ? css.selectedDay : ''} ${previewed ? dragPreview?.kind === 'tracking' ? css.previewTrackingDay : dragPreview?.kind === 'task' ? css.previewTaskDay : css.previewUnitDay : ''} ${previewStart ? css.previewStartDay : ''} ${previewEnd ? css.previewEndDay : ''} ${disabled ? css.previewDisabledDay : ''}`} />
               })}
             </div>
           </div>
         })}
       </div>
     </section>
-    {choosing && range && <Modal open title={t.pickTitle} closeLabel={t.close} onClose={() => { if (!saving) closePicker() }} className={css.dialogNarrow!}
+    {active && choosing && range && <Modal open title={t.pickTitle} closeLabel={t.close} onClose={() => { if (!saving) closePicker() }} className={css.dialogNarrow!}
       footer={<><Button variant="ghost" disabled={saving} onClick={closePicker}>{t.cancel}</Button><Button variant="primary" disabled={!selectedStory || saving} onClick={() => void saveSelection(selectedStory)}>{saving ? t.saving : t.confirmPick}</Button></>}>
       <div className={css.form}>
         <RequirementPicker items={requirements} selected={selectedStory} disabled={saving} request={api} onSelect={setSelectedStory} />
         {error && <p className={css.error} role="alert">{error}</p>}
       </div>
     </Modal>}
-    {editingTask && <TaskEditor key={editingTask.itemKey} task={editingTask} readOnly={readOnly} busy={saving} onClose={() => setEditingTask(null)} onMutate={mutateTask} onNotify={notify} onBugCountChange={updateBugCount} />}
-    {editingKey && editingUnits.length > 0 && <GroupEditor key={editingKey} itemKey={editingKey} units={editingUnits} archivedUnits={archivedUnits} onClose={() => setEditingKey('')} onSaved={notice => { setVersion(v => v + 1); onRefresh(); if (notice) setMessage(notice) }} />}
+    {active && editingTask && <TaskEditor key={editingTask.itemKey} task={editingTask} readOnly={readOnly} busy={saving} onClose={() => setEditingTask(null)} onMutate={mutateTask} onNotify={notify} onBugCountChange={updateBugCount} />}
+    {active && editingKey && editingUnits.length > 0 && <GroupEditor key={editingKey} itemKey={editingKey} units={editingUnits} archivedUnits={archivedUnits} onClose={() => setEditingKey('')} onSaved={notice => { setVersion(v => v + 1); onRefresh(); if (notice) setMessage(notice) }} />}
   </div>
 }
 
 /** One requirement is one plan: every date range it owns is allocated together. */
-function GroupEditor({ itemKey, units, archivedUnits, onClose, onSaved }: { itemKey: string; units: WorktimeUnit[]; archivedUnits: WorktimeUnit[]; onClose: () => void; onSaved: (notice?: string) => void }) {
+function GroupEditor({ itemKey, units: initialUnits, archivedUnits: initialArchivedUnits, onClose, onSaved }: { itemKey: string; units: WorktimeUnit[]; archivedUnits: WorktimeUnit[]; onClose: () => void; onSaved: (notice?: string) => void }) {
+  const [units, setUnits] = useState(initialUnits)
+  const [archivedUnits, setArchivedUnits] = useState(initialArchivedUnits)
   const historyUnits = [...units, ...archivedUnits.filter(unit => unit.itemKey === itemKey)]
   const title = units[0]?.title || itemKey
   const savedUnits = useRef(units)
   const [meta, setMeta] = useState<WorktimeMetadata | null>(null)
   const [error, setError] = useState('')
-  const [busy, setBusy] = useState(false)
+  const [busy, setBusy] = useState(true)
   const [cost, setCost] = useState(units[0]?.cost || '')
   const [team, setTeam] = useState(units[0]?.team || '')
   const [category, setCategory] = useState(units[0]?.category || '')
-  const [confirmRetry, setConfirmRetry] = useState(false)
   const [ranges, setRanges] = useState<RangeDraft[]>(() => units.map(unit => ({ key: unit.id, id: unit.id, revision: unit.revision, start: unit.start, end: unit.end, locked: unitHasCreatedTasks(unit, units) })))
   // Prefill unsent drafts only; confirmed Tasks are shown separately.
   const [drafts, setDrafts] = useState(() => Object.fromEntries(stages.map(stage => {
-    const task = units.flatMap(unit => unit.tasks).find(item => item.stage === stage && item.status !== 'created' && !item.itemKey)
-    return [stage, { days: task ? String(task.days) : '', title: task?.title || taskTitle(title, stage) }]
+    return [stage, { days: '', title: taskTitle(title, stage) }]
   })) as Record<Stage, { days: string; title: string }>)
   // Existing Tasks keep their dates and consume capacity; extra slots form the next batch.
   const hasCreated = historyUnits.some(unit => unit.tasks.some(task => task.status === 'created'))
@@ -435,7 +444,6 @@ function GroupEditor({ itemKey, units, archivedUnits, onClose, onSaved }: { item
     const original = savedUnits.current.find(unit => unit.id === range.id)
     return !original || original.start !== range.start || original.end !== range.end
   })
-  const retried = historyUnits.some(unit => unit.tasks.some(task => task.status !== 'pending' && task.status !== 'created'))
   const count = useMemo(() => {
     const valid = ranges.filter(range => range.start && range.end && range.end >= range.start)
     try { return valid.length ? availableWorktimeSlots(unitDates(valid), historyUnits.flatMap(unit => unit.tasks), unitDates(historyUnits)).length / 2 : 0 } catch { return 0 }
@@ -450,10 +458,16 @@ function GroupEditor({ itemKey, units, archivedUnits, onClose, onSaved }: { item
   const over = total > count + 1e-6
   useEffect(() => {
     const controller = new AbortController()
-    void api<WorktimeMetadata>(`/metadata?itemKey=${encodeURIComponent(itemKey)}`, undefined, controller.signal).then(data => {
+    void Promise.all([
+      api<WorktimeMetadata>(`/metadata?itemKey=${encodeURIComponent(itemKey)}`, undefined, controller.signal),
+      api<{ units: WorktimeUnit[]; archivedUnits?: WorktimeUnit[] }>(`?itemKey=${encodeURIComponent(itemKey)}`, undefined, controller.signal),
+    ]).then(([data, snapshot]) => {
+      if (controller.signal.aborted) return
+      setUnits(snapshot.units); setArchivedUnits(snapshot.archivedUnits ?? []); savedUnits.current = snapshot.units
+      setRanges(snapshot.units.map(unit => ({ key: unit.id, id: unit.id, revision: unit.revision, start: unit.start, end: unit.end, locked: unitHasCreatedTasks(unit, snapshot.units) })))
       setMeta(data); setCost(current => current || data.suggestedCost); setTeam(current => current || data.suggestedTeam)
       setCategory(current => current || data.categories.find(value => /bug|BUG|Bug/u.test(title) ? /bug|BUG|Bug/u.test(value) : value === '软件开发') || data.categories[0] || '')
-    }).catch(error => { if (!controller.signal.aborted) setError(errorText(error)) })
+    }).catch(error => { if (!controller.signal.aborted) setError(errorText(error)) }).finally(() => { if (!controller.signal.aborted) setBusy(false) })
     return () => controller.abort()
   }, [itemKey, title])
   const inputTasks = stages.filter(stage => Number(drafts[stage].days) > 0).map(stage => ({ stage, days: Number(drafts[stage].days), title: drafts[stage].title }))
@@ -466,7 +480,6 @@ function GroupEditor({ itemKey, units, archivedUnits, onClose, onSaved }: { item
     meta && !category && '请选择任务分类',
     !inputTasks.length && '请至少填写一个阶段的人天',
     over && `${t.overAllocate}（${total} / ${count} 人天）`,
-    retried && !confirmRetry && '请先核对上次创建结果并勾选重试确认',
   ].filter((value): value is string => typeof value === 'string')
   const changeRange = (key: string, patch: Partial<RangeDraft>) => setRanges(current => current.map(range => range.key === key ? { ...range, ...patch } : range))
   /** Persist ranges first so creation always sees the exact saved revisions. */
@@ -497,7 +510,7 @@ function GroupEditor({ itemKey, units, archivedUnits, onClose, onSaved }: { item
     try {
       const claims = await persistRanges()
       if (over) throw new Error(`${t.overAllocate}：${total} > ${count} ${t.personDays}`)
-      const result = await api<{ unit: WorktimeUnit; units?: WorktimeUnit[]; error?: string }>('/create', { units: claims, cost, team, category, tasks: inputTasks, confirmRetry })
+      const result = await api<{ unit: WorktimeUnit; units?: WorktimeUnit[]; error?: string }>('/create', { units: claims, cost, team, category, tasks: inputTasks })
       if (result.error) { onSaved(); setError(result.error) } else { onSaved(t.createdMessage); onClose() }
     } catch (error) { setError(errorText(error)) } finally { setBusy(false) }
   }
@@ -532,7 +545,6 @@ function GroupEditor({ itemKey, units, archivedUnits, onClose, onSaved }: { item
       {over && <p className={css.error} role="alert">{t.overAllocate}：{total} &gt; {count} {t.personDays}</p>}
       </>}
       {hasCreated && <p className={css.notice}>{t.locked}</p>}
-      {retried && <><p className={css.notice}>{t.retryHint}</p><label><input type="checkbox" checked={confirmRetry} disabled={busy} onChange={event => setConfirmRetry(event.target.checked)} />{t.confirmRetry}</label></>}
       {historyUnits.flatMap(unit => unit.tasks).filter(task => task.status !== 'created').map((task, i) => <div className={css.result} key={i}><strong>{task.title}</strong><small>{task.start} — {task.end} · {task.days} {t.personDays} · {task.status === 'pending' ? t.pending : t.uncertain}</small>{task.itemKey && <div className={css.itemLink}><span>{task.itemKey}</span><TomatoLinkButton itemKey={task.itemKey} /></div>}{task.error && <p className={css.error}>{task.error}</p>}</div>)}
       {error && <p role="alert" className={css.error}>{error}</p>}
     </div>
@@ -558,7 +570,7 @@ function TaskEditor({ task, readOnly, busy: calendarBusy, onClose, onMutate, onN
     setError('')
     try { await onMutate(task, action, { start, end }) } catch (error) { setError(errorText(error)) }
   }
-  return <Modal open title={`${t.task} · ${task.itemKey}`} description={task.title} closeLabel={t.close} onClose={() => { if (!busy) onClose() }} className={css.taskDialog!}
+  return <Modal open title={`${task.itemType || t.task} · ${task.itemKey}`} description={task.title} closeLabel={t.close} onClose={() => { if (!busy) onClose() }} className={css.taskDialog!}
     footer={<><Button variant="ghost" disabled={busy} onClick={onClose}>{t.close}</Button>{!readOnly && <><Button variant="outline" disabled={busy} onClick={() => void submit('delete')}>{confirmDelete ? t.confirmDelete : t.deleteTask}</Button><Button variant="primary" disabled={busy || !daysIn(start, end) || (start === task.start && end === task.end)} onClick={() => void submit('move')}>{busy ? t.saving : t.saveTaskDates}</Button></>}</>}>
     <div className={css.form}><div className={css.unitSummary}><span>{task.days} {t.personDays}{statusLabel && ` · ${statusLabel}`}</span><TomatoLinkButton itemKey={task.itemKey} /></div>
       <div className={css.twoColumns}>

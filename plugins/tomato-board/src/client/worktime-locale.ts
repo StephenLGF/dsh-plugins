@@ -19,7 +19,7 @@ export const worktimeText = {
   total: '阶段合计', create: '确认并创建 Task', creating: '正在创建并核对…',
   createdAllocation: '已分配投入', currentCapacity: '本次可分配', currentStages: '本次阶段与投入', skippedFields: '未写入番茄的字段',
   splitHint: '仅填写需要的阶段，留空的阶段不会创建。每个阶段至少 0.5 人天、按 0.5 递增，合计不能超过剩余可分配人天。',
-  retryHint: '上次创建结果待核对。已有 Task 编号的记录不能直接重建；无编号的记录须先确认番茄中没有对应 Task，再重试。', confirmRetry: '已核对番茄，确认没有本次待核对记录对应的 Task', locked: '已有 Task 会保留；拖拽扩长时间段后，可以继续分配剩余人天。',
+  locked: '已有 Task 会保留；拖拽扩长时间段后，可以继续分配剩余人天。',
   readFailed: '读取失败', hostStale: '工时服务仍是旧版本，请退出并重新打开 DSH 后重试', close: '关闭', saved: '安排已保存', createdMessage: 'Task 已创建并核对',
   duplicate: '该需求在相同日期已有安排，已打开原记录',
   historyFailed: '番茄历史 Task 读取失败，本地安排仍保留',

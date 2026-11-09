@@ -1,5 +1,6 @@
 /** Durable calendar units and their individually verified Tomato tasks. */
 export interface WorktimeTask {
+  itemType?: string
   stage: string
   title: string
   days: number

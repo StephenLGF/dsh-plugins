@@ -11,7 +11,12 @@
 .legend { display: flex; align-items: center; gap: 5px; margin: 0; color: var(--wt-muted); font-size: 11px; }
 .legend small { margin-left: auto; font-size: 11px; }
 .storyDot, .taskDot { width: 8px; height: 8px; display: inline-block; border-radius: 2px; background: var(--wt-accent); }
-.taskDot { margin-left: 12px; border-radius: 50%; background: var(--dsw-alias-state-success-primary, var(--wt-text)); }
+.taskDot { margin-left: 12px; border-radius: 50%; background: var(--wt-task); }
+.trackingDot { width: 8px; height: 8px; display: inline-block; margin-left: 12px; border-radius: 50%; background: var(--wt-tracking); }
+.barTracking { border: 1px solid color-mix(in srgb, var(--wt-tracking) 30%, transparent); border-left: 3px solid var(--wt-tracking); background: color-mix(in srgb, var(--wt-tracking) 13%, var(--wt-bg)); }
+.previewTrackingDay { background: color-mix(in srgb, var(--wt-tracking) 18%, transparent); box-shadow: inset 0 2px var(--wt-tracking), inset 0 -2px var(--wt-tracking); }
+.previewTrackingDay.previewStartDay { border-left-color: var(--wt-tracking); }
+.previewTrackingDay.previewEndDay { border-right-color: var(--wt-tracking); }
 .help { margin: 8px 0 12px; font-size: 11px; line-height: 1.7; color: var(--dsw-alias-label-secondary); }
 .calendarArea { flex: 1; width: 100%; max-width: 1280px; max-height: 640px; margin: auto; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
 /* While dragging a range, bars must not swallow the pointer entering a day. */

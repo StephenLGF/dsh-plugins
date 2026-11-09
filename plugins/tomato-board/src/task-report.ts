@@ -1,3 +1,4 @@
+import { isScheduledTask } from './task-types.ts'
 type Row = Record<string, unknown>
 type Run = (args: string[]) => Promise<unknown>
 const row = (value: unknown): Row => value && typeof value === 'object' && !Array.isArray(value) ? value as Row : {}
@@ -67,7 +68,15 @@ function transitions(payload: unknown) {
 }
 
 /** Only follow live, unambiguous business transitions; never approve work hours. */
-function nextTransition(currentStatus: string, candidates: Row[]) {
+function nextTransition(currentStatus: string, candidates: Row[], preparing = false) {
+  if (preparing) candidates = candidates.map(value => {
+    // These exact fields are supplied and verified by this report before any
+    // transition executes. Other validation and permission failures still block.
+    const reason = text(value.disabledReason)
+    const missing = /当前事项字段「(工时工作量|实际开始时间|实际完成时间)」应该非空/gu
+    const remainder = reason.replace(missing, '').replace(/[\s；;，,。]/gu, '')
+    return value.disabled === true && reason && !remainder ? { ...value, disabled: false } : value
+  })
   const review = candidates.filter(value => reviewStates.has(text(value.targetStatus ?? value.status)))
   const done = candidates.filter(value => doneStates.has(text(value.targetStatus ?? value.status)))
   const progress = candidates.filter(value => progressStates.has(text(value.targetStatus ?? value.status)))
@@ -75,7 +84,7 @@ function nextTransition(currentStatus: string, candidates: Row[]) {
   const options = groups.find(group => group.some(value => value.disabled === false && text(value.transition))) ?? groups.flat()
   const enabled = options.filter(value => value.disabled === false && text(value.transition))
   if (enabled.length > 1) throw new Error('存在多个报工流转，请在番茄中选择具体分支')
-  if (!enabled.length) throw new Error(options.map(value => text(value.disabledReason)).filter(Boolean).join('；') || '当前没有可用的报工流转，请在番茄中检查工作流和必填字段')
+  if (!enabled.length) throw new Error([...new Set(options.map(value => text(value.disabledReason)).filter(Boolean))].join('；') || '当前没有可用的报工流转，请在番茄中检查工作流和必填字段')
   return enabled[0]!
 }
 
@@ -85,7 +94,7 @@ export function createTaskReportService(run: Run) {
     let mutating = false
     const read = async () => row(await run(['team', 'item', 'view', input.itemKey]))
     const owned = (item: Row) => {
-      if (text(item.itemType) !== 'Task') throw new Error('只能对 Task 报工')
+      if (!isScheduledTask(text(item.itemType))) throw new Error('只能对 Task 或跟踪任务报工')
       if (!array(fields(item).assignee).map(row).some(owner =>
         (text(user.userId) && text(owner.objectId ?? owner.value) === text(user.userId))
         || (text(user.username) && text(owner.username) === text(user.username)))) throw new Error('只能对当前登录用户负责的 Task 报工')
@@ -106,8 +115,9 @@ export function createTaskReportService(run: Run) {
       if (result.currentStatus !== input.expectedStatus || taskStart !== input.expectedStart || taskEnd !== input.expectedEnd
         || date(value.StartDate) !== input.expectedActualStart || date(value.ActualFinishTime) !== input.expectedActualEnd
         || (value.StoryPoint1 == null ? null : Number(value.StoryPoint1)) !== input.expectedActualDays) throw new Error('Task 状态、日期或实际工时已变化，请刷新后重试')
-      // Check the first edge before changing any fields.
-      nextTransition(result.currentStatus, transitions(await run(['team', 'transition', 'list', input.itemKey])))
+      // Preflight permits only missing actual-work fields supplied below. The
+      // real enabled transition is always rediscovered after field persistence.
+      nextTransition(result.currentStatus, transitions(await run(['team', 'transition', 'list', input.itemKey])), true)
       item = await read(); owned(item); value = fields(item)
       if (text(item.status) !== input.expectedStatus || date(value.DateSDate) !== input.expectedStart || date(value.qiwangwanchengriqi) !== input.expectedEnd
         || date(value.StartDate) !== input.expectedActualStart || date(value.ActualFinishTime) !== input.expectedActualEnd

@@ -1,3 +1,4 @@
+import { isScheduledTask, scheduledTaskIql } from './task-types.ts'
 import { readFile, mkdir, writeFile, rename, open, unlink } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
@@ -40,6 +41,8 @@ interface Store {
   units: WorktimeUnit[]
   /** Removed ranges keep Task journals without scheduling the requirement. */
   archivedUnits?: WorktimeUnit[]
+  /** Submission journals only; never used as live Task data or capacity. */
+  creationHistory?: WorktimeUnit[]
   taskOperations?: Array<{ itemKey: string; action: string; start?: string; end?: string; startedAt: string }>
   groupOperations?: Array<{ itemKey: string; startedAt: string; tasks: Array<{ itemKey: string; start: string; end: string; nextStart: string; nextEnd: string }> }>
 }
@@ -47,6 +50,8 @@ const keyPattern = /^[A-Za-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)*-\d+$/u
 const record = (value: unknown): RecordValue => value && typeof value === 'object' && !Array.isArray(value) ? value as RecordValue : {}
 const text = (value: unknown): string => typeof value === 'string' ? value : Array.isArray(value) ? text(value[0]) : value && typeof value === 'object' ? text(record(value).name ?? record(value).label ?? record(value).value) : ''
 const list = (value: unknown): unknown[] => Array.isArray(value) ? value : []
+const sprintIds = (value: unknown): string[] => (Array.isArray(value) ? value : value ? [value] : [])
+  .map(item => typeof item === 'string' ? item : text(record(item).objectId ?? record(item).value)).filter(Boolean).sort()
 const fieldValues = (raw: unknown) => record(record(raw).values ?? record(raw).value)
 const localDate = (value: unknown): string => {
   if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/u.test(value)) return value.slice(0, 10)
@@ -111,7 +116,8 @@ async function metadata(run: Dependencies['run'], itemKey: string) {
   const unanimous = (key: string) => { const values = [...new Set(recentValues.map(value => text(value[key])).filter(Boolean))]; return values.length === 1 ? values[0]! : '' }
   const range = list(record(definitions.find(field => field.key === 'ActualFinishTime')?.property).range).map(localDate).filter(Boolean)
   const data: WorktimeMetadata = {
-    project, assignee: currentId, assigneeName: text(current.nickname) || text(current.username) || currentId,
+    project: options('view_project').find(option => option.value === project)?.label || project,
+    assignee: currentId, assigneeName: text(current.nickname) || text(current.username) || currentId,
     teams: options('suoshutuandui').map(option => option.label), costs: options('Dropdown2').map(option => option.label),
     categories: options('Dropdown_task').map(option => option.label).filter(value => ['软件开发', '修复BUG', 'bug修复', 'Bug修复'].includes(value)),
     suggestedTeam: text(fields.suoshutuandui) || unanimous('suoshutuandui'), suggestedCost: text(fields.Dropdown2) || unanimous('Dropdown2'),
@@ -188,6 +194,46 @@ export function registerWorktime(ctx: Context, deps: Dependencies): void {
     } }), `tomato-board: ${path}`)
   }
   const taskBugs = createTaskBugService(deps.run, deps)
+  async function refreshRequirementTasks(store: Store, itemKey: string) {
+    const group = [...store.units, ...(store.archivedUnits ?? [])].filter(unit => unit.itemKey === itemKey)
+    if (!group.length) return
+    const [context, current] = await Promise.all([storyContext(deps.run, itemKey), deps.run(['team', 'user', 'current'])])
+    const user = record(current)
+    const tasks: WorktimeUnit['tasks'] = []
+    for (let page = 1; ; page++) {
+      if (page > 100) throw new Error('需求下 Task 过多，无法完整核对')
+      const payload = record(await deps.run(['team', 'item', 'search', '--iql', `${scheduledTaskIql} and ancestors in ${JSON.stringify([text(context.story.objectId ?? context.story.itemId)])}`,
+        '--fields', 'key,name,assignee,DateSDate,qiwangwanchengriqi,planStoryPoint', '--page', String(page), '--size', '50']))
+      if (!Array.isArray(payload.items)) throw new Error('读取需求 Task 失败，不能使用本地记录计算工时')
+      for (const raw of payload.items) {
+        const key = text(record(raw).key)
+        if (!keyPattern.test(key) || tasks.some(task => task.itemKey === key)) continue
+        const remote = record(await deps.run(['team', 'item', 'view', key])); const values = fieldValues(remote)
+        if (!isScheduledTask(text(remote.itemType)) || !list(values.assignee).map(record).some(owner =>
+          (text(user.userId) && text(owner.objectId ?? owner.value) === text(user.userId)) || (text(user.username) && text(owner.username) === text(user.username)))) continue
+        const parent = record(remote.ancestor)
+        const ancestors = list(remote.ancestors).map(value => text(record(value).objectId ?? value))
+        const parentId = text(context.story.objectId ?? context.story.itemId)
+        if (text(parent.objectId) ? text(parent.objectId) !== parentId : ancestors.length !== 1 || ancestors[0] !== parentId) continue
+        const start = localDate(values.DateSDate); const end = localDate(values.qiwangwanchengriqi)
+        const days = Number(values.planStoryPoint)
+        if (!start || !end || end < start || !Number.isFinite(days) || days <= 0) continue
+        const journal = group.flatMap(unit => unit.tasks).find(task => task.itemKey === key)
+        tasks.push({ stage: journal?.stage ?? 'develop', itemType: text(remote.itemType), itemKey: key, title: text(remote.name), start, end, days, status: 'created',
+          ...(journal?.start === start && journal.end === end && journal.days === days && journal.allocationSlots ? { allocationSlots: [...journal.allocationSlots] } : {}) })
+      }
+      if (payload.items.length < 50 || payload.nextPageIndex === -1) break
+    }
+    // Keep evidence of previous submissions separately from live snapshots.
+    const journals = group.filter(unit => unit.tasks.some(task => task.status !== 'pending'))
+    for (const unit of journals) {
+      if (!store.creationHistory?.some(previous => previous.id === unit.id && previous.revision === unit.revision && JSON.stringify(previous.tasks) === JSON.stringify(unit.tasks))) {
+        store.creationHistory = [...(store.creationHistory ?? []), { ...unit, tasks: [...unit.tasks] }]
+      }
+    }
+    for (const unit of group) unit.tasks = []
+    for (const task of tasks) (store.units.find(unit => unit.itemKey === itemKey && unit.start <= task.start && task.start <= unit.end) ?? group[0]!).tasks.push(task)
+  }
   route('/api/tomato-board/worktime/requirements', 'GET', async (_, query) => searchRequirements(deps.run, query.get('q') ?? ''))
   const reportTask = createTaskReportService(deps.run)
   route('/api/tomato-board/worktime/report-options', 'GET', async () => loadTaskReportConstraints(deps.run))
@@ -231,10 +277,20 @@ export function registerWorktime(ctx: Context, deps: Dependencies): void {
   route('/api/tomato-board/worktime', 'GET', async (_, query) => {
     const store = await load()
     const assignee = query.get('assignee')
-    if (!assignee) return store
+    if (!assignee || assignee === 'currentUser()') {
+      const itemKey = query.get('itemKey')
+      if (itemKey) {
+        if (!keyPattern.test(itemKey)) throw new Error('无效的需求编号')
+        await refreshRequirementTasks(store, itemKey)
+        return { units: store.units.filter(unit => unit.itemKey === itemKey), archivedUnits: (store.archivedUnits ?? []).filter(unit => unit.itemKey === itemKey) }
+      }
+      // Calendar plans are local. Remote Task snapshots are fetched separately,
+      // and allocation dialogs explicitly reconcile only the opened requirement.
+      return { ...store, units: store.units.map(unit => ({ ...unit, tasks: [] })), archivedUnits: (store.archivedUnits ?? []).map(unit => ({ ...unit, tasks: [] })), creationHistory: undefined }
+    }
     if (assignee !== 'currentUser()' && !/^[A-Za-z0-9_.@-]{1,128}$/u.test(assignee)) throw new Error('无效的负责人')
     // Local plans belong to the current login; another user is read-only and shows only remote tasks.
-    return assignee === 'currentUser()' ? store : { ...store, units: [], archivedUnits: [] }
+    return { ...store, units: [], archivedUnits: [], creationHistory: undefined }
   })
   route('/api/tomato-board/worktime/metadata', 'GET', async (_, query) => (await metadata(deps.run, query.get('itemKey') ?? '')).data)
   route('/api/tomato-board/worktime/ranges', 'POST', async request => {
@@ -248,6 +304,7 @@ export function registerWorktime(ctx: Context, deps: Dependencies): void {
       const group = store.units.filter(unit => unit.itemKey === itemKey)
       const claims = list(input.units).map(record)
       if (group.length !== claims.length || group.some(unit => !claims.some(claim => claim.id === unit.id && claim.revision === unit.revision))) throw new Error('安排已变化，请刷新后编辑')
+      await refreshRequirementTasks(store, itemKey)
       const removed = group.filter(unit => !ranges.some(range => range.id === unit.id))
       freezeAllocations(store, itemKey)
       if (removed.some(unit => unit.tasks.length)) store.archivedUnits = [...(store.archivedUnits ?? []), ...removed.filter(unit => unit.tasks.length)]
@@ -308,7 +365,7 @@ export function registerWorktime(ctx: Context, deps: Dependencies): void {
   /** Verify ownership and the version of a remote Task before writing dates. */
   async function ownedTask(itemKey: string, start: string, end: string, user: RecordValue) {
     const raw = record(await deps.run(['team', 'item', 'view', itemKey]))
-    if (text(raw.itemType) !== 'Task') throw new Error('只允许对 Task 同步日期或删除')
+    if (!isScheduledTask(text(raw.itemType))) throw new Error('只允许对 Task 或跟踪任务同步日期或删除')
     const values = fieldValues(raw)
     if (!list(values.assignee).map(record).some(owner =>
       (text(user.userId) && text(owner.objectId ?? owner.value) === text(user.userId))
@@ -403,11 +460,7 @@ export function registerWorktime(ctx: Context, deps: Dependencies): void {
         if (!unit || unit.itemKey !== first.itemKey || unit.revision !== claim.revision) throw new Error('安排已变化，请刷新后重试')
         return unit
       })
-      const unresolved = [...store.units, ...(store.archivedUnits ?? [])].filter(unit => unit.itemKey === first.itemKey).flatMap(unit =>
-        unit.tasks.filter(task => (task.status === 'uncertain' || task.status === 'creating')
-          && (batch.includes(unit) || batch.some(range => task.start <= range.end && task.end >= range.start))))
-      if (unresolved.some(task => task.itemKey)) throw new Error('已有 Task 编号但创建结果待核对，请先核对番茄记录，不能直接重复创建')
-      if (unresolved.length && input.confirmRetry !== true) throw new Error('创建结果待核对，请先确认番茄中没有对应 Task，再确认重试')
+      await refreshRequirementTasks(store, first.itemKey)
       const group = store.units.filter(value => value.itemKey === first.itemKey)
       const dates = unitDates(batch)
       // A zero person-day stage means "not allocated": skip it instead of failing.
@@ -428,6 +481,7 @@ export function registerWorktime(ctx: Context, deps: Dependencies): void {
         view_project: [context.project], Dropdown2: optionValue('Dropdown2', input.cost), suoshutuandui: optionValue('suoshutuandui', input.team),
         Dropdown_task: optionValue('Dropdown_task', input.category),
         assignee: taskAssignees.map(userValue),
+        ...(sprintIds(context.fields.sprint).length ? { sprint: sprintIds(context.fields.sprint) } : {}),
       }
       if (!data.categories.includes(String(input.category))) throw new Error('任务分类仅支持软件开发或修复BUG')
       // The plan dates and workload are the point of the record, so they may never
@@ -470,11 +524,6 @@ export function registerWorktime(ctx: Context, deps: Dependencies): void {
       })
       // Each task belongs to the date unit its first day falls into.
       for (const unit of batch) unit.tasks = unit.tasks.filter(task => task.status === 'created')
-      // Explicitly confirmed missing Tasks can be retried; confirmed creations
-      // and records with real item keys are never discarded or recreated.
-      if (input.confirmRetry === true) for (const unit of store.archivedUnits ?? []) {
-        unit.tasks = unit.tasks.filter(task => !unresolved.includes(task) || Boolean(task.itemKey))
-      }
       for (const task of tasks) (batch.find(unit => unit.start <= task.start && task.start <= unit.end) ?? batch[0]!).tasks.push(task)
       for (const unit of batch) {
         unit.project = context.project; unit.team = String(input.team); unit.cost = String(input.cost); unit.category = String(input.category)
@@ -497,6 +546,7 @@ export function registerWorktime(ctx: Context, deps: Dependencies): void {
           const checks: Array<[string, boolean]> = [
             ['name', text(verified.name) === task.title],
             ['view_project', text(actual.view_project) === text(values.view_project)],
+            ['sprint', !('sprint' in values) || JSON.stringify(sprintIds(actual.sprint)) === JSON.stringify(sprintIds(values.sprint))],
             ['Dropdown2', text(actual.Dropdown2) === text(values.Dropdown2)],
             ['suoshutuandui', text(actual.suoshutuandui) === text(values.suoshutuandui)],
             ['Dropdown_task', text(actual.Dropdown_task) === text(values.Dropdown_task)],
@@ -537,7 +587,7 @@ export function registerWorktime(ctx: Context, deps: Dependencies): void {
     const assignee = query.get('assignee') || 'currentUser()'
     if (assignee !== 'currentUser()' && !/^[A-Za-z0-9_.@-]{1,128}$/u.test(assignee)) throw new Error('无效的负责人')
     const owner = assignee === 'currentUser()' ? assignee : JSON.stringify(assignee)
-    const iql = `负责人 in [${owner}] and 类型 = Task and DateSDate <= ${JSON.stringify(end)} and qiwangwanchengriqi >= ${JSON.stringify(start)}`
+    const iql = `负责人 in [${owner}] and ${scheduledTaskIql} and DateSDate <= ${JSON.stringify(end)} and qiwangwanchengriqi >= ${JSON.stringify(start)}`
     const candidates = new Set<string>()
     let seen = 0
     let truncated = false
@@ -554,19 +604,19 @@ export function registerWorktime(ctx: Context, deps: Dependencies): void {
     // allowing a search result to become an editable calendar Task.
     const user = assignee === 'currentUser()' ? record(await deps.run(['team', 'user', 'current'])) : { username: assignee, userId: assignee }
     const keys = [...candidates].filter(key => keyPattern.test(key))
-    const tasks: Array<{ itemKey: string; title: string; status: string; start: string; end: string; days: number; actualDays: number | null; actualStart: string; actualEnd: string }> = []
+    const tasks: Array<{ itemKey: string; title: string; status: string; start: string; end: string; days: number; itemType: string; actualDays: number | null; actualStart: string; actualEnd: string }> = []
     let cursor = 0
     await Promise.all(Array.from({ length: Math.min(4, keys.length) }, async () => {
       while (cursor < keys.length) {
         const itemKey = keys[cursor++]!
         const item = record(await deps.run(['team', 'item', 'view', itemKey]))
         const value = fieldValues(item)
-        if (text(item.itemType) !== 'Task' || !list(value.assignee).map(record).some(owner =>
+        if (!isScheduledTask(text(item.itemType)) || !list(value.assignee).map(record).some(owner =>
           (text(user.userId) && text(owner.objectId ?? owner.value) === text(user.userId))
           || (text(user.username) && text(owner.username) === text(user.username)))) continue
         const taskStart = localDate(value.DateSDate); const taskEnd = localDate(value.qiwangwanchengriqi)
         if (!taskStart || !taskEnd || taskStart > taskEnd || taskStart > end || taskEnd < start) continue
-        tasks.push({ itemKey, title: text(item.name ?? item.title), status: text(item.status), start: taskStart, end: taskEnd, days: Number(value.planStoryPoint) || 0,
+        tasks.push({ itemKey, itemType: text(item.itemType), title: text(item.name ?? item.title), status: text(item.status), start: taskStart, end: taskEnd, days: Number(value.planStoryPoint) || 0,
           actualDays: value.StoryPoint1 == null ? null : Number(value.StoryPoint1), actualStart: localDate(value.StartDate), actualEnd: localDate(value.ActualFinishTime) })
       }
     }))

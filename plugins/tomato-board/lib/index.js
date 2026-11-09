@@ -903,6 +903,14 @@ function registerPrAssistant(ctx, config = {}) {
 	}), "pr-assistant: conflict push route");
 }
 //#endregion
+//#region src/task-types.ts
+/** Work items supported by the scheduling/reporting tools. Creation remains Task. */
+const scheduledTaskTypes = ["Task", "跟踪任务"];
+const scheduledTaskIql = `类型 in ${JSON.stringify(scheduledTaskTypes)}`;
+function isScheduledTask(type) {
+	return scheduledTaskTypes.includes(type);
+}
+//#endregion
 //#region src/worktime-model.ts
 /** A Task may cover several ranges even though its record belongs to the first. */
 function unitHasCreatedTasks(unit, units) {
@@ -1092,7 +1100,7 @@ function createTaskBugService(run, config) {
 			"view",
 			itemKey
 		]));
-		if (text$3(value.itemType) !== "Task") throw new Error("请选择 Task");
+		if (!isScheduledTask(text$3(value.itemType))) throw new Error("请选择 Task 或跟踪任务");
 		if (!text$3(value.objectId)) throw new Error("Task 缺少事项标识");
 		return value;
 	}
@@ -1311,7 +1319,15 @@ function transitions(payload) {
 	throw new Error("无法读取 Task 工作流");
 }
 /** Only follow live, unambiguous business transitions; never approve work hours. */
-function nextTransition(currentStatus, candidates) {
+function nextTransition(currentStatus, candidates, preparing = false) {
+	if (preparing) candidates = candidates.map((value) => {
+		const reason = text$2(value.disabledReason);
+		const remainder = reason.replace(/当前事项字段「(工时工作量|实际开始时间|实际完成时间)」应该非空/gu, "").replace(/[\s；;，,。]/gu, "");
+		return value.disabled === true && reason && !remainder ? {
+			...value,
+			disabled: false
+		} : value;
+	});
 	const review = candidates.filter((value) => reviewStates.has(text$2(value.targetStatus ?? value.status)));
 	const done = candidates.filter((value) => doneStates.has(text$2(value.targetStatus ?? value.status)));
 	const progress = candidates.filter((value) => progressStates.has(text$2(value.targetStatus ?? value.status)));
@@ -1323,7 +1339,7 @@ function nextTransition(currentStatus, candidates) {
 	const options = groups.find((group) => group.some((value) => value.disabled === false && text$2(value.transition))) ?? groups.flat();
 	const enabled = options.filter((value) => value.disabled === false && text$2(value.transition));
 	if (enabled.length > 1) throw new Error("存在多个报工流转，请在番茄中选择具体分支");
-	if (!enabled.length) throw new Error(options.map((value) => text$2(value.disabledReason)).filter(Boolean).join("；") || "当前没有可用的报工流转，请在番茄中检查工作流和必填字段");
+	if (!enabled.length) throw new Error([...new Set(options.map((value) => text$2(value.disabledReason)).filter(Boolean))].join("；") || "当前没有可用的报工流转，请在番茄中检查工作流和必填字段");
 	return enabled[0];
 }
 function createTaskReportService(run) {
@@ -1343,7 +1359,7 @@ function createTaskReportService(run) {
 			input.itemKey
 		]));
 		const owned = (item) => {
-			if (text$2(item.itemType) !== "Task") throw new Error("只能对 Task 报工");
+			if (!isScheduledTask(text$2(item.itemType))) throw new Error("只能对 Task 或跟踪任务报工");
 			if (!array$1(fields(item).assignee).map(row$1).some((owner) => text$2(user.userId) && text$2(owner.objectId ?? owner.value) === text$2(user.userId) || text$2(user.username) && text$2(owner.username) === text$2(user.username))) throw new Error("只能对当前登录用户负责的 Task 报工");
 		};
 		try {
@@ -1367,7 +1383,7 @@ function createTaskReportService(run) {
 				"transition",
 				"list",
 				input.itemKey
-			])));
+			])), true);
 			item = await read();
 			owned(item);
 			value = fields(item);
@@ -1534,6 +1550,7 @@ const keyPattern = /^[A-Za-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)*-\d+$/u;
 const record = (value) => value && typeof value === "object" && !Array.isArray(value) ? value : {};
 const text = (value) => typeof value === "string" ? value : Array.isArray(value) ? text(value[0]) : value && typeof value === "object" ? text(record(value).name ?? record(value).label ?? record(value).value) : "";
 const list = (value) => Array.isArray(value) ? value : [];
+const sprintIds = (value) => (Array.isArray(value) ? value : value ? [value] : []).map((item) => typeof item === "string" ? item : text(record(item).objectId ?? record(item).value)).filter(Boolean).sort();
 const fieldValues = (raw) => record(record(raw).values ?? record(raw).value);
 const localDate = (value) => {
 	if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}/u.test(value)) return value.slice(0, 10);
@@ -1651,7 +1668,7 @@ async function metadata(run, itemKey) {
 		definitions,
 		options,
 		data: {
-			project,
+			project: options("view_project").find((option) => option.value === project)?.label || project,
 			assignee: currentId,
 			assigneeName: text(current.nickname) || text(current.username) || currentId,
 			teams: options("suoshutuandui").map((option) => option.label),
@@ -1771,6 +1788,74 @@ function registerWorktime(ctx, deps) {
 		}), `tomato-board: ${path}`);
 	};
 	const taskBugs = createTaskBugService(deps.run, deps);
+	async function refreshRequirementTasks(store, itemKey) {
+		const group = [...store.units, ...store.archivedUnits ?? []].filter((unit) => unit.itemKey === itemKey);
+		if (!group.length) return;
+		const [context, current] = await Promise.all([storyContext(deps.run, itemKey), deps.run([
+			"team",
+			"user",
+			"current"
+		])]);
+		const user = record(current);
+		const tasks = [];
+		for (let page = 1;; page++) {
+			if (page > 100) throw new Error("需求下 Task 过多，无法完整核对");
+			const payload = record(await deps.run([
+				"team",
+				"item",
+				"search",
+				"--iql",
+				`${scheduledTaskIql} and ancestors in ${JSON.stringify([text(context.story.objectId ?? context.story.itemId)])}`,
+				"--fields",
+				"key,name,assignee,DateSDate,qiwangwanchengriqi,planStoryPoint",
+				"--page",
+				String(page),
+				"--size",
+				"50"
+			]));
+			if (!Array.isArray(payload.items)) throw new Error("读取需求 Task 失败，不能使用本地记录计算工时");
+			for (const raw of payload.items) {
+				const key = text(record(raw).key);
+				if (!keyPattern.test(key) || tasks.some((task) => task.itemKey === key)) continue;
+				const remote = record(await deps.run([
+					"team",
+					"item",
+					"view",
+					key
+				]));
+				const values = fieldValues(remote);
+				if (!isScheduledTask(text(remote.itemType)) || !list(values.assignee).map(record).some((owner) => text(user.userId) && text(owner.objectId ?? owner.value) === text(user.userId) || text(user.username) && text(owner.username) === text(user.username))) continue;
+				const parent = record(remote.ancestor);
+				const ancestors = list(remote.ancestors).map((value) => text(record(value).objectId ?? value));
+				const parentId = text(context.story.objectId ?? context.story.itemId);
+				if (text(parent.objectId) ? text(parent.objectId) !== parentId : ancestors.length !== 1 || ancestors[0] !== parentId) continue;
+				const start = localDate(values.DateSDate);
+				const end = localDate(values.qiwangwanchengriqi);
+				const days = Number(values.planStoryPoint);
+				if (!start || !end || end < start || !Number.isFinite(days) || days <= 0) continue;
+				const journal = group.flatMap((unit) => unit.tasks).find((task) => task.itemKey === key);
+				tasks.push({
+					stage: journal?.stage ?? "develop",
+					itemType: text(remote.itemType),
+					itemKey: key,
+					title: text(remote.name),
+					start,
+					end,
+					days,
+					status: "created",
+					...journal?.start === start && journal.end === end && journal.days === days && journal.allocationSlots ? { allocationSlots: [...journal.allocationSlots] } : {}
+				});
+			}
+			if (payload.items.length < 50 || payload.nextPageIndex === -1) break;
+		}
+		const journals = group.filter((unit) => unit.tasks.some((task) => task.status !== "pending"));
+		for (const unit of journals) if (!store.creationHistory?.some((previous) => previous.id === unit.id && previous.revision === unit.revision && JSON.stringify(previous.tasks) === JSON.stringify(unit.tasks))) store.creationHistory = [...store.creationHistory ?? [], {
+			...unit,
+			tasks: [...unit.tasks]
+		}];
+		for (const unit of group) unit.tasks = [];
+		for (const task of tasks) (store.units.find((unit) => unit.itemKey === itemKey && unit.start <= task.start && task.start <= unit.end) ?? group[0]).tasks.push(task);
+	}
 	route("/api/tomato-board/worktime/requirements", "GET", async (_, query) => searchRequirements(deps.run, query.get("q") ?? ""));
 	const reportTask = createTaskReportService(deps.run);
 	route("/api/tomato-board/worktime/report-options", "GET", async () => loadTaskReportConstraints(deps.run));
@@ -1831,12 +1916,35 @@ function registerWorktime(ctx, deps) {
 	route("/api/tomato-board/worktime", "GET", async (_, query) => {
 		const store = await load();
 		const assignee = query.get("assignee");
-		if (!assignee) return store;
+		if (!assignee || assignee === "currentUser()") {
+			const itemKey = query.get("itemKey");
+			if (itemKey) {
+				if (!keyPattern.test(itemKey)) throw new Error("无效的需求编号");
+				await refreshRequirementTasks(store, itemKey);
+				return {
+					units: store.units.filter((unit) => unit.itemKey === itemKey),
+					archivedUnits: (store.archivedUnits ?? []).filter((unit) => unit.itemKey === itemKey)
+				};
+			}
+			return {
+				...store,
+				units: store.units.map((unit) => ({
+					...unit,
+					tasks: []
+				})),
+				archivedUnits: (store.archivedUnits ?? []).map((unit) => ({
+					...unit,
+					tasks: []
+				})),
+				creationHistory: void 0
+			};
+		}
 		if (assignee !== "currentUser()" && !/^[A-Za-z0-9_.@-]{1,128}$/u.test(assignee)) throw new Error("无效的负责人");
-		return assignee === "currentUser()" ? store : {
+		return {
 			...store,
 			units: [],
-			archivedUnits: []
+			archivedUnits: [],
+			creationHistory: void 0
 		};
 	});
 	route("/api/tomato-board/worktime/metadata", "GET", async (_, query) => (await metadata(deps.run, query.get("itemKey") ?? "")).data);
@@ -1854,6 +1962,7 @@ function registerWorktime(ctx, deps) {
 			const group = store.units.filter((unit) => unit.itemKey === itemKey);
 			const claims = list(input.units).map(record);
 			if (group.length !== claims.length || group.some((unit) => !claims.some((claim) => claim.id === unit.id && claim.revision === unit.revision))) throw new Error("安排已变化，请刷新后编辑");
+			await refreshRequirementTasks(store, itemKey);
 			const removed = group.filter((unit) => !ranges.some((range) => range.id === unit.id));
 			freezeAllocations(store, itemKey);
 			if (removed.some((unit) => unit.tasks.length)) store.archivedUnits = [...store.archivedUnits ?? [], ...removed.filter((unit) => unit.tasks.length)];
@@ -1935,7 +2044,7 @@ function registerWorktime(ctx, deps) {
 			"view",
 			itemKey
 		]));
-		if (text(raw.itemType) !== "Task") throw new Error("只允许对 Task 同步日期或删除");
+		if (!isScheduledTask(text(raw.itemType))) throw new Error("只允许对 Task 或跟踪任务同步日期或删除");
 		const values = fieldValues(raw);
 		if (!list(values.assignee).map(record).some((owner) => text(user.userId) && text(owner.objectId ?? owner.value) === text(user.userId) || text(user.username) && text(owner.username) === text(user.username))) throw new Error("只能修改当前登录用户负责的 Task");
 		if (localDate(values.DateSDate) !== start || localDate(values.qiwangwanchengriqi) !== end) throw new Error("Task 日期已变化，请刷新后重试");
@@ -2093,9 +2202,7 @@ function registerWorktime(ctx, deps) {
 				if (!unit || unit.itemKey !== first.itemKey || unit.revision !== claim.revision) throw new Error("安排已变化，请刷新后重试");
 				return unit;
 			});
-			const unresolved = [...store.units, ...store.archivedUnits ?? []].filter((unit) => unit.itemKey === first.itemKey).flatMap((unit) => unit.tasks.filter((task) => (task.status === "uncertain" || task.status === "creating") && (batch.includes(unit) || batch.some((range) => task.start <= range.end && task.end >= range.start))));
-			if (unresolved.some((task) => task.itemKey)) throw new Error("已有 Task 编号但创建结果待核对，请先核对番茄记录，不能直接重复创建");
-			if (unresolved.length && input.confirmRetry !== true) throw new Error("创建结果待核对，请先确认番茄中没有对应 Task，再确认重试");
+			await refreshRequirementTasks(store, first.itemKey);
 			const group = store.units.filter((value) => value.itemKey === first.itemKey);
 			const dates = unitDates(batch);
 			const drafts = list(input.tasks).map(record).map((task) => ({
@@ -2117,7 +2224,8 @@ function registerWorktime(ctx, deps) {
 				Dropdown2: optionValue("Dropdown2", input.cost),
 				suoshutuandui: optionValue("suoshutuandui", input.team),
 				Dropdown_task: optionValue("Dropdown_task", input.category),
-				assignee: taskAssignees.map(userValue)
+				assignee: taskAssignees.map(userValue),
+				...sprintIds(context.fields.sprint).length ? { sprint: sprintIds(context.fields.sprint) } : {}
 			};
 			if (!data.categories.includes(String(input.category))) throw new Error("任务分类仅支持软件开发或修复BUG");
 			const planKeys = new Set([
@@ -2177,7 +2285,6 @@ function registerWorktime(ctx, deps) {
 				};
 			});
 			for (const unit of batch) unit.tasks = unit.tasks.filter((task) => task.status === "created");
-			if (input.confirmRetry === true) for (const unit of store.archivedUnits ?? []) unit.tasks = unit.tasks.filter((task) => !unresolved.includes(task) || Boolean(task.itemKey));
 			for (const task of tasks) (batch.find((unit) => unit.start <= task.start && task.start <= unit.end) ?? batch[0]).tasks.push(task);
 			for (const unit of batch) {
 				unit.project = context.project;
@@ -2222,6 +2329,7 @@ function registerWorktime(ctx, deps) {
 					const broken = [
 						["name", text(verified.name) === task.title],
 						["view_project", text(actual.view_project) === text(values.view_project)],
+						["sprint", !("sprint" in values) || JSON.stringify(sprintIds(actual.sprint)) === JSON.stringify(sprintIds(values.sprint))],
 						["Dropdown2", text(actual.Dropdown2) === text(values.Dropdown2)],
 						["suoshutuandui", text(actual.suoshutuandui) === text(values.suoshutuandui)],
 						["Dropdown_task", text(actual.Dropdown_task) === text(values.Dropdown_task)],
@@ -2268,7 +2376,7 @@ function registerWorktime(ctx, deps) {
 		datesBetween(start, end);
 		const assignee = query.get("assignee") || "currentUser()";
 		if (assignee !== "currentUser()" && !/^[A-Za-z0-9_.@-]{1,128}$/u.test(assignee)) throw new Error("无效的负责人");
-		const iql = `负责人 in [${assignee === "currentUser()" ? assignee : JSON.stringify(assignee)}] and 类型 = Task and DateSDate <= ${JSON.stringify(end)} and qiwangwanchengriqi >= ${JSON.stringify(start)}`;
+		const iql = `负责人 in [${assignee === "currentUser()" ? assignee : JSON.stringify(assignee)}] and ${scheduledTaskIql} and DateSDate <= ${JSON.stringify(end)} and qiwangwanchengriqi >= ${JSON.stringify(start)}`;
 		const candidates = /* @__PURE__ */ new Set();
 		let seen = 0;
 		let truncated = false;
@@ -2314,12 +2422,13 @@ function registerWorktime(ctx, deps) {
 					itemKey
 				]));
 				const value = fieldValues(item);
-				if (text(item.itemType) !== "Task" || !list(value.assignee).map(record).some((owner) => text(user.userId) && text(owner.objectId ?? owner.value) === text(user.userId) || text(user.username) && text(owner.username) === text(user.username))) continue;
+				if (!isScheduledTask(text(item.itemType)) || !list(value.assignee).map(record).some((owner) => text(user.userId) && text(owner.objectId ?? owner.value) === text(user.userId) || text(user.username) && text(owner.username) === text(user.username))) continue;
 				const taskStart = localDate(value.DateSDate);
 				const taskEnd = localDate(value.qiwangwanchengriqi);
 				if (!taskStart || !taskEnd || taskStart > taskEnd || taskStart > end || taskEnd < start) continue;
 				tasks.push({
 					itemKey,
+					itemType: text(item.itemType),
 					title: text(item.name ?? item.title),
 					status: text(item.status),
 					start: taskStart,

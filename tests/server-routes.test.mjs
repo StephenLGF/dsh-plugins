@@ -1,3 +1,6 @@
+import { mkdtemp, writeFile, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { apply as applyTomatoBoard } from '../plugins/tomato-board/lib/index.js'
@@ -55,4 +58,23 @@ test('read routes reject unsupported methods', async () => {
   const route = loadRoutes(applyTomatoBoard).find(item => item.path === '/api/tomato-board/pr/repository')
   const result = await invoke(route, { method: 'POST', url: '/api/tomato-board/pr/repository?path=/tmp/repo' })
   assert.equal(result.status, 405)
+})
+
+
+test('the issue board includes tracking tasks without a type restriction', async t => {
+  const dir = await mkdtemp(join(tmpdir(), 'tomato-board-tracking-'))
+  t.after(() => rm(dir, { recursive: true, force: true }))
+  const executable = join(dir, 'gitee')
+  await writeFile(executable, `#!${process.execPath}
+const args = process.argv.slice(2)
+const iql = args[args.indexOf('--iql') + 1]
+if (args[2] !== 'search' || iql !== '负责人 in [currentUser()]') process.exit(1)
+console.log(JSON.stringify({count: 1, items: [{key: 'proxima-12345', name: '跟踪需求实施', itemType: {name: '跟踪任务'}, status: {name: '进行中'}}]}))
+`, { mode: 0o755 })
+  const route = loadRoutes(applyTomatoBoard, { executable }).find(route => route.path === '/api/tomato-board/items')
+  const result = await invoke(route, { method: 'GET', url: '/api/tomato-board/items' })
+  assert.equal(result.status, 200)
+  assert.equal(result.body.items.length, 1)
+  assert.equal(result.body.items[0].itemType, '跟踪任务')
+  assert.equal(result.body.items[0].itemKey, 'proxima-12345')
 })

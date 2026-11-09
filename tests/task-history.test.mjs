@@ -29,6 +29,20 @@ const task = (username, overrides = {}) => ({
   values: { assignee: [{ username, value: `${username}-id` }], DateSDate: '2026-10-20', qiwangwanchengriqi: '2026-10-22', planStoryPoint: 2, ...overrides },
 })
 
+test('calendar queries and retains Task and tracking tasks, excluding other item types', async t => {
+  const request = await setup(t, async args => {
+    if (args[1] === 'user') return { username: 'alice', userId: 'alice-id' }
+    if (args[2] === 'search') {
+      assert.match(args[args.indexOf('--iql') + 1], /类型 in \["Task","跟踪任务"\]/)
+      return { count: 3, items: [1, 2, 3].map(id => ({ key: `Task-${id}` })) }
+    }
+    return { ...task('alice'), itemType: { name: args[3] === 'Task-1' ? 'Task' : args[3] === 'Task-2' ? '跟踪任务' : 'Story' } }
+  })
+  const result = await request(history)
+  assert.equal(result.statusCode, 200)
+  assert.deepEqual(result.body.tasks.map(task => task.itemType), ['Task', '跟踪任务'])
+})
+
 test('Task calendar verifies live ownership and dates instead of trusting stale search rows', async t => {
   let transferred = false
   const request = await setup(t, async args => {
@@ -40,7 +54,7 @@ test('Task calendar verifies live ownership and dates instead of trusting stale 
   })
   const first = await request(history)
   assert.equal(first.statusCode, 200)
-  assert.deepEqual(first.body.tasks, [{ itemKey: 'Task-1', title: '最新标题', status: '修复中', start: '2026-10-20', end: '2026-10-22', days: 2, actualDays: null, actualStart: '', actualEnd: '' }])
+  assert.deepEqual(first.body.tasks, [{ itemKey: 'Task-1', itemType: 'Task', title: '最新标题', status: '修复中', start: '2026-10-20', end: '2026-10-22', days: 2, actualDays: null, actualStart: '', actualEnd: '' }])
   transferred = true
   assert.deepEqual((await request(history)).body.tasks, [])
   assert.equal((await request(`${history}&assignee=bob`)).body.tasks.length, 2)
