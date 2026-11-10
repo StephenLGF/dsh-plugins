@@ -1,3 +1,4 @@
+import { IconChevronDown, IconClose, IconCopy, IconRefresh } from './icons.tsx'
 import { typeTone } from './item-type-colors.ts'
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
 import type { Context } from '@deepseek-ai/cordis'
@@ -9,7 +10,7 @@ import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 import {
-  Button, IconChevronDownOutline14, IconCloseOutline16, IconCopyOutline16, IconRefreshOutline16, Menu, Modal, Toast, writeClipboard,
+  Button, Menu, Modal, Toast, writeClipboard,
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { MenuEntry } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
@@ -596,7 +597,7 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
               variant="toolbar"
               size="sm"
               className={css.headerIconButton}
-              icon={<IconRefreshOutline16 />}
+              icon={<IconRefresh />}
               title="刷新番茄事项"
               aria-label="刷新番茄事项"
               disabled={board.loading}
@@ -607,7 +608,7 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
               variant="toolbar"
               size="sm"
               className={css.headerIconButton}
-              icon={<IconCloseOutline16 />}
+              icon={<IconClose />}
               title="关闭番茄工作台"
               aria-label="关闭番茄工作台"
               onClick={() => closeWorkbench(ctx)}
@@ -710,7 +711,7 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
                             setCopyNotice(current => ({ id: (current?.id ?? 0) + 1, text: copied ? `已复制 ${item.itemKey}` : '复制失败，请手动复制事项编号' }))
                           }}
                           onKeyDown={event => event.stopPropagation()}>
-                          <IconCopyOutline16 size={14} />
+                          <IconCopy size={14} />
                         </Button>
                       </div>
                       <div className={css.cardButtons}>
@@ -851,7 +852,7 @@ function WorkspaceFilterRow({ options, hidden, onToggle, onSetAll }: {
               onClick={() => { setOpen(!open) }}
             >
               <span>{summary}</span>
-              <i className={css.workspaceChevron} aria-hidden><IconChevronDownOutline14 /></i>
+              <i className={css.workspaceChevron} aria-hidden><IconChevronDown /></i>
             </button>
           }
         />
@@ -1009,7 +1010,7 @@ function TomatoConversationShortcut({ ctx, sessionId, useSessions }: PropsRuntim
                     <>
                       <span className={css.transitionDivider} aria-hidden="true" />
                       <span className={css.transitionAction}>流转</span>
-                      <IconChevronDownOutline14 className={css.transitionChevron} />
+                      <IconChevronDown className={css.transitionChevron} />
                     </>
                   ) : null}
                 </>

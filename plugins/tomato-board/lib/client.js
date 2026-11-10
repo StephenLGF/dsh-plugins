@@ -4,9 +4,80 @@ window.__ModuleLoader__.load({
 		var module = { exports: {} };
 		var exports = module.exports;
 		Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
+		let react_jsx_runtime = require("react/jsx-runtime");
 		let react = require("react");
 		let _deepseek_ai_dsh_client_ui_primitives = require("@deepseek-ai/dsh-client-ui-primitives");
-		let react_jsx_runtime = require("react/jsx-runtime");
+		//#region src/client/icons.tsx
+		function IconChevronDown({ size = 14, className }) {
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("svg", {
+				width: size,
+				height: size,
+				className,
+				viewBox: "0 0 16 16",
+				fill: "none",
+				stroke: "currentColor",
+				strokeWidth: "1.5",
+				strokeLinecap: "round",
+				strokeLinejoin: "round",
+				"aria-hidden": "true",
+				focusable: "false",
+				children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "m4 6 4 4 4-4" })
+			});
+		}
+		function IconClose({ size = 16, className }) {
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("svg", {
+				width: size,
+				height: size,
+				className,
+				viewBox: "0 0 16 16",
+				fill: "none",
+				stroke: "currentColor",
+				strokeWidth: "1.5",
+				strokeLinecap: "round",
+				"aria-hidden": "true",
+				focusable: "false",
+				children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "m4 4 8 8M12 4l-8 8" })
+			});
+		}
+		function IconCopy({ size = 16, className }) {
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("svg", {
+				width: size,
+				height: size,
+				className,
+				viewBox: "0 0 16 16",
+				fill: "none",
+				stroke: "currentColor",
+				strokeWidth: "1.3",
+				strokeLinecap: "round",
+				strokeLinejoin: "round",
+				"aria-hidden": "true",
+				focusable: "false",
+				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("rect", {
+					x: "5.5",
+					y: "5.5",
+					width: "8",
+					height: "8",
+					rx: "1.5"
+				}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M10.5 3.5V3A1.5 1.5 0 0 0 9 1.5H3A1.5 1.5 0 0 0 1.5 3v6A1.5 1.5 0 0 0 3 10.5h.5" })]
+			});
+		}
+		function IconRefresh({ size = 16, className }) {
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("svg", {
+				width: size,
+				height: size,
+				className,
+				viewBox: "0 0 16 16",
+				fill: "none",
+				stroke: "currentColor",
+				strokeWidth: "1.5",
+				strokeLinecap: "round",
+				strokeLinejoin: "round",
+				"aria-hidden": "true",
+				focusable: "false",
+				children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M13 6a5.2 5.2 0 1 0 .1 3M13 2.5V6H9.5" })
+			});
+		}
+		//#endregion
 		//#region src/client/item-type-colors.ts
 		const TYPE_TONES = {
 			Story: "#2f7d72",
@@ -1918,7 +1989,7 @@ window.__ModuleLoader__.load({
 						variant: "toolbar",
 						size: "sm",
 						className: team_management_module_css_default.headerIconButton,
-						icon: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconRefreshOutline16, {}),
+						icon: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(IconRefresh, {}),
 						title: "刷新",
 						"aria-label": "刷新团队统计",
 						onClick: () => {
@@ -2589,7 +2660,7 @@ window.__ModuleLoader__.load({
 							setOpen((current) => !current);
 							setQuery("");
 						},
-						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: selected?.name ?? value }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconChevronDownOutline14, {})]
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: selected?.name ?? value }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(IconChevronDown, {})]
 					}), open ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 						className: tomato_board_module_css_default.assigneeDropdown,
 						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
@@ -5569,7 +5640,7 @@ window.__ModuleLoader__.load({
 											variant: "toolbar",
 											size: "sm",
 											className: tomato_board_module_css_default.headerIconButton,
-											icon: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconRefreshOutline16, {}),
+											icon: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(IconRefresh, {}),
 											title: "刷新番茄事项",
 											"aria-label": "刷新番茄事项",
 											disabled: board.loading,
@@ -5583,7 +5654,7 @@ window.__ModuleLoader__.load({
 										variant: "toolbar",
 										size: "sm",
 										className: tomato_board_module_css_default.headerIconButton,
-										icon: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconCloseOutline16, {}),
+										icon: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(IconClose, {}),
 										title: "关闭番茄工作台",
 										"aria-label": "关闭番茄工作台",
 										onClick: () => closeWorkbench(ctx)
@@ -5795,7 +5866,7 @@ window.__ModuleLoader__.load({
 																}));
 															},
 															onKeyDown: (event) => event.stopPropagation(),
-															children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconCopyOutline16, { size: 14 })
+															children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(IconCopy, { size: 14 })
 														})]
 													}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 														className: tomato_board_module_css_default.cardButtons,
@@ -5935,7 +6006,7 @@ window.__ModuleLoader__.load({
 							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: summary }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("i", {
 								className: tomato_board_module_css_default.workspaceChevron,
 								"aria-hidden": true,
-								children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconChevronDownOutline14, {})
+								children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(IconChevronDown, {})
 							})]
 						})
 					})
@@ -6083,7 +6154,7 @@ window.__ModuleLoader__.load({
 								className: tomato_board_module_css_default.transitionAction,
 								children: "流转"
 							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_deepseek_ai_dsh_client_ui_primitives.IconChevronDownOutline14, { className: tomato_board_module_css_default.transitionChevron })
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)(IconChevronDown, { className: tomato_board_module_css_default.transitionChevron })
 						] }) : null
 					] })
 				})

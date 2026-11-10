@@ -1,6 +1,7 @@
+import { IconChevronDown } from './icons.tsx'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import { Button, IconChevronDownOutline14 } from '@deepseek-ai/dsh-client-ui-primitives'
+import { Button } from '@deepseek-ai/dsh-client-ui-primitives'
 import css from './tomato-board.module.css'
 
 export interface AssigneeUser {
@@ -43,7 +44,7 @@ export function AssigneePicker({ users, value, onChange, label = '负责人', cl
       {label ? <span>{label}</span> : null}
       <div ref={rootRef} className={css.assigneePicker}>
         <Button variant="outline" size="sm" className={css.assigneeTrigger} aria-label={ariaLabel} aria-haspopup="listbox" aria-expanded={open} onClick={() => { setOpen(current => !current); setQuery('') }}>
-          <span>{selected?.name ?? value}</span><IconChevronDownOutline14 />
+          <span>{selected?.name ?? value}</span><IconChevronDown />
         </Button>
         {open ? (
           <div className={css.assigneeDropdown}>

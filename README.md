@@ -6,7 +6,7 @@
 
 | 插件 | npm 包 | 说明 |
 | --- | --- | --- |
-| [番茄工作台](./plugins/tomato-board) | `@stephen1620/dsh-tomato-board` | 事项看板、任务日历、PR 助手、团队管理与 Harness 原生对话联动（0.3.4） |
+| [番茄工作台](./plugins/tomato-board) | `@stephen1620/dsh-tomato-board` | 事项看板、任务日历、PR 助手、团队管理与 Harness 原生对话联动（0.3.5） |
 
 每个插件都在 `plugins/` 下独立维护，拥有自己的 README、版本号、构建产物和 npm 发布配置。
 

@@ -35,6 +35,10 @@ npx @deepseek-ai/dsh plugin --profile desktop add .
 
 安装前请先确认必备的 Gitee CLI 已配置完成，具体要求见下方“必备环境”。
 
+## 0.3.5 更新
+
+- 修复部分 DSH shell 缺少 sized 图标导出导致的 React #130 白屏：下拉、关闭、复制、刷新图标改为插件内置 SVG，事项看板、负责人选择器和团队管理均不再依赖宿主图标命名。
+
 ## 0.3.4 更新
 
 - PR 助手合并为第三个页签，原「迭代投入」调整为「团队管理」。访问过的任务日历、PR 助手和团队管理在切换页签时保留界面状态。
@@ -61,6 +65,8 @@ npx @deepseek-ai/dsh plugin --profile desktop add .
 ## 界面兼容性
 
 工作台注册到 Harness 的 `main` 主内容区，打开时替换对话页并保留左侧会话栏，关闭后返回原对话。点击侧栏对话（含当前对话和搜索结果）或切换、新建对话时自动返回对话页；点击侧栏空白、展开项目和打开菜单时保留工作台。需要支持 `main` keyed slot 和 `ctx.layout.selectPanel` 的 Harness 版本；已在 DSH Desktop 2.0.13 验证。构建时也需要对应版本的 Harness 源码与类型声明。
+
+插件内置下拉、关闭、复制和刷新 SVG 图标，不依赖宿主的 sized 或 Medium/Regular 图标导出名称，避免不同 DSH shell 的图标命名差异导致 React #130 白屏。
 
 客户端仅以类型导入 `SessionId`，不依赖浏览器提供 `@deepseek-ai/dsh-session/types` 运行时模块，避免构建工具将其外置后导致插件加载失败。
 
@@ -176,7 +182,7 @@ command -v gitee
 
 ## 安装
 
-仓库当前版本：`0.3.4`。GitHub 代码与 npm 发布独立；如需使用本 README 描述的最新仓库实现，请优先从 GitHub 或本地目录安装。
+仓库当前版本：`0.3.5`。GitHub 代码与 npm 发布独立；如需使用本 README 描述的最新仓库实现，请优先从 GitHub 或本地目录安装。
 
 通过 npm 安装的用户，可在对应 profile 目录升级到 npm 已发布的最新版本：
 
