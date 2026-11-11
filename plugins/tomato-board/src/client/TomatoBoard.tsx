@@ -730,7 +730,7 @@ function TomatoBoardPanel({ ctx }: { ctx: Context }) {
                         >
                           ●
                         </Button>
-                        <TomatoLinkButton itemKey={item.itemKey} />
+                        <TomatoLinkButton itemKey={item.itemKey} tomatoUrl={item.tomatoUrl} />
                       </div>
                     </div>
                     <strong>{item.title}</strong>
@@ -1018,7 +1018,7 @@ function TomatoConversationShortcut({ ctx, sessionId, useSessions }: PropsRuntim
           </Button>
         )}
       />
-      <TomatoLinkButton itemKey={itemKey} disabled={!transitionState.tomatoUrl} />
+      <TomatoLinkButton itemKey={itemKey} tomatoUrl={transitionState.tomatoUrl} disabled={!transitionState.tomatoUrl} />
     </>
   )
 }

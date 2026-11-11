@@ -117,8 +117,25 @@ window.__ModuleLoader__.load({
 		var tomato_link_button_module_css_default = { "button": "AFUbiG_button" };
 		//#endregion
 		//#region src/client/TomatoLinkButton.tsx
-		/** One external-item action, using the configured host and tenant on the server. */
-		function TomatoLinkButton({ itemKey, disabled = false }) {
+		function externalUrl(value) {
+			if (typeof value !== "string" || !value) return "";
+			try {
+				const url = new URL(value);
+				if (url.protocol !== "https:" && url.protocol !== "http:") return "";
+				const host = url.hostname.toLowerCase();
+				if (host === "localhost" || host === "127.0.0.1" || host === "::1" || host.endsWith(".localhost")) return "";
+				return url.toString();
+			} catch {
+				return "";
+			}
+		}
+		async function resolveTomatoUrl(itemKey) {
+			const response = await fetch(`/api/tomato-board/open/${encodeURIComponent(itemKey)}`, { headers: { accept: "application/json" } });
+			const body = await response.json();
+			return response.ok ? externalUrl(body.tomatoUrl) : "";
+		}
+		/** Opens the configured Tomato item page in the system browser. */
+		function TomatoLinkButton({ itemKey, tomatoUrl = "", disabled = false }) {
 			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 				type: "button",
 				className: tomato_link_button_module_css_default.button,
@@ -127,7 +144,14 @@ window.__ModuleLoader__.load({
 				"aria-label": `在番茄中查看 ${itemKey}`,
 				onClick: (event) => {
 					event.stopPropagation();
-					window.open(`/api/tomato-board/open/${encodeURIComponent(itemKey)}`, "_blank", "noopener,noreferrer");
+					const known = externalUrl(tomatoUrl);
+					if (known) {
+						window.open(known, "_blank", "noopener,noreferrer");
+						return;
+					}
+					resolveTomatoUrl(itemKey).then((url) => {
+						if (url) window.open(url, "_blank", "noopener,noreferrer");
+					}).catch(() => {});
 				},
 				onKeyDown: (event) => {
 					if (event.key === "Enter" || event.key === " ") event.stopPropagation();
@@ -2130,7 +2154,10 @@ window.__ModuleLoader__.load({
 											className: team_management_module_css_default.itemPoints,
 											children: item.itemType === "Task" ? item.periodDays === null ? "未估算" : `${number(item.periodDays)} 人天` : item.storyPoints === null ? "未估点" : `${number(item.storyPoints)} SP`
 										}),
-										/* @__PURE__ */ (0, react_jsx_runtime.jsx)(TomatoLinkButton, { itemKey: item.itemKey })
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)(TomatoLinkButton, {
+											itemKey: item.itemKey,
+											tomatoUrl: item.tomatoUrl
+										})
 									]
 								}, item.itemKey)) })
 							] })]
@@ -5883,7 +5910,10 @@ window.__ModuleLoader__.load({
 															},
 															onKeyDown: (event) => event.stopPropagation(),
 															children: "●"
-														}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(TomatoLinkButton, { itemKey: item.itemKey })]
+														}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(TomatoLinkButton, {
+															itemKey: item.itemKey,
+															tomatoUrl: item.tomatoUrl
+														})]
 													})]
 												}),
 												/* @__PURE__ */ (0, react_jsx_runtime.jsx)("strong", { children: item.title }),
@@ -6160,6 +6190,7 @@ window.__ModuleLoader__.load({
 				})
 			}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(TomatoLinkButton, {
 				itemKey,
+				tomatoUrl: transitionState.tomatoUrl,
 				disabled: !transitionState.tomatoUrl
 			})] });
 		}

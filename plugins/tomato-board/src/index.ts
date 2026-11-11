@@ -525,8 +525,15 @@ export function apply(ctx: Context, config: Config = {}): void {
         sendJson(response, 400, { error: '无效的番茄事项编号' })
         return
       }
+      const tomatoUrl = tomatoItemUrl(config, itemKey)
+      const accept = request.headers?.accept
+      const acceptsJson = (Array.isArray(accept) ? accept.join(',') : accept ?? '').includes('application/json')
+      if (acceptsJson) {
+        sendJson(response, 200, { tomatoUrl })
+        return
+      }
       response.statusCode = 302
-      response.setHeader('location', tomatoItemUrl(config, itemKey))
+      response.setHeader('location', tomatoUrl)
       response.setHeader('cache-control', 'no-store')
       response.end()
     },

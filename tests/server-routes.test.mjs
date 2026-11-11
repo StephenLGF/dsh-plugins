@@ -54,6 +54,20 @@ test('PR routes reject relative repository paths', async () => {
   assert.equal(result.status, 400)
 })
 
+test('opening a tomato item returns the external page instead of a local redirect target', async () => {
+  const route = loadRoutes(applyTomatoBoard, {
+    tomatoOrigin: 'https://osc.gitee.work',
+    tomatoTenant: 'xly-poc',
+  }).find(item => item.path === '/api/tomato-board/open')
+  const result = await invoke(route, {
+    method: 'GET',
+    url: '/api/tomato-board/open/GiteeReport-3296',
+    headers: { accept: 'application/json' },
+  })
+  assert.equal(result.status, 200)
+  assert.equal(result.body.tomatoUrl, 'https://osc.gitee.work/_team/xly-poc/item/GiteeReport-3296?workspace=GiteeReport&tenant=xly-poc&hiddenHeader=true&from=one&frameless=true')
+})
+
 test('read routes reject unsupported methods', async () => {
   const route = loadRoutes(applyTomatoBoard).find(item => item.path === '/api/tomato-board/pr/repository')
   const result = await invoke(route, { method: 'POST', url: '/api/tomato-board/pr/repository?path=/tmp/repo' })
